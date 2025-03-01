@@ -1,0 +1,4 @@
+model_paths: null
+device: cuda
+default_dtype: float32
+mace_energy_units: eV

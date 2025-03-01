@@ -1,0 +1,8 @@
+# @package _global_
+
+defaults:
+  - override /minimisation@local_min: mmmff94s
+  - override /minimisation@global_min: mmff94s
+
+conformers:
+  numConfs: 50

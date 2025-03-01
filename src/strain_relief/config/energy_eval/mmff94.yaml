@@ -1,0 +1,4 @@
+method: MMFF94
+MMFFGetMoleculeProperties:
+  mmffVariant: ${..method}
+MMFFGetMoleculeForceField: {}

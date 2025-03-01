@@ -1,0 +1,7 @@
+method: MMFF94s
+maxIters: 1000
+MMFFGetMoleculeProperties:
+  mmffVariant: ${..method}
+MMFFGetMoleculeForceField: {}
+Minimize:
+  maxIts: ${..maxIters}

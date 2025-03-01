@@ -1,0 +1,50 @@
+[project]
+name = "prescient-strain-relief"
+description = "Calculates torsional strain of small molecules from their docked poses."
+authors = [{name = "Ewan Wallace"}]
+dynamic = ["version", "readme", "dependencies", "optional-dependencies"]
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.in"]}
+readme = {file = "README.md"}
+
+[tool.setuptools.dynamic.optional-dependencies]
+dev = {file = ["requirements-dev.in"]}
+
+[build-system]
+requires = ["setuptools >= 65", "setuptools_scm[toml]>=6.2"]
+build-backend = 'setuptools.build_meta'
+
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle
+    "F", # pyflakes
+    "I", # isort
+    "UP", # pyupgrade
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["litlmol"]
+
+[tool.ruff]
+line-length = 100
+
+
+[tool.setuptools_scm]
+local_scheme = "node-and-date"
+search_parent_directories = true
+version_scheme = "no-guess-dev"
+fallback_version = "0.0.1"
+
+[project.scripts]
+strain-relief = "strain_relief.cmdline:strain_relief"
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: marks tests as integration (deselect with '-m \"not integration\"')",
+    "gpu: marks tests as needing a gpu (deselect with '-m \"not gpu\"')"
+]

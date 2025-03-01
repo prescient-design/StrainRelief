@@ -1,0 +1,133 @@
+FROM nvidia/cuda:12.1.1-devel-ubuntu22.04
+# AWS Access
+ARG AWS_RCP_KEY
+ARG AWS_RCP_SECRET
+ENV AWS_ACCESS_KEY_ID=${AWS_RCP_KEY}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_RCP_SECRET}
+ENV AWS_DEFAULT_REGION=us-west-2
+
+ARG ARCH_TYPE=x86_64
+ENV DEBIAN_FRONTEND=noninteractive
+ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
+
+# Conda and monrepo settings
+ARG FORGE=Mambaforge
+ARG CONDA_VER=23.3.1-1
+ARG CONDA_BIN=mamba
+ENV CODE_DIR=/Users/code
+ENV CONDA_DIR=/opt/conda
+ENV ACCEPT_EULA=Y
+ARG RCLONE_VER=1.56.2
+ARG DAGSTER_VERSION=1.1.6
+
+ARG PRESCIENT_PYPI
+ENV PRESCIENT_PYPI=${PRESCIENT_PYPI}
+
+ARG WANDB_API_KEY
+ENV WANDB_API_KEY=${WANDB_API_KEY}
+ENV WANDB_BASE_URL=https://genentech.wandb.io
+
+# Debian packages
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+            bzip2 \
+            ca-certificates \
+            curl \
+            git \
+            libxext-dev \
+            libxrender-dev \
+            awscli \
+            wget \
+            ffmpeg \
+            libsm6 \
+            libxext6 \
+            libgl1 \
+            rsync \
+            zlib1g-dev \
+            libjpeg-dev \
+            tzdata \
+            wget && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR $CODE_DIR
+ENV PATH=${CONDA_DIR}/bin:${PATH}
+
+# Dagster dev env variables
+ENV ENVIRONMENT=production
+
+RUN wget -r -l1 --no-parent --quiet -A .crt -P /usr/local/share/ca-certificates https://certinfo.roche.com/rootcerts/ && update-ca-certificates
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+
+# Get OpenEye license file
+RUN aws s3 cp s3://prescient-data-dev/smdd/software/openeye/oe_license.txt $CODE_DIR
+ENV OE_LICENSE=$CODE_DIR/oe_license.txt
+
+# Mamba setup
+RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/download/${CONDA_VER}/${FORGE}-${CONDA_VER}-Linux-$(uname -m).sh -O /tmp/miniforge.sh && \
+    /bin/bash /tmp/miniforge.sh -b -p ${CONDA_DIR} && \
+    rm /tmp/miniforge.sh && \
+    find ${CONDA_DIR} -follow -type f -name '*.a' -delete && \
+    find ${CONDA_DIR} -follow -type f -name '*.pyc' -delete && \
+    $CONDA_BIN clean -afy && \
+    echo ". ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate base" >> /etc/skel/.bashrc && \
+    echo ". ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate base" >> ~/.bashrc && \
+    wget https://github.com/rclone/rclone/releases/download/v${RCLONE_VER}/rclone-v${RCLONE_VER}-linux-amd64.deb && \
+    apt-get install --yes --no-install-recommends ./rclone-v${RCLONE_VER}-linux-amd64.deb && \
+    rm rclone-v${RCLONE_VER}-linux-amd64.deb
+
+COPY strain_relief $CODE_DIR/strain_relief
+
+RUN $CONDA_BIN env update -n base -f $CODE_DIR/strain_relief/env.yml && \
+    $CONDA_BIN clean -afy && \
+    find ${CONDA_DIR} -follow -type f -name '*.a' -delete && \
+    find ${CONDA_DIR} -follow -type f -name '*.pyc' -delete
+
+# Python setup & lint
+ENV PYTHONPATH=${CONDA_DIR}/lib/python3.10/site-packages:$CODE_DIR/
+
+## Requirements
+# Install dagcode's requirements
+COPY dagcode/requirements.in $CODE_DIR
+RUN python -m pip install  --index-url=$PRESCIENT_PYPI  -r requirements.in
+
+# Install bolt's requirements
+COPY bolt/requirements.in $CODE_DIR
+RUN python -m pip install  --index-url=$PRESCIENT_PYPI  -r requirements.in
+
+COPY dynabolts/requirements.in $CODE_DIR
+RUN python -m pip install  --index-url=$PRESCIENT_PYPI  -r requirements.in
+
+## Packages
+
+# install internal dependencies
+COPY prescient $CODE_DIR/prescient
+COPY dagcode $CODE_DIR/dagcode
+COPY bolt $CODE_DIR/bolt
+COPY dynabolts $CODE_DIR/dynabolts
+
+RUN python -m pip install --index-url=$PRESCIENT_PYPI "./prescient[all]"  && \
+    python -m pip install ./dagcode --no-deps && \
+    python -m pip install ./bolt --no-deps && \
+    # This dependency needs to be installed in editable mode for now
+    python -m pip install -e ./dynabolts --no-deps
+
+# Install strain_relief
+RUN python -m pip install -e ./strain_relief --no-deps
+
+ENV GYST_API_BASE='https://sc1lvgystp05.sc1.roche.com:4833'
+ENV GYSTAPI_ACCESS_TOKEN='eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ2ZGJ3Y3U3NTE4TS1SQzdUNE82bGJDNDJxdTdtb29pSFZFT29aN3ltZ013In0.eyJleHAiOjE3Mjk2MDQ2NDMsImlhdCI6MTcyOTYwNDM0MywiYXV0aF90aW1lIjoxNzI5NjA0MzQwLCJqdGkiOiJjZWM2ZWUxMy02ZjdiLTQyZTAtOTI3Yy1mODFjMzU2ZmQ0YTIiLCJpc3MiOiJodHRwczovL2F1dGhzZXJ2aWNlLmdlbmUuY29tL2F1dGgvcmVhbG1zL2dlbmUiLCJhdWQiOlsiZ3lzdGljcyIsImd5c3QtYXBpLWJhY2tlbmRzIl0sInN1YiI6ImY6OTdkMTJkMTktNWZlMi00N2VkLTgzMDMtNzMxOGVkODEyNmI5OnNobWlsb3ZrIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiZ3lzdC1hcGkiLCJzZXNzaW9uX3N0YXRlIjoiYmI5Y2RlZTYtNmU0Zi00ZThlLTlhZmYtYTU0ZGRkYjQ4ZWRjIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0OjgwODAiLCJodHRwOi8vbG9jYWxob3N0OjM4NjUiXSwicmVzb3VyY2VfYWNjZXNzIjp7Imd5c3RpY3MiOnsicm9sZXMiOlsiZ3JlZCJdfSwiZ3lzdC1hcGktYmFja2VuZHMiOnsicm9sZXMiOlsiZ3JlZCJdfX0sInNjb3BlIjoib3BlbmlkIGVtYWlsIHByb2ZpbGUiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJLaXJpbGwgU2htaWxvdmljaCIsInByZWZlcnJlZF91c2VybmFtZSI6InNobWlsb3ZrIiwiZ2l2ZW5fbmFtZSI6IktpcmlsbCIsImZhbWlseV9uYW1lIjoiU2htaWxvdmljaCIsImVtYWlsIjoic2htaWxvdmljaC5raXJpbGxAZ2VuZS5jb20ifQ.emj4e9LXLkFZf30Ln3o6dABe-DMfW3yoWoT9VhdsTMzPOyuOdH3Z-g7GqD9DFy7_a5oiV8I64OZIUJ0uiO1AS2EPc8iGqhBB-UcMT5MIGttG3XzSgPgCmC33mOST1o18B4dXUK5zHj0l5pEk9Kw9XRucfZXKf-80KowuBe6s4a3h9ljOk3slt0iY64kX8P1H4Mw0r33T4cvT6_BNrs9TumRyhCPA7u_-hCbvSnZ-QRNdgRqTXSsUpwd9zlbultiPQjBKyNd7QQFxHF89dVdAL-gLc_mv6aWhKZ-ASDPQNxAHz1MToiZ-9x2EZBTNVaI8re_Broiv7QGzFBs6Ti59mA'
+
+#### End  ####
+
+# Copy over labintheloop protocols
+COPY labintheloop  .
+
+ARG CI_REGISTRY_IMAGE
+ARG CI_COMMIT_SHORT_SHA
+ENV CI_REGISTRY_IMAGE=${CI_REGISTRY_IMAGE}
+ENV CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA}
+ARG CI_COMMIT_REF_NAME
+ENV CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME}
+
+CMD ["/bin/bash"]

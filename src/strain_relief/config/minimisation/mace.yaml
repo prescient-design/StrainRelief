@@ -1,0 +1,7 @@
+defaults:
+  - ../model/mace@_here_
+
+method: MACE
+maxIters: 250
+fmax: 0.05
+fexit: 250

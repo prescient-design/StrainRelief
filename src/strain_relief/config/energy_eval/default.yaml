@@ -1,0 +1,1 @@
+method: ${..global_min.method}

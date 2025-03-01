@@ -1,0 +1,94 @@
+Metadata-Version: 2.2
+Name: prescient-strain-relief
+Version: 2024.9.17.0.post1.dev621+gd6937ccf6
+Summary: Calculates torsional strain of small molecules from their docked poses.
+Author: Ewan Wallace
+Requires-Python: >=3.11
+Description-Content-Type: text/x-rst
+Requires-Dist: rdkit
+Requires-Dist: ase
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: mace-torch
+Requires-Dist: omegaconf
+Requires-Dist: hydra-core
+Requires-Dist: pyarrow
+Requires-Dist: fastparquet
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
+
+# Strain Relief
+Strain relief calculates the torsional strain of docked poses and has a suite of different force fields with which to do this. This includes a MACE neural network potential trained on SPICE2.
+
+`strain-relief` - Uses XTB and crest to find to find the global minimum conformation with energies evaluated by MACE. Best for a small number of poses. **Note** - not yet implemented.
+
+`strain-relief-lite` - Uses RDKit conformer enumeration and UFF/MMFF94/MACE minimisation to approximate the global minimum. Best for high throughput workflows.
+
+## Installation
+
+From the `./strain_relief`, run the following command to install the package and its dependencies in editable mode:
+
+```bash
+mamba env create -f env.yml
+mamba activate strain
+pip install -e .
+
+pre-commit install
+```
+
+## Usage
+Choose a minimisation and energy evalation force field from `uff`, `mmff94`, `mmff94s`, `mace`.
+
+The calculator works best when the same force field is used for both methods.
+
+```
+strain-relief-lite \
+    io.input.parquet_path=path/to/parquet_with_mol_bytes \
+    io.ouput.output_file=path/to/output \
+    minimisation=mmff94s \
+    energy_eval=mmff94s
+```
+
+```
+strain-relief-lite \
+    io.input.parquet_path=path/to/parquet_with_mol_bytes \
+    io.ouput.output_file=path/to/output \
+    model.path=path/to/model \
+    minimisation=mace \
+    energy_eval=mace
+```
+
+#### RDKit kwargs
+The following dictionaries are passed directly to the function of that name.
+- `conformers` (`EmbedMultipleConfs`)
+- `minimisation.UFFOptimizeMoleculeConfs`
+- `minimisation.MMFFGetMoleculeProperties`
+- `minimisation.MMFFGetMoleculeForceField`
+- `minimisation.Minimize`
+- `energy_eval.MMFFGetMoleculeProperties`
+- `energy_eval.MMFFGetMoleculeForceField`
+- `energy_eval.UFFGetMoleculeForceField`
+
+The hydra config is set up to allow additional kwargs to be passed to these functions e.g. `+minimisation.UFFOptimizeMoleculeConfs.vdwThresh=1.0`.
+
+**Common kwargs**
+- `conformers.numConfs`
+- `conformers.maxAttempts`
+- `minimisation.maxIters`
+- `hydra.verbose`
+
+#### Input Data
+`strain-relief-lite` accepts pd.DataFrames with rdkit molecules stored as `bytes` strings (using `mol.ToBinary()`)
+
+### Logging
+
+Logging is set to the `INFO` level by default which logs only aggregate information. `hydra.verbose=true` can be used to activate `DEBUG` level logging which includes information for every molecule and conformer.
+
+## Unit Tests
+- `pytest tests/` - runs all tests (unit and integration)
+- `pytest tests/ -m "not gpu"` - excludes all MACE tests
+- `pytest tests/ -m "not integration"` - runs all unit tests
+
+## More information
+For any questions, please reach out to Ewan Wallace: ewan.wallace@roche.com

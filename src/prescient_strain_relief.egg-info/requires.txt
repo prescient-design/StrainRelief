@@ -1,0 +1,13 @@
+rdkit
+ase
+numpy
+pandas
+mace-torch
+omegaconf
+hydra-core
+pyarrow
+fastparquet
+
+[dev]
+pytest
+pytest-cov

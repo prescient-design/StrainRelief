@@ -1,0 +1,12 @@
+rdkit
+ase
+numpy
+pandas
+torch==2.5.1
+mace-torch
+omegaconf
+hydra-core
+pyarrow
+fastparquet
+universal-pathlib
+boto3
