@@ -1,6 +1,5 @@
 import pytest
 from rdkit import Chem
-
 from strain_relief.constants import ENERGY_PROPERTY_NAME
 from strain_relief.energy_eval import predict_energy
 
@@ -8,7 +7,6 @@ from strain_relief.energy_eval import predict_energy
 @pytest.mark.parametrize(
     "method, expected_exception, kwargs",
     [
-        ("UFF", None, {"UFFGetMoleculeForceField": {}}),
         (
             "MMFF94",
             None,

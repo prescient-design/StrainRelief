@@ -1,5 +1,0 @@
-method: UFF
-maxIters: 1000
-UFFOptimizeMoleculeConfs:
-  maxIters: ${..maxIters}
-  numThreads: ${...numThreads}

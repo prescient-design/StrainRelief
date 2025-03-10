@@ -1,6 +1,0 @@
-defaults:
-  - ../model/mace@_here_
-
-method: MACE
-default_dtype: float64
-batch_size: 10_000

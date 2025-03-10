@@ -1,14 +1,15 @@
-###################################################################################################################
-# This is the script for StrainRelief to generate conformers and calculate ligand strain using MACE.              #
-#                                                                                                                 #
-# ALGORITHM:                                                                                                      #
-# 1. Read in molecules(s) from df                                                                                 #
-# 2. Calculate the local minimum conformer by minimising the docked pose with a loose convergence criteria        #
-# 2. Generate n conformers for each molecule                                                                      #
-# 3. Minimise each conformation and choose the lowest as an approximation for the global minimum                  #
-# 4. (ONLY IF USING A DIFFFERENT FF FOR ENERGIES) Predict energy of each conformation                             #
-# 5. Calculate ligand strain between local and global minimum and apply threshold                                 #
-###################################################################################################################
+####################################################################################################
+# This is the script for StrainRelief calculate ligand strain using a given force field            #
+#                                                                                                  #
+# ALGORITHM:                                                                                       #
+# 1. Read in molecules(s) from df                                                                  #
+# 2. Calculate the local minimum conformer by minimising the docked pose with a loose convergence  #
+#    criteria                                                                                      #
+# 2. Generate n conformers for each molecule                                                       #
+# 3. Minimise each conformation and choose the lowest as an approximation for the global minimum   #
+# 4. (ONLY IF USING A DIFFFERENT FF FOR ENERGIES) Predict energy of each conformation              #
+# 5. Calculate ligand strain between local and global minimum and apply threshold                  #
+#####################################################################################################
 
 import logging
 from copy import deepcopy
@@ -90,7 +91,7 @@ def strain_relief(df: pd.DataFrame, cfg: DictConfig) -> pd.DataFrame:
     return md
 
 
-@hydra.main(version_base=None, config_path="../config", config_name="default")
+@hydra.main(version_base=None, config_path="../hydra_config", config_name="default")
 def main(cfg: DictConfig):
     df = load_parquet(**cfg.io.input)
     return strain_relief(df, cfg)

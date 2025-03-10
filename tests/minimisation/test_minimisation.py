@@ -1,6 +1,5 @@
 import pytest
 from rdkit import Chem
-
 from strain_relief.constants import ENERGY_PROPERTY_NAME
 from strain_relief.minimisation import minimise_conformers
 
@@ -9,18 +8,14 @@ from strain_relief.minimisation import minimise_conformers
     "method, expected_exception, kwargs",
     [
         (
-            "UFF",
-            None,
-            {"UFFOptimizeMoleculeConfs": {"maxIters": 1, "numThreads": 0}, "maxIters": 1},
-        ),
-        (
             "MMFF94",
             None,
             {
                 "MMFFGetMoleculeProperties": {"mmffVariant": "MMFF94"},
                 "MMFFGetMoleculeForceField": {},
-                "Minimize": {"maxIts": 1},
                 "maxIters": 1,
+                "fmax": 0.05,
+                "fexit": 250,
             },
         ),
         (
@@ -29,8 +24,9 @@ from strain_relief.minimisation import minimise_conformers
             {
                 "MMFFGetMoleculeProperties": {"mmffVariant": "MMFF94s"},
                 "MMFFGetMoleculeForceField": {},
-                "Minimize": {"maxIts": 1},
                 "maxIters": 1,
+                "fmax": 0.05,
+                "fexit": 250,
             },
         ),
         ("XXX", ValueError, {}),

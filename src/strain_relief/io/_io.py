@@ -33,7 +33,7 @@ def load_parquet(
     if id_col_name is None:
         id_col_name = ID_COL_NAME
 
-    logging.info(f"Loading data...")
+    logging.info("Loading data...")
     df = pd.read_parquet(parquet_path)
     logging.info(f"Loaded {len(df)} posed molecules")
 
@@ -86,7 +86,7 @@ def _check_columns(df: pd.DataFrame, mol_col_name: str, id_col_name: str):
         Name of the column containing the molecule IDs.
     """
     if "mol_bytes" not in df.columns:
-        raise ValueError(f"Column 'mol_bytes' not found in dataframe")
+        raise ValueError("Column 'mol_bytes' not found in dataframe")
     df[mol_col_name] = df["mol_bytes"].apply(Chem.Mol)
     logging.info(f"RDKit.Mol column is '{mol_col_name}'")
 
@@ -102,17 +102,18 @@ def _calculate_charge(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
 
     Parameters
     ----------
-    md: MolDataset
-        MolDataset containing molecules.
+    df: pd.DataFrame
+        DataFrame containing molecules.
 
     Returns
     -------
-        MolDataset containing only neutral molecules.
+        DataFrame with charge column.
     """
     df["charge"] = df[mol_col_name].apply(lambda x: Chem.GetFormalCharge(x))
     if len(df[df["charge"] != 0]) > 0:
         logging.info(
-            f"Dataset contains {len(df[df['charge'] != 0])} charged molecules. Ligand strains will not be calculated for these."
+            f"Dataset contains {len(df[df['charge'] != 0])} charged molecules. Ligand strains will "
+            "not be calculated for these."
         )
     return df
 
@@ -161,7 +162,6 @@ def save_parquet(
     dicts = []
 
     for id in docked_mols.keys():
-        docked_mol = docked_mols[id]
         local_min_mol = local_min_mols[id]
         global_min_mol = global_min_mols[id]
 
@@ -200,7 +200,6 @@ def save_parquet(
         dicts.append(
             {
                 "id": id,
-                "docked_mol": docked_mol.ToBinary(),
                 "local_min_mol": local_min_conf,
                 "local_min_e": local_min_energy,
                 "global_min_mol": global_min_conf,
@@ -215,11 +214,13 @@ def save_parquet(
 
     if len(results[results.ligand_strain < 0]) > 0:
         logging.warning(
-            f"{len(results[results.ligand_strain < 0])} molecules have a negative ligand strain i.e. the initial conformer is lower energy than all generated conformers."
+            f"{len(results[results.ligand_strain < 0])} molecules have a negative ligand strain "
+            "i.e. the initial conformer is lower energy than all generated conformers."
         )
     if len(results[results.ligand_strain.isna()]) > 0:
         logging.warning(
-            f"{len(results[results.ligand_strain.isna()])} molecules have no conformers generated for either the initial or minimised pose."
+            f"{len(results[results.ligand_strain.isna()])} molecules have no conformers generated "
+            "for either the initial or minimised pose."
         )
 
     results = input_df.merge(results, left_on=id_col_name, right_on="id", how="outer")

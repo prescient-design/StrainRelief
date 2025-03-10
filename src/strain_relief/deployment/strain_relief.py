@@ -14,12 +14,12 @@ class DeploymentConfig:
     num_confs: int = 20
     minimisation: str = "mace"
     max_iters: int = 125
-    model_path: str = "s3://prescient-data-dev/strain_relief/models/MACE.model"
+    model_path: str = "s3://prescient-data-dev/strain_relief/models/MACE_SPICE2_NEUTRAL.model"
 
 
 def deployment_function(dataframe: pd.DataFrame, config: DictConfig) -> pd.DataFrame:
-    """Strain Relief calculates the ligand strain of docked poses and has a suite of different force fields with which to do this.
-    This includes a MACE neural network potential.
+    """Strain Relief calculates the ligand strain of docked poses and has a suite of different
+    force fields with which to do this. This includes a MACE neural network potential.
 
     Parameters
     ----------
@@ -29,7 +29,8 @@ def deployment_function(dataframe: pd.DataFrame, config: DictConfig) -> pd.DataF
             - mol column: mol_bytes (rdkit Mol object as bytes)
 
             For scoring and ranking models, the ID column is treated as a unique identifier.
-            The output must preserve the ID column - it is used to map the output scores back to the input.
+            The output must preserve the ID column - it is used to map the output scores back to the
+            input.
 
     config : DictConfig
         OmegaConf's DictConfig object with fields defined in DeploymentConfig
@@ -43,7 +44,7 @@ def deployment_function(dataframe: pd.DataFrame, config: DictConfig) -> pd.DataF
             - new output columns: ligand_strain, passes_strain_filter
 
     """
-    with initialize(version_base="1.1", config_path="../config"):
+    with initialize(version_base="1.1", config_path="../hydra_config"):
         cfg = compose(
             config_name="default",
             overrides=[

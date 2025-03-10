@@ -1,9 +1,7 @@
 import numpy as np
-import pandas as pd
 import pytest
 from mace.calculators import MACECalculator
 from rdkit import Chem
-
 from strain_relief import test_dir
 from strain_relief.constants import EV_TO_KCAL_PER_MOL
 from strain_relief.io import load_parquet, to_mols_dict

@@ -1,0 +1,19 @@
+# @package _global_
+
+defaults:
+  - override /minimisation@local_min: mace
+  - override /minimisation@global_min: mace
+  - override /model: mace
+
+conformers:
+  numConfs: 20
+
+model:
+  model_paths: models/MACE_SPICE2_NEUTRAL.model
+
+local_min:
+  model_paths: models/MACE_SPICE2_NEUTRAL.model
+  fmax: 0.50
+
+global_min:
+  model_paths: models/MACE_SPICE2_NEUTRAL.model

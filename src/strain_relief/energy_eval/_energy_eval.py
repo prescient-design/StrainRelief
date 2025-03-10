@@ -5,11 +5,17 @@ from typing import Literal
 from rdkit import Chem
 
 from strain_relief.constants import ENERGY_PROPERTY_NAME
-from strain_relief.energy_eval import MACE_energy, MMFF94_energy, UFF_energy
+from strain_relief.energy_eval import MACE_energy, MMFF94_energy
+
+METHODS_DICT = {
+    "MACE": MACE_energy,
+    "MMFF94": MMFF94_energy,
+    "MMFF94s": MMFF94_energy,
+}
 
 
 def predict_energy(
-    mols: dict[str : Chem.Mol], method: Literal["MACE", "MMFF94", "MMFF94s", "UFF"], **kwargs
+    mols: dict[str : Chem.Mol], method: Literal["MACE", "MMFF94", "MMFF94s"], **kwargs
 ):
     """Predict the energy of all conformers of molecules in mols using a specified method.
 
@@ -17,7 +23,7 @@ def predict_energy(
     ----------
     mols : dict[str:Chem.Mol]
         A dictionary of molecules.
-    method : Literal["MACE", "MMFF94", "MMFF94s", "UFF"]
+    method : Literal["MACE", "MMFF94", "MMFF94s"]
         The method to use for energy prediction.
     **kwargs
         Additional keyword arguments to pass to the energy prediction method.
@@ -25,15 +31,10 @@ def predict_energy(
     Returns
     -------
     dict[str:Chem.Mol]
-        A dictionary of molecules with the predicted energies stored as a property on each conformer.
+        A dictionary of molecules with the predicted energies stored as a property on each
+        conformer.
     """
     start = timer()
-    METHODS_DICT = {
-        "MACE": MACE_energy,
-        "UFF": UFF_energy,
-        "MMFF94": MMFF94_energy,
-        "MMFF94s": MMFF94_energy,
-    }
 
     if method not in METHODS_DICT:
         raise ValueError(f"method must be in {METHODS_DICT.keys()}")

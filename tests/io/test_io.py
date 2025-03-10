@@ -3,13 +3,10 @@ from pathlib import Path
 import pandas as pd
 import pytest
 from rdkit import Chem
-
 from strain_relief import test_dir
 from strain_relief.io._io import (
     _calculate_charge,
-    _check_columns,
     load_parquet,
-    save_parquet,
     to_mols_dict,
 )
 

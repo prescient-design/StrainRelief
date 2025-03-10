@@ -19,7 +19,8 @@ def generate_conformers(
 ) -> dict[str : Chem.Mol]:
     """Generate conformers for a molecule. The 0th conformer is the original molecule.
 
-    This function uses RDKit's ETKDGv2 method to generate conformers with the execption of clearConfs=False.
+    This function uses RDKit's ETKDGv2 method to generate conformers with the execption of
+    clearConfs=False.
 
     Parameters
     ----------

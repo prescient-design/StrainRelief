@@ -13,9 +13,20 @@ pip install -e .
 pre-commit install
 ```
 
+### Installation with uv
+Install `uv` and from the root directory run:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv sync
+```
+
+
 ## The Protocol
 
 The protocol used in StrainRelief is designed to be simple, fast and model agnostic - all that is needed to apply a new force field is to write an ASE calculator wrapper. Additionally you can use any MACE model, such as these from the [MACE-OFF23](https://github.com/ACEsuit/mace-off/tree/main/mace_off23) repository.
+
+![Strain Relief Protocol](assets/strain_relief_protocol.png)
 
 The protocol consists of 5 steps:
 
@@ -23,23 +34,28 @@ The protocol consists of 5 steps:
 2. Generate 20 conformers from the docked ligand pose.
 3. Minimise the generated conformers (and the original docked pose) with a stricter convergence criteria.
 4. Evaluate the energy of all conformers and choose the lowest energy as an approximation of the global minimum.
-5. Calculate ligand strain, `E(local minimum) - E(global minimum)` and apply threshold.
+5. Calculate `E(ligand strain) = E(local minimum) - E(global minimum)` and apply threshold.
 
 **N.B.** energies returned are in kcal/mol.
 
 ## Usage
-Choose a minimisation and energy evalation force field from `uff`, `mmff94`, `mmff94s`, `mace`.
+Choose a minimisation and energy evalation force field from `mmff94`, `mmff94s`, `mace`.
 
 The calculator works best when the same force field is used for both methods. If this is the case, `energy_eval` does not need to be specified.
 
+See the example scripts in [examples](./examples/examples.sh) along with a [tutorial](./examples/tutorial.ipynb) to explain StrainRelief's output and some handy helper functions.
+
+This is the simplest and fastest implementation of StrainRelief using MMFF94s and a minimial example dataset.
 ```
 strain-relief \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
     io.output.output_file=data/example_ligboundconf_output.parquet \
     minimisation@local_min=mmff94s \
-    minimisation@global_min=mmff94s
+    minimisation@global_min=mmff94s \
+    local_min.fmax=0.50
 ```
 
+This script demonstrates using different force fields for minimisation (MMFF94s) and energy evaluations (MACE).
 ```
 strain-relief \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
@@ -52,6 +68,7 @@ strain-relief \
     energy_eval.model_paths=s3://prescient-data-dev/strain_relief/models/MACE.model
 ```
 
+This is the script as used for most calculations in the StrainRelief paper. MACE is used for minimisation (and energy evalutions implicitly). A looser convergence criteria is used for local minimisation. Note: a gpu is required by default to run calculations with MACE.
 ```
 strain-relief \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
@@ -69,15 +86,12 @@ strain-relief \
 #### RDKit kwargs
 The following dictionaries are passed directly to the function of that name.
 - `conformers` (`EmbedMultipleConfs`)
-- `minimisation.UFFOptimizeMoleculeConfs`
 - `minimisation.MMFFGetMoleculeProperties`
 - `minimisation.MMFFGetMoleculeForceField`
-- `minimisation.Minimize`
 - `energy_eval.MMFFGetMoleculeProperties`
 - `energy_eval.MMFFGetMoleculeForceField`
-- `energy_eval.UFFGetMoleculeForceField`
 
-The hydra config is set up to allow additional kwargs to be passed to these functions e.g. `+minimisation.UFFOptimizeMoleculeConfs.vdwThresh=1.0`.
+The hydra config is set up to allow additional kwargs to be passed to these functions e.g. `+minimisation.MMFFGetMoleculeProperties.mmffVerbosity=1`.
 
 **Common kwargs**
 - `threshold` (set by default to 16.1 kcal/mol - calibrated using LigBoundConf 2.0)
@@ -98,6 +112,26 @@ Logging is set to the `INFO` level by default which logs only aggregate informat
 - `pytest tests/` - runs all tests (unit and integration)
 - `pytest tests/ -m "not gpu"` - excludes all MACE tests
 - `pytest tests/ -m "not integration"` - runs all unit tests
+
+## Citations
+<!-- TODO: include preprint citation and other relevant ones (e.g. MACE) -->
+If you use StrainRelief or adapt the StrainRelief code for any purpose, please cite:
+
+<!-- CITATION -->
+```bibtex
+@article{StrainReliefPreprint}
+```
+
+```bibtex
+@article{batatia2022mace,
+  title={MACE: Higher order equivariant message passing neural networks for fast and accurate force fields},
+  author={Batatia, Ilyes and Kovacs, David P and Simm, Gregor and Ortner, Christoph and Cs{\'a}nyi, G{\'a}bor},
+  journal={Advances in neural information processing systems},
+  volume={35},
+  pages={11423--11436},
+  year={2022}
+}
+```
 
 ## More information
 For any questions, please reach out to Ewan Wallace: ewan.wallace@roche.com

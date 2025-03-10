@@ -7,8 +7,8 @@ from mace.calculators import MACECalculator
 from rdkit import Chem
 
 from strain_relief.constants import EV_TO_KCAL_PER_MOL, HARTREE_TO_KCAL_PER_MOL
-from strain_relief.io.utils import copy_from_s3
-from strain_relief.utils import rdkit_to_ase
+from strain_relief.io import rdkit_to_ase
+from strain_relief.io.utils_s3 import copy_from_s3
 
 
 def MACE_energy(

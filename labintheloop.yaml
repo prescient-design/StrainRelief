@@ -36,7 +36,7 @@ deployments:
       nullable: false
     minimisation:
       type: string
-      description: Force field to use for minimisation. Choose from uff, mmff94s, mace.
+      description: Force field to use for minimisation. Choose from mmff94, mmff94s, mace.
       default: mace
       nullable: false
     max_iters:
@@ -47,7 +47,7 @@ deployments:
     model_path:
       type: string
       description: Path to the MACE model.
-      default: s3://prescient-data-dev/strain_relief/models/MACE.model
+      default: s3://prescient-data-dev/strain_relief/models/MACE_SPICE2_NEUTRAL.model
       nullable: true
 
   test: strain_relief/tests/deployment/

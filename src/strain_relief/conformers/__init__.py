@@ -1,3 +1,3 @@
 from ._rdkit_generation import generate_conformers
 
-_all_ = ["generate_conformers"]
+__all__ = ["generate_conformers"]

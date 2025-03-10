@@ -1,12 +1,12 @@
 from ._mace import MACE_min
 from ._mmff94 import MMFF94_min
-from ._uff import UFF_min
+from .utils_bfgs import StrainReliefBFGS
 
 from ._minimisation import minimise_conformers  # isort: skip
 
-_all__ = [
+__all__ = [
     "MACE_min",
-    "UFF_min",
     "MMFF94_min",
+    "StrainReliefBFGS",
     "minimise_conformers",
 ]

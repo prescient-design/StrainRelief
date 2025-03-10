@@ -5,11 +5,13 @@ from typing import Literal
 from rdkit import Chem
 
 from strain_relief.constants import ENERGY_PROPERTY_NAME
-from strain_relief.minimisation import MACE_min, MMFF94_min, UFF_min
+from strain_relief.minimisation import MACE_min, MMFF94_min
+
+METHODS_DICT = {"MACE": MACE_min, "MMFF94": MMFF94_min, "MMFF94s": MMFF94_min}
 
 
 def minimise_conformers(
-    mols: dict[str : Chem.Mol], method: Literal["MACE", "UFF"], **kwargs
+    mols: dict[str : Chem.Mol], method: Literal["MACE", "MMFF94s", "MMFF94"], **kwargs
 ) -> dict[str : Chem.Mol]:
     """Minimise all conformers of all molecules using a force field.
 
@@ -17,7 +19,7 @@ def minimise_conformers(
     ----------
     mols : dict[str:Chem.Mol]
         Dictionary of molecules to minimise.
-    method : Literal["MACE", "UFF"]
+    method : Literal["MACE", "MMFF94s", "MMFF94"]
         Method to use for minimisation.
     kwargs : dict
         Additional keyword arguments to pass to the minimisation function.
@@ -28,7 +30,6 @@ def minimise_conformers(
         List of molecules with the conformers minimised.
     """
     start = timer()
-    METHODS_DICT = {"MACE": MACE_min, "UFF": UFF_min, "MMFF94": MMFF94_min, "MMFF94s": MMFF94_min}
 
     if method not in METHODS_DICT:
         raise ValueError(f"method must be in {METHODS_DICT.keys()}")
@@ -36,7 +37,6 @@ def minimise_conformers(
     logging.info(f"Minimising conformers using {method} and removing non-converged conformers...")
     # Select method and run minimisation
     min_method = METHODS_DICT[method]
-    if method != "MACE": del kwargs["maxIters"]
     energies, mols = min_method(mols, **kwargs)
 
     # Store the predicted energies as a property on each conformer

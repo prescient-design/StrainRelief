@@ -2,7 +2,6 @@ import ase
 import numpy as np
 import pytest
 from rdkit import Chem
-
 from strain_relief.constants import EV_TO_KCAL_PER_MOL
 from strain_relief.energy_eval._mace import MACE_energy, _MACE_energy
 
@@ -34,7 +33,8 @@ def test_MACE_energy(
     for mol_id in result.keys():
         for conf_id in result[mol_id].keys():
             assert np.isclose(result[mol_id][conf_id], expected[mol_id][conf_id], atol=1e-6), (
-                f"{result[mol_id][conf_id]} != {expected[mol_id][conf_id]} (diff = {result[mol_id][conf_id] - expected[mol_id][conf_id]})"
+                f"{result[mol_id][conf_id]} != {expected[mol_id][conf_id]} "
+                f"(diff = {result[mol_id][conf_id] - expected[mol_id][conf_id]})"
             )
 
 
@@ -57,5 +57,6 @@ def test__MACE_energy(
     assert result.keys() == expected.keys()
     for conf_if in result.keys():
         assert np.isclose(result[conf_id], expected[conf_id], atol=1e-6), (
-            f"{result[conf_id]} != {expected[conf_id]} (diff = {result[conf_id] - mace_energies[conf_id]})"
+            f"{result[conf_id]} != {expected[conf_id]} "
+            f"(diff = {result[conf_id] - mace_energies[conf_id]})"
         )

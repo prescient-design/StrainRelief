@@ -1,7 +1,14 @@
 import numpy as np
-import pytest
-
-from strain_relief.constants import *
+from strain_relief.constants import (
+    ANGSTROM_TO_BOHR,
+    BOHR_TO_ANGSTROM,
+    EV_TO_HARTREE,
+    EV_TO_KCAL_PER_MOL,
+    HARTREE_TO_EV,
+    HARTREE_TO_KCAL_PER_MOL,
+    KCAL_PER_MOL_TO_EV,
+    KCAL_PER_MOL_TO_HARTREE,
+)
 
 
 def test_units():

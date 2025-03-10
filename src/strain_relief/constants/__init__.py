@@ -14,7 +14,7 @@ from ._units import (
     KCAL_PER_MOL_TO_HARTREE,
 )
 
-_all_ = [
+__all__ = [
     # String Constants
     "ID_COL_NAME",
     "MOL_COL_NAME",

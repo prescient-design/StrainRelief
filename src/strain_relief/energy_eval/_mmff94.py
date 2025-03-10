@@ -38,7 +38,7 @@ def MMFF94_energy(
 def _MMFF94_energy(
     mol: Chem.Mol, id: str, MMFFGetMoleculeProperties: dict, MMFFGetMoleculeForceField: dict
 ) -> dict[int:float]:
-    """Calculate the UFF energy for all conformers of a molecule.
+    """Calculate the MMFF94 energy for all conformers of a molecule.
 
     Parameters
     ----------
@@ -63,6 +63,7 @@ def _MMFF94_energy(
         )
         conformer_energies[conf.GetId()] = ff.CalcEnergy()
         logging.debug(
-            f"{id}: Minimised conformer {conf.GetId()} energy = {conformer_energies[conf.GetId()]} kcal/mol"
+            f"{id}: Minimised conformer {conf.GetId()} "
+            f"energy = {conformer_energies[conf.GetId()]} kcal/mol"
         )
     return conformer_energies

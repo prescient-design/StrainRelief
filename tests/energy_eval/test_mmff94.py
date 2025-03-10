@@ -1,6 +1,5 @@
 import pytest
 from rdkit import Chem
-
 from strain_relief.energy_eval._mmff94 import MMFF94_energy, _MMFF94_energy
 
 
