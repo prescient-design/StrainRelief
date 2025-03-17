@@ -42,8 +42,9 @@ strain_relief lint:
   needs: ["build node strain_relief"]
   image: $ECR_REGISTRY/strain_relief:$CI_COMMIT_SHORT_SHA
   script:
+    - cd strain_relief
     - pip install pre-commit
-    - pre-commit run --files strain_relief/**/*
+    - pre-commit run --files ./**/*
   tags:
     - prescient-cpu
 
