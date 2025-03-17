@@ -110,7 +110,12 @@ def _calculate_charge(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
         DataFrame with charge column.
     """
     df["charge"] = df[mol_col_name].apply(lambda x: Chem.GetFormalCharge(x))
-    if len(df[df["charge"] != 0]) > 0:
+    if all(df["charge"] != 0):
+        raise ValueError(
+            "All molecules are charged. StrainRelief only calculates ligand strain for neutral "
+            "molecules."
+        )
+    elif any(df["charge"] != 0):
         logging.info(
             f"Dataset contains {len(df[df['charge'] != 0])} charged molecules. Ligand strains will "
             "not be calculated for these."
@@ -205,7 +210,7 @@ def save_parquet(
                 "global_min_mol": global_min_conf,
                 "global_min_e": global_min_energy,
                 "ligand_strain": strain,
-                "passes_strain_filter": strain <= threshold,
+                "passes_strain_filter": strain <= threshold if threshold is not None else np.nan,
                 "nconfs_converged": len(conf_energies),
             }
         )
