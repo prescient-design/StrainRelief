@@ -27,8 +27,8 @@ deployments:
     threshold:
       type: float
       description: Threshold for ligand strain filter.
-      default: 16.1
-      nullable: false
+      default: null
+      nullable: true
     num_confs:
       type: int
       description: Number of conformers to generate in addition to the given docked pose.

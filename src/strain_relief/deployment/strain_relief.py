@@ -10,7 +10,7 @@ from strain_relief.cmdline._strain_relief import strain_relief
 @dataclass
 class DeploymentConfig:
     seed: int = -1
-    threshold: float = 12.0
+    threshold: float|str = "null"
     num_confs: int = 20
     minimisation: str = "mace"
     max_iters: int = 125
