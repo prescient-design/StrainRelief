@@ -1,7 +1,7 @@
 # StrainRelief
 StrainRelief calculates the ligand strain of uncharged docked poses and has a suite of different force fields with which to do this. This includes a MACE neural network potential trained on SPICE2.
 
-The pre-print can be found [here](https://arxiv.org/abs/2503.13352).
+The pre-print can be found [here](https://arxiv.org/abs/2503.13352) and all relevant datasets [here](https://huggingface.co/datasets/erwallace/LigBoundConf2.0).
 
 ## Installation
 
@@ -96,7 +96,7 @@ The following dictionaries are passed directly to the function of that name.
 The hydra config is set up to allow additional kwargs to be passed to these functions e.g. `+minimisation.MMFFGetMoleculeProperties.mmffVerbosity=1`.
 
 **Common kwargs**
-- `threshold` (set by default to 16.1 kcal/mol - calibrated using LigBoundConf 2.0)
+- `threshold` (set by default to 16.1 kcal/mol - calibrated using [LigBoundConf 2.0](https://huggingface.co/datasets/erwallace/LigBoundConf2.0))
 - `conformers.numConfs`
 - `global_min.maxIters`/`local_min.maxIters`
 - `global_min.fmax`/`local_min.maxIters`
