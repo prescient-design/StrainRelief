@@ -1,6 +1,8 @@
 # StrainRelief
 StrainRelief calculates the ligand strain of uncharged docked poses and has a suite of different force fields with which to do this. This includes a MACE neural network potential trained on SPICE2.
 
+The pre-print can be found [here](https://arxiv.org/abs/2503.13352).
+
 ## Installation
 
 From the root directory, run the following commands to install the package and its dependencies in editable mode:
@@ -114,12 +116,18 @@ Logging is set to the `INFO` level by default which logs only aggregate informat
 - `pytest tests/ -m "not integration"` - runs all unit tests
 
 ## Citations
-<!-- TODO: include preprint citation and other relevant ones (e.g. MACE) -->
 If you use StrainRelief or adapt the StrainRelief code for any purpose, please cite:
 
-<!-- CITATION -->
 ```bibtex
-@article{StrainReliefPreprint}
+@misc{wallace2025strainrelief,
+      title={Strain Problems got you in a Twist? Try StrainRelief: A Quantum-Accurate Tool for Ligand Strain Calculations}, 
+      author={Ewan R. S. Wallace and Nathan C. Frey and Joshua A. Rackers},
+      year={2025},
+      eprint={2503.13352},
+      archivePrefix={arXiv},
+      primaryClass={physics.chem-ph},
+      url={https://arxiv.org/abs/2503.13352}, 
+}
 ```
 
 ```bibtex
@@ -134,4 +142,4 @@ If you use StrainRelief or adapt the StrainRelief code for any purpose, please c
 ```
 
 ## More information
-For any questions, please reach out to Ewan Wallace: ewan.wallace@roche.com
+For any questions, please reach out to [Ewan Wallace](https://www.linkedin.com/in/ewan-wallace-82297318a/): ewan.wallace@roche.com
