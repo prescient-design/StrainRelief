@@ -1,3 +1,0 @@
-[console_scripts]
-strain-relief = strain_relief.cmdline:strain_relief
-strain-relief-lite = strain_relief.cmdline:strain_relief_lite
