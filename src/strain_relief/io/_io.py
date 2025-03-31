@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from rdkit import Chem
 
-from strain_relief.constants import ENERGY_PROPERTY_NAME, ID_COL_NAME, MOL_COL_NAME
+from strain_relief.constants import CHARGE_COL_NAME, ENERGY_PROPERTY_NAME, ID_COL_NAME, MOL_COL_NAME
 
 
 def load_parquet(
@@ -65,12 +65,12 @@ def to_mols_dict(df: pd.DataFrame, mol_col_name: str, id_col_name: str) -> dict:
     if id_col_name is None:
         id_col_name = ID_COL_NAME
 
-    if "charge" not in df.columns:  # needed for deployment code
+    if CHARGE_COL_NAME not in df.columns:  # needed for deployment code
         if mol_col_name not in df.columns:
             df[mol_col_name] = df["mol_bytes"].apply(Chem.Mol)
         df = _calculate_charge(df, mol_col_name)
 
-    return {r[id_col_name]: r[mol_col_name] for _, r in df[df.charge == 0].iterrows()}
+    return {r[id_col_name]: r[mol_col_name] for _, r in df[df[CHARGE_COL_NAME] == 0].iterrows()}
 
 
 def _check_columns(df: pd.DataFrame, mol_col_name: str, id_col_name: str):
@@ -109,16 +109,16 @@ def _calculate_charge(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
     -------
         DataFrame with charge column.
     """
-    df["charge"] = df[mol_col_name].apply(lambda x: Chem.GetFormalCharge(x))
-    if all(df["charge"] != 0):
+    df[CHARGE_COL_NAME] = df[mol_col_name].apply(lambda x: Chem.GetFormalCharge(x))
+    if all(df[CHARGE_COL_NAME] != 0):
         raise ValueError(
             "All molecules are charged. StrainRelief only calculates ligand strain for neutral "
             "molecules."
         )
-    elif any(df["charge"] != 0):
+    elif any(df[CHARGE_COL_NAME] != 0):
         logging.info(
-            f"Dataset contains {len(df[df['charge'] != 0])} charged molecules. Ligand strains will "
-            "not be calculated for these."
+            f"Dataset contains {len(df[df[CHARGE_COL_NAME] != 0])} charged molecules. Ligand " 
+            "strains will not be calculated for these."
         )
     return df
 

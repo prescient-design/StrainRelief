@@ -1,4 +1,5 @@
 from ._str import (
+    CHARGE_COL_NAME,
     ENERGY_PROPERTY_NAME,
     ID_COL_NAME,
     MOL_COL_NAME,
@@ -18,8 +19,7 @@ __all__ = [
     # String Constants
     "ID_COL_NAME",
     "MOL_COL_NAME",
-    "MOL_BTYES_COL_NAME",
-    "ID_COL_NAME",
+    "CHARGE_COL_NAME",
     "ENERGY_PROPERTY_NAME",
     # Units Conversions
     "HARTREE_TO_KCAL_PER_MOL",
