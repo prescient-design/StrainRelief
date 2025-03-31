@@ -65,9 +65,10 @@ def to_mols_dict(df: pd.DataFrame, mol_col_name: str, id_col_name: str) -> dict:
     if id_col_name is None:
         id_col_name = ID_COL_NAME
 
+    if mol_col_name not in df.columns:  # needed for deployment code
+        df[mol_col_name] = df["mol_bytes"].apply(Chem.Mol)
+
     if CHARGE_COL_NAME not in df.columns:  # needed for deployment code
-        if mol_col_name not in df.columns:
-            df[mol_col_name] = df["mol_bytes"].apply(Chem.Mol)
         df = _calculate_charge(df, mol_col_name)
 
     return {r[id_col_name]: r[mol_col_name] for _, r in df[df[CHARGE_COL_NAME] == 0].iterrows()}
