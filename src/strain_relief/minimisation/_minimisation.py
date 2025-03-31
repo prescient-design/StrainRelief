@@ -54,6 +54,6 @@ def minimise_conformers(
         logging.warning(f"{no_confs} molecules have 0 converged confomers after minimisation.")
 
     end = timer()
-    logging.info(f"Conformers minimisation took {end - start:.2f} seconds.")
+    logging.info(f"Conformers minimisation took {end - start:.2f} seconds. \n")
 
     return mols

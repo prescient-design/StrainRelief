@@ -77,6 +77,6 @@ def generate_conformers(
     logging.info(f"Min. number of conformers is {np.min(n_conformers)}")
 
     end = timer()
-    logging.info(f"Conformer generation took {end - start:.2f} seconds.")
+    logging.info(f"Conformer generation took {end - start:.2f} seconds. \n")
 
     return mols

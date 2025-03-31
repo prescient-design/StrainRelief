@@ -55,6 +55,6 @@ def predict_energy(
     )
 
     end = timer()
-    logging.info(f"Energy prediction took {end - start:.2f} seconds.")
+    logging.info(f"Energy prediction took {end - start:.2f} seconds. \n")
 
     return mols

@@ -232,8 +232,8 @@ def save_parquet(
 
     if total_n_confs != 0:
         logging.info(
-            f"{total_n_confs:,} configurations converged across {len(results):,} molecules \n"
-            f"Avg. {total_n_confs / len(results):.2f} conformers per molecule"
+            f"{total_n_confs:,} configurations converged across {len(results):,} molecules "
+            f"(avg. {total_n_confs / len(results):.2f} per molecule)"
         )
     else:
         logging.warning("No conformers generated for any molecule")

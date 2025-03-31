@@ -79,7 +79,7 @@ def strain_relief(df: pd.DataFrame, cfg: DictConfig) -> pd.DataFrame:
     md = save_parquet(df, docked, local_minima, global_minimia, cfg.threshold, **cfg.io.output)
 
     end = timer()
-    logging.info(f"Ligand strain calculations took {end - start:.2f} seconds")
+    logging.info(f"Ligand strain calculations took {end - start:.2f} seconds. \n")
 
     return md
 
