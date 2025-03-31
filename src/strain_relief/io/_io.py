@@ -202,6 +202,7 @@ def save_parquet(
             strain = np.nan
             logging.warning(f"Strain cannot be calculated for molecule {id}")
 
+        total_n_confs = len(conf_energies)
         dicts.append(
             {
                 "id": id,
@@ -211,7 +212,7 @@ def save_parquet(
                 "global_min_e": global_min_energy,
                 "ligand_strain": strain,
                 "passes_strain_filter": strain <= threshold if threshold is not None else np.nan,
-                "nconfs_converged": len(conf_energies),
+                "nconfs_converged": total_n_confs,
             }
         )
 
@@ -227,6 +228,14 @@ def save_parquet(
             f"{len(results[results.ligand_strain.isna()])} molecules have no conformers generated "
             "for either the initial or minimised pose."
         )
+
+    if total_n_confs != 0:
+        logging.info(
+            f"{total_n_confs:,} configurations converged across {len(results):,} molecules \n"
+            f"Avg. {total_n_confs / len(results):.2f} conformers per molecule"
+        )
+    else:
+        logging.warning("No conformers generated for any molecule")
 
     results = input_df.merge(results, left_on=id_col_name, right_on="id", how="outer")
     results.drop(columns=[mol_col_name], inplace=True)

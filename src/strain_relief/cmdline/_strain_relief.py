@@ -79,14 +79,7 @@ def strain_relief(df: pd.DataFrame, cfg: DictConfig) -> pd.DataFrame:
     md = save_parquet(df, docked, local_minima, global_minimia, cfg.threshold, **cfg.io.output)
 
     end = timer()
-    n_confs = sum([mol.GetNumConformers() for mol in global_minimia.values()])
-    logging.info(
-        "SUMMARY: \n"
-        f"Torsional strains calculated in {end - start:.2f} seconds\n"
-        f"Computed {n_confs:,} configurations across {len(md):,} molecules \n"
-        f"Avg. {n_confs / len(md):.2f} conformers per molecule\n"
-        f"Avg. {(end - start) / n_confs:.3f} seconds per configuration"
-    )
+    logging.info(f"Ligand strain calculations took {end - start:.2f} seconds")
 
     return md
 
