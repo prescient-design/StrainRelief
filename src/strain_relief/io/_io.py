@@ -236,7 +236,7 @@ def save_parquet(
             f"(avg. {total_n_confs / len(results):.2f} per molecule)"
         )
     else:
-        logging.warning("No conformers generated for any molecule")
+        logging.error("Ligand strain calculation failed for all molecules")
 
     results = input_df.merge(results, left_on=id_col_name, right_on="id", how="outer")
     results.drop(columns=[mol_col_name], inplace=True)
