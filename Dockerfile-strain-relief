@@ -77,14 +77,16 @@ RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/dow
     rm rclone-v${RCLONE_VER}-linux-amd64.deb
 
 RUN echo "Preparing to clone the repository"
-RUN git clone https://github.com/prescient-design/StrainRelief.git $CODE_DIR/StrainRelief
+RUN git clone -b deployment-debugging https://github.com/prescient-design/StrainRelief.git $CODE_DIR/StrainRelief
 
 COPY strain_relief/labintheloop.yaml $CODE_DIR/StrainRelief/labintheloop.yaml
-RUN mkdir $CODE_DIR/StrainRelief/src/strain_relief/deployment
 COPY strain_relief/src/deployment/* $CODE_DIR/StrainRelief/src/strain_relief/deployment/
-RUN mkdir $CODE_DIR/StrainRelief/tests/deployment
 COPY strain_relief/tests/deployment/* $CODE_DIR/StrainRelief/tests/deployment/
 
+RUN ls $CODE_DIR/StrainRelief/src/strain_relief/
+RUN ls $CODE_DIR/StrainRelief/src/strain_relief/deployment/
+
+RUN cat $CODE_DIR/StrainRelief/src/strain_relief/__init__.py
 
 RUN $CONDA_BIN env update -n base -f $CODE_DIR/StrainRelief/env.yml && \
     $CONDA_BIN clean -afy && \
