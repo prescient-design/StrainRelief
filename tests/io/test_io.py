@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 from rdkit import Chem
 from strain_relief import test_dir
+from strain_relief.constants import CHARGE_COL_NAME
 from strain_relief.io._io import (
     _calculate_charge,
     load_parquet,
@@ -26,7 +27,7 @@ def test_load_parquet(parquet_path: Path, id_col_name: str | None):
 def test_calculate_charge():
     df = pd.DataFrame({"mol": [Chem.MolFromSmiles("C"), Chem.MolFromSmiles("C[O-]")]})
     df = _calculate_charge(df, "mol")
-    assert df.charge.to_list() == [0, -1]
+    assert df[CHARGE_COL_NAME].to_list() == [0, -1]
 
 
 def test_to_mols_dict():
