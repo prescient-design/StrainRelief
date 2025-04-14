@@ -1,7 +1,6 @@
-import logging
-
 import numpy as np
 import pandas as pd
+from loguru import logger as logging
 from rdkit import Chem
 
 from strain_relief.constants import CHARGE_COL_NAME, ENERGY_PROPERTY_NAME, ID_COL_NAME, MOL_COL_NAME
@@ -110,7 +109,7 @@ def _calculate_charge(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
     -------
         DataFrame with charge column.
     """
-    df[CHARGE_COL_NAME] = df[mol_col_name].apply(lambda x: Chem.GetFormalCharge(x))
+    df[CHARGE_COL_NAME] = df[mol_col_name].apply(lambda x: int(Chem.GetFormalCharge(x)))
     if all(df[CHARGE_COL_NAME] != 0):
         raise ValueError(
             "All molecules are charged. StrainRelief only calculates ligand strain for neutral "
@@ -118,7 +117,7 @@ def _calculate_charge(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
         )
     elif any(df[CHARGE_COL_NAME] != 0):
         logging.info(
-            f"Dataset contains {len(df[df[CHARGE_COL_NAME] != 0])} charged molecules. Ligand " 
+            f"Dataset contains {len(df[df[CHARGE_COL_NAME] != 0])} charged molecules. Ligand "
             "strains will not be calculated for these."
         )
     return df

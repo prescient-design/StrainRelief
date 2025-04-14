@@ -1,8 +1,8 @@
-import logging
 import tempfile
 from typing import Literal
 
 import ase
+from loguru import logger as logging
 from mace.calculators import MACECalculator
 from rdkit import Chem
 

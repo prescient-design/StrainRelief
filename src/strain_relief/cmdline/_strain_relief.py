@@ -11,12 +11,12 @@
 # 5. Calculate ligand strain between local and global minimum and apply threshold                  #
 #####################################################################################################
 
-import logging
 from copy import deepcopy
 from timeit import default_timer as timer
 
 import hydra
 import pandas as pd
+from loguru import logger as logging
 from omegaconf import DictConfig, OmegaConf
 
 from strain_relief.conformers import generate_conformers

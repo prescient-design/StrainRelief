@@ -1,8 +1,8 @@
-import logging
 from collections import Counter
 from timeit import default_timer as timer
 
 import numpy as np
+from loguru import logger as logging
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdDetermineBonds
 

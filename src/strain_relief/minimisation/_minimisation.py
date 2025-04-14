@@ -1,7 +1,7 @@
-import logging
 from timeit import default_timer as timer
 from typing import Literal
 
+from loguru import logger as logging
 from rdkit import Chem
 
 from strain_relief.constants import ENERGY_PROPERTY_NAME

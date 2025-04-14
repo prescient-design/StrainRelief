@@ -1,7 +1,6 @@
-import logging
-
 import ase
 import numpy as np
+from loguru import logger as logging
 from rdkit import Chem
 
 from strain_relief.io import ase_to_rdkit, rdkit_to_ase

@@ -1,7 +1,7 @@
-import logging
 from math import sqrt
 
 from ase.optimize import BFGS
+from loguru import logger as logging
 
 
 class StrainReliefBFGS(BFGS):

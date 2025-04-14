@@ -1,5 +1,4 @@
-import logging
-
+from loguru import logger as logging
 from rdkit import Chem
 from rdkit.Chem import rdDetermineBonds, rdForceFieldHelpers
 
