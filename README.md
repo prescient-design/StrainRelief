@@ -3,7 +3,7 @@ StrainRelief calculates the ligand strain of uncharged docked poses and has a su
 
 The pre-print can be found [here](https://arxiv.org/abs/2503.13352) and all relevant datasets [here](https://huggingface.co/datasets/erwallace/LigBoundConf2.0).
 
-![Strain Relief Logo](assets/strain_relief_logo.jpeg)
+![Strain Relief Logo](assets/strain_relief_logo.png)
 
 ## Installation
 
