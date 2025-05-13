@@ -10,3 +10,4 @@ pyarrow
 fastparquet
 universal-pathlib
 boto3
+loguru
