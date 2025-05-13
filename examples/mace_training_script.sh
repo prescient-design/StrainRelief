@@ -1,0 +1,45 @@
+#!/bin/bash
+
+srun python ../scripts/run_train.py \
+    --name="SPICE2_NEUTRAL_S" \
+    --model_dir="../models" \
+    --log_dir="../runs/SPICE2_NEUTRAL_S/logs" \
+    --checkpoints_dir="../runs/SPICE2_NEUTRAL_S/checkpoints" \
+    --results_dir="../runs/SPICE2_NEUTRAL_S/results" \
+    --train_file="/path/to/train" \
+    --valid_file="/path/to/valid" \
+    --test_dir="/path/to/test" \
+    --statistics_file="/path/to/stats.json" \
+    --atomic_numbers="[1, 6, 7, 8, 9, 15, 16, 17, 35, 53]" \
+    --E0s="{35: -70045.28385080204, 6: -1030.5671648271828, 17: -12522.649269035726, 9: -2715.318528602957, 1: -13.571964772646918, 53: -8102.524593409054, 7: -1486.3750255780376, 8: -2043.933693071156, 15: -9287.407133426237, 16: -10834.4844708122}" \
+    --model="MACE" \
+    --num_interactions=2 \
+    --num_channels=98 \
+    --max_L=0 \
+    --correlation=3 \
+    --r_max=4.5 \
+    --forces_weight=1000 \
+    --energy_weight=40 \
+    --weight_decay=5e-10 \
+    --clip_grad=1.0 \
+    --batch_size=128 \
+    --valid_batch_size=128 \
+    --max_num_epochs=190 \
+    --scheduler_patience=20 \
+    --patience=50 \
+    --eval_interval=1 \
+    --ema \
+    --stage_two \
+    --start_stage_two=115 \
+    --stage_two_lr=0.00025 \
+    --stage_two_forces_weight=10 \
+    --num_workers=32 \
+    --error_table='PerAtomRMSE' \
+    --default_dtype="float64" \
+    --device=cuda \
+    --seed=123 \
+    --restart_latest \
+    --save_cpu \
+    --distributed \
+    --energy_key='energy' \
+
