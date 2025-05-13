@@ -1,7 +1,9 @@
-# StrainRelief
+# StrainRelief 💊
 StrainRelief calculates the ligand strain of uncharged docked poses and has a suite of different force fields with which to do this. This includes a MACE neural network potential trained on SPICE2.
 
 The pre-print can be found [here](https://arxiv.org/abs/2503.13352) and all relevant datasets [here](https://huggingface.co/datasets/erwallace/LigBoundConf2.0).
+
+![Strain Relief Logo](assets/strain_relief_logo.jpeg)
 
 ## Installation
 
