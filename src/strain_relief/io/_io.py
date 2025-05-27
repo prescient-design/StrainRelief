@@ -111,7 +111,8 @@ def _calculate_charge(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
     """
     df[CHARGE_COL_NAME] = df[mol_col_name].apply(lambda x: int(Chem.GetFormalCharge(x)))
     if all(df[CHARGE_COL_NAME] != 0):
-        raise ValueError(
+        logging.error(
+        # raise ValueError(
             "All molecules are charged. StrainRelief only calculates ligand strain for neutral "
             "molecules."
         )
@@ -121,6 +122,53 @@ def _calculate_charge(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
             "strains will not be calculated for these."
         )
     return df
+
+
+def _process_molecule_data(
+    id: str,
+    local_min_mol: Chem.Mol,
+    global_min_mol: Chem.Mol,
+    threshold: float,
+) -> dict:
+    """Helper function to process data for a single molecule."""
+    local_min_energy, local_min_conf = np.nan, np.nan
+    
+    if local_min_mol.GetNumConformers() != 0:
+        local_min_energy = local_min_mol.GetConformer().GetDoubleProp(ENERGY_PROPERTY_NAME)
+        local_min_conf = local_min_mol.ToBinary()
+
+    global_min_energy, global_min_conf, conf_energies = np.nan, np.nan, []
+    if global_min_mol.GetNumConformers() != 0:
+        conf_energies = [
+            conf.GetDoubleProp(ENERGY_PROPERTY_NAME) for conf in global_min_mol.GetConformers()
+        ]
+        conf_idxs = [conf.GetId() for conf in global_min_mol.GetConformers()]
+        min_idx = np.argmin(conf_energies)
+        global_min_energy = conf_energies[min_idx]
+        global_min_conf = Chem.Mol(global_min_mol, confId=conf_idxs[min_idx]).ToBinary()
+
+    strain = np.nan
+    if not np.isnan(local_min_energy) and not np.isnan(global_min_energy):
+        strain = local_min_energy - global_min_energy
+        if strain < 0:
+            logging.warning(
+                f"{strain:.2f} kcal/mol ligand strain for molecule {id}. Negative ligand strain."
+            )
+        else:
+            logging.debug(f"{strain:.2f} kcal/mol ligand strain for molecule {id}")
+    else:
+        logging.warning(f"Strain cannot be calculated for molecule {id}")
+
+    return {
+        "id": id,
+        "local_min_mol": local_min_conf,
+        "local_min_e": local_min_energy,
+        "global_min_mol": global_min_conf,
+        "global_min_e": global_min_energy,
+        "ligand_strain": strain,
+        "passes_strain_filter": strain <= threshold if threshold is not None else np.nan,
+        "nconfs_converged": len(conf_energies),
+    }
 
 
 def save_parquet(
@@ -165,85 +213,52 @@ def save_parquet(
         mol_col_name = MOL_COL_NAME
 
     dicts = []
-
-    for id in docked_mols.keys():
-        local_min_mol = local_min_mols[id]
-        global_min_mol = global_min_mols[id]
-
-        # Initial energy if local_min_mol has conformers
-        if local_min_mol.GetNumConformers() != 0:
-            local_min_energy = local_min_mol.GetConformer().GetDoubleProp(ENERGY_PROPERTY_NAME)
-            local_min_conf = local_min_mol.ToBinary()
-        else:
-            local_min_energy, local_min_conf = np.nan, np.nan
-
-        # Minimised energy and conformer if global_min_mol has conformers
-        if global_min_mol.GetNumConformers() != 0:
-            conf_energies = [
-                conf.GetDoubleProp(ENERGY_PROPERTY_NAME) for conf in global_min_mol.GetConformers()
-            ]
-            conf_idxs = [conf.GetId() for conf in global_min_mol.GetConformers()]
-            min_idx = np.argmin(conf_energies)
-            global_min_energy = conf_energies[min_idx]
-            global_min_conf = Chem.Mol(global_min_mol, confId=conf_idxs[min_idx]).ToBinary()
-        else:
-            global_min_energy, global_min_conf, conf_energies = np.nan, np.nan, []
-
-        # Ligand strain if both local_min_mol and global_min_mol have conformers
-        if local_min_mol.GetNumConformers() != 0 and global_min_mol.GetNumConformers() != 0:
-            strain = local_min_energy - global_min_energy
-            if strain < 0:
-                logging.warning(
-                    f"{strain} kcal/mol ligand strain for molecule {id}. Negative ligand strain."
-                )
-            else:
-                logging.debug(f"{strain} kcal/mol ligand strain for molecule {id}")
-        else:
-            strain = np.nan
-            logging.warning(f"Strain cannot be calculated for molecule {id}")
-
-        total_n_confs = len(conf_energies)
+    for mol_id in docked_mols.keys():
         dicts.append(
-            {
-                "id": id,
-                "local_min_mol": local_min_conf,
-                "local_min_e": local_min_energy,
-                "global_min_mol": global_min_conf,
-                "global_min_e": global_min_energy,
-                "ligand_strain": strain,
-                "passes_strain_filter": strain <= threshold if threshold is not None else np.nan,
-                "nconfs_converged": total_n_confs,
-            }
+            _process_molecule_data(
+                mol_id,
+                local_min_mols[mol_id],
+                global_min_mols[mol_id],
+                threshold,
+            )
         )
 
-    results = pd.DataFrame(dicts)
+    # Define columns upfront to ensure correct order and handle empty DataFrame creation
+    result_columns = [
+        "id", "local_min_mol", "local_min_e", "global_min_mol",
+        "global_min_e", "ligand_strain", "passes_strain_filter", "nconfs_converged"
+    ]
+    results = pd.DataFrame(dicts, columns=result_columns)
 
-    if len(results[results.ligand_strain < 0]) > 0:
+    if not results[results.ligand_strain < 0].empty:
         logging.warning(
-            f"{len(results[results.ligand_strain < 0])} molecules have a negative ligand strain "
-            "i.e. the initial conformer is lower energy than all generated conformers."
+            f"{len(results[results.ligand_strain < 0])} molecules have a negative ligand strain, "
+            "meaning the initial conformer is lower energy than all generated conformers."
         )
-    if len(results[results.ligand_strain.isna()]) > 0:
+    if not results[results.ligand_strain.isna()].empty:
         logging.warning(
             f"{len(results[results.ligand_strain.isna()])} molecules have no conformers generated "
-            "for either the initial or minimised pose."
+            "for either the initial or minimised pose, so strain cannot be calculated."
         )
 
-    if total_n_confs != 0:
+    total_n_confs = results["nconfs_converged"].sum() if not results.empty else 0
+
+    if total_n_confs > 0 and not results.empty:
         logging.info(
             f"{total_n_confs:,} configurations converged across {len(results):,} molecules "
             f"(avg. {total_n_confs / len(results):.2f} per molecule)"
         )
     else:
-        logging.error("Ligand strain calculation failed for all molecules")
+        logging.error("Ligand strain calculation failed for all molecules or no molecules were processed.")
 
-    results = input_df.merge(results, left_on=id_col_name, right_on="id", how="outer")
-    results.drop(columns=[mol_col_name], inplace=True)
+    # Merge and drop original molecule column
+    final_results = input_df.merge(results, left_on=id_col_name, right_on="id", how="outer")
+    final_results.drop(columns=[mol_col_name], inplace=True)
 
     if output_file is not None:
-        results.to_parquet(output_file)
+        final_results.to_parquet(output_file)
         logging.info(f"Data saved to {output_file}")
     else:
-        logging.info("Output file not provided, data not saved")
+        logging.info("Output file not provided, data not saved.")
 
-    return results
+    return final_results

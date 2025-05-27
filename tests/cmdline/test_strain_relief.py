@@ -49,6 +49,25 @@ def test_strain_relief_w_mace():
 
 
 @pytest.mark.integration
+def test_strain_relief_all_charged():
+    with initialize(version_base="1.1", config_path="../../src/strain_relief/hydra_config"):
+        cfg = compose(
+            config_name="default",
+            overrides=[
+                f"io.input.parquet_path={test_dir}/data/all_charged.parquet",
+                "io.input.id_col_name=id",
+                "minimisation@local_min=mmff94s",
+                "minimisation@global_min=mmff94s",
+                "conformers.numConfs=1",
+            ],
+        )
+    df = load_parquet(parquet_path=cfg.io.input.parquet_path, id_col_name="id")
+    results = strain_relief(df, cfg)
+    assert results["ligand_strain"].isna().all()
+    assert results["passes_strain_filter"].isna().all()
+
+
+@pytest.mark.integration
 @pytest.mark.parametrize(
     "parquet, id_col_name",
     [
