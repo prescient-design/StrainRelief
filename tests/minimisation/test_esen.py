@@ -9,7 +9,6 @@ def test_eSEN_min(mols: dict[str, Chem.Mol], esen_model_path: str):
         mols,
         str(esen_model_path),
         maxIters=1,
-        default_dtype="float32",
         device="cuda",
         fmax=0.05,
         fexit=250,
