@@ -74,7 +74,9 @@ def generate_conformers(
         f"{np.sum(n_conformers == numConfs + 1)} molecules with {numConfs + 1} conformers each"
     )
     logging.info(f"Avg. number of conformers is {np.mean(n_conformers):.1f}")
-    logging.info(f"Min. number of conformers is {np.min(n_conformers) if len(n_conformers) > 0 else np.nan}")
+    logging.info(
+        f"Min. number of conformers is {np.min(n_conformers) if len(n_conformers) > 0 else np.nan}"
+    )
 
     end = timer()
     logging.info(f"Conformer generation took {end - start:.2f} seconds. \n")
