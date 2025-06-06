@@ -20,7 +20,7 @@ def eSEN_min(
     device=Literal["cpu", "cuda"],
     energy_units: Literal["eV", "Hartrees", "kcal/mol"] = "eV",
 ) -> tuple[dict[str : dict[str:float]], dict[str : Chem.Mol]]:
-    """Minimise all conformers of a Chem.Mol using MACE.
+    """Minimise all conformers of a Chem.Mol using eSEN.
 
     Parameters
     ----------
@@ -58,13 +58,13 @@ def eSEN_min(
 
     if energy_units == "eV":
         conversion_factor = EV_TO_KCAL_PER_MOL
-        logging.info("MACE model outputs energies in eV. Converting to kcal/mol.")
+        logging.info("eSEN model outputs energies in eV. Converting to kcal/mol.")
     elif energy_units == "Hartrees":
         conversion_factor = HARTREE_TO_KCAL_PER_MOL
-        logging.info("MACE model outputs energies in Hartrees. Converting to kcal/mol.")
+        logging.info("eSEN model outputs energies in Hartrees. Converting to kcal/mol.")
     elif energy_units == "kcal/mol":
         conversion_factor = 1
-        logging.info("MACE model outputs energies in kcal/mol. No conversion needed.")
+        logging.info("eSEN model outputs energies in kcal/mol. No conversion needed.")
 
     esen_predictor = load_predict_unit(path=model_paths, device=device)
     calculator = FAIRChemCalculator(esen_predictor, task_name="omol")
