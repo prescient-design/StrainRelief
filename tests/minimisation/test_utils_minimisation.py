@@ -49,6 +49,7 @@ def test_method_min_mmff(request, fixture: dict[str : Chem.Mol], force_field: st
     assert all([mol.GetNumConformers() == 0 for mol in mols.values()])
 
 
+@pytest.mark.gpu
 @pytest.mark.parametrize("calculator_fixture", ["mace_calculator", "esen_calculator"])
 def test__method_min_nnp(mol_w_confs: Chem.Mol, calculator_fixture: str, request):
     calculator = request.getfixturevalue(calculator_fixture)
