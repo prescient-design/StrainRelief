@@ -24,7 +24,7 @@ def predict_energy(
     ----------
     mols : dict[str:Chem.Mol]
         A dictionary of molecules.
-    method : Literal["MACE", "MMFF94", "MMFF94s"]
+    method : Literal["MACE", "eSEN", "MMFF94", "MMFF94s"]
         The method to use for energy prediction.
     **kwargs
         Additional keyword arguments to pass to the energy prediction method.

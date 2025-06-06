@@ -19,7 +19,7 @@ def minimise_conformers(
     ----------
     mols : dict[str:Chem.Mol]
         Dictionary of molecules to minimise.
-    method : Literal["MACE", "MMFF94s", "MMFF94"]
+    method : Literal["MACE", "eSEN", "MMFF94s", "MMFF94"]
         Method to use for minimisation.
     kwargs : dict
         Additional keyword arguments to pass to the minimisation function.
