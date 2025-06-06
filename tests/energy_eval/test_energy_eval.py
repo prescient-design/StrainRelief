@@ -49,7 +49,7 @@ def test_predict_energy_MACE(mols: dict[str, Chem.Mol], model_path: str):
     kwargs = {
         "device": "cuda",
         "model_paths": str(model_path),
-        "mace_energy_units": "eV",
+        "energy_units": "eV",
     }
     result = predict_energy(mols, "MACE", **kwargs)
     assert result is not None
