@@ -1,13 +1,13 @@
 import pytest
 from rdkit import Chem
-from strain_relief.minimisation._mace import MACE_min
+from strain_relief.minimisation._esen import eSEN_min
 
 
 @pytest.mark.gpu
-def test_MACE_min(mols: dict[str, Chem.Mol], mace_model_path: str):
-    energies, mols = MACE_min(
+def test_eSEN_min(mols: dict[str, Chem.Mol], esen_model_path: str):
+    energies, mols = eSEN_min(
         mols,
-        str(mace_model_path),
+        str(esen_model_path),
         maxIters=1,
         default_dtype="float32",
         device="cuda",

@@ -9,10 +9,14 @@ The pre-print can be found [here](https://arxiv.org/abs/2503.13352) and all rele
 
 From the root directory, run the following commands to install the package and its dependencies in editable mode:
 
+(`mace-torch==0.3.x` requires `e3nn==0.4.4` (only for training, not inference). `fairchem-core` requires `e3nn>=0.5`. So until `mace-torch==0.4` is released we will have to do this finicky way of installing [issue](https://github.com/ACEsuit/mace/issues/555))
+
 ```bash
 mamba env create -f env.yml
 mamba activate strain
 pip install -e .
+
+pip install --force-reinstall e3nn==0.5 fairchem-core
 
 pre-commit install
 ```
@@ -122,13 +126,13 @@ If you use StrainRelief or adapt the StrainRelief code for any purpose, please c
 
 ```bibtex
 @misc{wallace2025strainrelief,
-      title={Strain Problems got you in a Twist? Try StrainRelief: A Quantum-Accurate Tool for Ligand Strain Calculations}, 
+      title={Strain Problems got you in a Twist? Try StrainRelief: A Quantum-Accurate Tool for Ligand Strain Calculations},
       author={Ewan R. S. Wallace and Nathan C. Frey and Joshua A. Rackers},
       year={2025},
       eprint={2503.13352},
       archivePrefix={arXiv},
       primaryClass={physics.chem-ph},
-      url={https://arxiv.org/abs/2503.13352}, 
+      url={https://arxiv.org/abs/2503.13352},
 }
 ```
 
