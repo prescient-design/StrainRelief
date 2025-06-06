@@ -1,4 +1,3 @@
 model_paths: null
 device: cuda
-default_dtype: float32
 energy_units: eV

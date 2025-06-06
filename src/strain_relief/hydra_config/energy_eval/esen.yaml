@@ -2,4 +2,3 @@ defaults:
   - ../model/esen@_here_
 
 method: eSEN
-default_dtype: float64
