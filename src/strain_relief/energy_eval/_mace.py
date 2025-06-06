@@ -15,7 +15,7 @@ def MACE_energy(
     mols: dict[str : Chem.Mol],
     model_paths: str,
     device: str = Literal["cpu", "cuda"],
-    energy_units: Literal["eV", "Hartrees", "kcal/mol"] = "eV",
+    mace_energy_units: Literal["eV", "Hartrees", "kcal/mol"] = "eV",
     default_dtype: Literal["float32", "float64"] = "float64",
 ) -> dict[dict]:
     """Calculate the MACE energy for all conformers of all molecules.
@@ -28,7 +28,7 @@ def MACE_energy(
         Path to the MACE model to use for energy calculation.
     device : Literal["cpu", "cuda"]
         The device to use for energy calculation.
-    energy_units : Literal["eV", "Hartrees", "kcal/mol"]
+    mace_energy_units : Literal["eV", "Hartrees", "kcal/mol"]
         The units output from the energy calculation.
     default_dtype : Literal["float32", "float64"]
         The default data type to use for energy calculation.
@@ -49,13 +49,13 @@ def MACE_energy(
         copy_from_s3(model_paths, local_path)
         model_paths = local_path
 
-    if energy_units == "eV":
+    if mace_energy_units == "eV":
         conversion_factor = EV_TO_KCAL_PER_MOL
         logging.info("MACE model outputs energies in eV. Converting to kcal/mol.")
-    elif energy_units == "Hartrees":
+    elif mace_energy_units == "Hartrees":
         conversion_factor = HARTREE_TO_KCAL_PER_MOL
         logging.info("MACE model outputs energies in Hartrees. Converting to kcal/mol.")
-    elif energy_units == "kcal/mol":
+    elif mace_energy_units == "kcal/mol":
         conversion_factor = 1
         logging.info("MACE model outputs energies in kcal/mol. No conversion needed.")
 

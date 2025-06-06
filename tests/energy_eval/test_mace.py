@@ -11,7 +11,7 @@ def test_MACE_energy(
     mols_wo_bonds: dict[str, Chem.Mol], model_path: str, mace_energies: list[float]
 ):
     mols = mols_wo_bonds
-    result = MACE_energy(mols, str(model_path), device="cuda", energy_units="eV")
+    result = MACE_energy(mols, str(model_path), device="cuda", mace_energy_units="eV")
     assert result is not None
     assert isinstance(result, dict)
     assert len(result) == len(mols)
