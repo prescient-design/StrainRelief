@@ -5,13 +5,13 @@ from loguru import logger as logging
 from rdkit import Chem
 
 from strain_relief.constants import ENERGY_PROPERTY_NAME
-from strain_relief.minimisation import MACE_min, MMFF94_min
+from strain_relief.minimisation import MACE_min, MMFF94_min, eSEN_min
 
-METHODS_DICT = {"MACE": MACE_min, "MMFF94": MMFF94_min, "MMFF94s": MMFF94_min}
+METHODS_DICT = {"MACE": MACE_min, "eSEN": eSEN_min, "MMFF94": MMFF94_min, "MMFF94s": MMFF94_min}
 
 
 def minimise_conformers(
-    mols: dict[str : Chem.Mol], method: Literal["MACE", "MMFF94s", "MMFF94"], **kwargs
+    mols: dict[str : Chem.Mol], method: Literal["MACE", "eSEN", "MMFF94s", "MMFF94"], **kwargs
 ) -> dict[str : Chem.Mol]:
     """Minimise all conformers of all molecules using a force field.
 

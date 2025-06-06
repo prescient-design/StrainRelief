@@ -5,17 +5,18 @@ from loguru import logger as logging
 from rdkit import Chem
 
 from strain_relief.constants import ENERGY_PROPERTY_NAME
-from strain_relief.energy_eval import MACE_energy, MMFF94_energy
+from strain_relief.energy_eval import MACE_energy, MMFF94_energy, eSEN_energy
 
 METHODS_DICT = {
     "MACE": MACE_energy,
+    "eSEN": eSEN_energy,
     "MMFF94": MMFF94_energy,
     "MMFF94s": MMFF94_energy,
 }
 
 
 def predict_energy(
-    mols: dict[str : Chem.Mol], method: Literal["MACE", "MMFF94", "MMFF94s"], **kwargs
+    mols: dict[str : Chem.Mol], method: Literal["MACE", "eSEN", "MMFF94", "MMFF94s"], **kwargs
 ):
     """Predict the energy of all conformers of molecules in mols using a specified method.
 
