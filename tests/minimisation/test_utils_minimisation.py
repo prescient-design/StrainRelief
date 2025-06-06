@@ -12,9 +12,10 @@ from strain_relief.minimisation.utils_minimisation import (
 )
 
 
-@pytest.mark.gpu  # from mace
-def test_method_min_mace(mols: dict[str : Chem.Mol], mace_model_path: str):
-    calculator = MACECalculator(model_paths=mace_model_path, device="cuda", default_dtype="float32")
+@pytest.mark.gpu
+@pytest.mark.parametrize("calculator_fixture", ["mace_calculator", "esen_calculator"])
+def test_method_min_nnp(mols: dict[str : Chem.Mol], calculator_fixture: str, request):
+    calculator = request.getfixturevalue(calculator_fixture)
     energies, mols = method_min(
         mols,
         calculator,
@@ -48,11 +49,9 @@ def test_method_min_mmff(request, fixture: dict[str : Chem.Mol], force_field: st
     assert all([mol.GetNumConformers() == 0 for mol in mols.values()])
 
 
-@pytest.mark.gpu
-def test__method_min_mace(mol_w_confs: Chem.Mol, mace_model_path: str):
-    calculator = MACECalculator(
-        model_paths=str(mace_model_path), device="cuda", default_dtype="float32"
-    )
+@pytest.mark.parametrize("calculator_fixture", ["mace_calculator", "esen_calculator"])
+def test__method_min_nnp(mol_w_confs: Chem.Mol, calculator_fixture: str, request):
+    calculator = request.getfixturevalue(calculator_fixture)
     energies, mol = _method_min(
         mol_w_confs,
         id="0",

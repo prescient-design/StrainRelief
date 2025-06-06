@@ -1,5 +1,9 @@
+import os
+
 import numpy as np
 import pytest
+from fairchem.core import FAIRChemCalculator
+from fairchem.core.units.mlip_unit import load_predict_unit
 from mace.calculators import MACECalculator
 from rdkit import Chem
 from strain_relief import test_dir
@@ -92,12 +96,38 @@ def mace_energies() -> list[float]:
 
 
 @pytest.fixture(scope="session")
+def esen_energies() -> list[float]:
+    """The MACE energies as calculated using the mace repo (in eV)."""
+    return {
+        idx: E
+        for idx, E in zip(
+            ["0", "1"], np.array([-19772.31732206841, -29376.818942909442]) * EV_TO_KCAL_PER_MOL
+        )
+    }
+
+
+@pytest.fixture(scope="session")
 def mace_model_path() -> str:
     """This is the MACE_SPICE2_NEUTRAL.model"""
     return str(test_dir / "models" / "MACE.model")
 
 
 @pytest.fixture(scope="session")
-def calculator(model_path):
+def esen_model_path() -> str:
+    """This is the OMol25 eSEN small conserving model."""
+    if os.path.exists(test_dir / "models" / "eSEN.pt"):
+        return str(test_dir / "models" / "eSEN.pt")
+    return pytest.skip(f"eSEN model not found at {test_dir / 'models' / 'eSEN.pt'}")
+
+
+@pytest.fixture(scope="session")
+def mace_calculator(mace_model_path):
     """The MACE ASE calculator."""
-    return MACECalculator(model_paths=model_path, device="cuda", default_dtype="float32")
+    return MACECalculator(model_paths=mace_model_path, device="cuda", default_dtype="float32")
+
+
+@pytest.fixture(scope="session")
+def esen_calculator(esen_model_path):
+    """The MACE ASE calculator."""
+    esen_predictor = load_predict_unit(path=esen_model_path, device="cuda")
+    return FAIRChemCalculator(esen_predictor, task_name="omol")

@@ -44,11 +44,12 @@ def test_predict_energy(mols: dict[str, Chem.Mol], method: str, expected_excepti
 
 
 @pytest.mark.gpu
-def test_predict_energy_MACE(mols: dict[str, Chem.Mol], mace_model_path: str):
-    mols = mols
+@pytest.mark.parametrize("model_path_fixture", ["mace_model_path", "esen_model_path"])
+def test_predict_energy_MACE(mols: dict[str, Chem.Mol], model_path_fixture: str, request):
+    model_path = request.getfixturevalue(model_path_fixture)
     kwargs = {
         "device": "cuda",
-        "model_paths": str(mace_model_path),
+        "model_paths": str(model_path),
         "energy_units": "eV",
     }
     result = predict_energy(mols, "MACE", **kwargs)
