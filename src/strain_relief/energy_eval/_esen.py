@@ -51,13 +51,13 @@ def eSEN_energy(
 
     if energy_units == "eV":
         conversion_factor = EV_TO_KCAL_PER_MOL
-        logging.info("MACE model outputs energies in eV. Converting to kcal/mol.")
+        logging.info("eSEN model outputs energies in eV. Converting to kcal/mol.")
     elif energy_units == "Hartrees":
         conversion_factor = HARTREE_TO_KCAL_PER_MOL
-        logging.info("MACE model outputs energies in Hartrees. Converting to kcal/mol.")
+        logging.info("eSEN model outputs energies in Hartrees. Converting to kcal/mol.")
     elif energy_units == "kcal/mol":
         conversion_factor = 1
-        logging.info("MACE model outputs energies in kcal/mol. No conversion needed.")
+        logging.info("eSEN model outputs energies in kcal/mol. No conversion needed.")
 
     esen_predictor = load_predict_unit(path=model_paths, device=device)
     calculator = FAIRChemCalculator(esen_predictor, task_name="omol")
@@ -74,7 +74,7 @@ def _eSEN_energy(
     calculator: ase.calculators,
     conversion_factor: float,
 ) -> dict[int:float]:
-    """Calculate the MACE energy for all conformers of a molecule.
+    """Calculate the eSEN energy for all conformers of a molecule.
 
     Parameters
     ----------
