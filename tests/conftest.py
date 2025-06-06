@@ -92,7 +92,7 @@ def mace_energies() -> list[float]:
 
 
 @pytest.fixture(scope="session")
-def model_path() -> str:
+def mace_model_path() -> str:
     """This is the MACE_SPICE2_NEUTRAL.model"""
     return str(test_dir / "models" / "MACE.model")
 

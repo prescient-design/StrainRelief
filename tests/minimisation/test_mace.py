@@ -4,10 +4,10 @@ from strain_relief.minimisation._mace import MACE_min
 
 
 @pytest.mark.gpu
-def test_MACE_min(mols: dict[str, Chem.Mol], model_path: str):
+def test_MACE_min(mols: dict[str, Chem.Mol], mace_model_path: str):
     energies, mols = MACE_min(
         mols,
-        str(model_path),
+        str(mace_model_path),
         maxIters=1,
         default_dtype="float32",
         device="cuda",

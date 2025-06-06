@@ -44,11 +44,11 @@ def test_predict_energy(mols: dict[str, Chem.Mol], method: str, expected_excepti
 
 
 @pytest.mark.gpu
-def test_predict_energy_MACE(mols: dict[str, Chem.Mol], model_path: str):
+def test_predict_energy_MACE(mols: dict[str, Chem.Mol], mace_model_path: str):
     mols = mols
     kwargs = {
         "device": "cuda",
-        "model_paths": str(model_path),
+        "model_paths": str(mace_model_path),
         "energy_units": "eV",
     }
     result = predict_energy(mols, "MACE", **kwargs)
