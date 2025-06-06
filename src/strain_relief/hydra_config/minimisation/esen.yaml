@@ -1,0 +1,7 @@
+defaults:
+  - ../model/esen@_here_
+
+method: eSEN
+maxIters: 250
+fmax: 0.05
+fexit: 250
