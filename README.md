@@ -57,7 +57,7 @@ This is the simplest and fastest implementation of StrainRelief using MMFF94s an
 ```
 strain-relief \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
-    io.output.output_file=data/example_ligboundconf_output.parquet \
+    io.output.parquet_path=data/example_ligboundconf_output.parquet \
     minimisation@local_min=mmff94s \
     minimisation@global_min=mmff94s \
     local_min.fmax=0.50
@@ -67,7 +67,7 @@ This script demonstrates using different force fields for minimisation (MMFF94s)
 ```
 strain-relief \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
-    io.output.output_file=data/example_ligboundconf_output.parquet \
+    io.output.parquet_path=data/example_ligboundconf_output.parquet \
     minimisation@local_min=mmff94s \
     minimisation@global_min=mmff94s \
     energy_eval=mace \
@@ -79,7 +79,7 @@ This is the script as used for most calculations in the StrainRelief paper. MACE
 ```
 strain-relief \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
-    io.output.output_file=data/example_ligboundconf_output.parquet \
+    io.output.parquet_path=data/example_ligboundconf_output.parquet \
     minimisation@global_min=mace \
     minimisation@local_min=mace \
     local_min.fmax=0.50 \

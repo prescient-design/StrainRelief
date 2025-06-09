@@ -13,5 +13,5 @@ strain-relief \
     experiment=mace \
     conformers.numConfs=5 \
     io.input.parquet_path=../data/example_ligboundconf_input.parquet \
-    io.output.output_file=../data/example_ligboundconf_output.parquet \
+    io.output.parquet_path=../data/example_ligboundconf_output.parquet \
     hydra.verbose=true

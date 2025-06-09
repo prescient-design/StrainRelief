@@ -13,13 +13,13 @@ source ~/prescient/strain_relief/.venv/bin/activate  # with uv
 
 strain-relief \
     io.input.parquet_path=../data/example_ligboundconf_input.parquet \
-    io.output.output_file=../data/example_ligboundconf_output.parquet \
+    io.output.parquet_path=../data/example_ligboundconf_output.parquet \
     minimisation@local_min=mmff94s \
     minimisation@global_min=mmff94s
 
 strain-relief \
     io.input.parquet_path=../data/example_ligboundconf_input.parquet \
-    io.output.output_file=../data/example_ligboundconf_output.parquet \
+    io.output.parquet_path=../data/example_ligboundconf_output.parquet \
     model=mace \
     model.model_paths=s3://prescient-data-dev/strain_relief/models/MACE.model \
     minimisation@local_min=mmff94s \
@@ -29,7 +29,7 @@ strain-relief \
 
 strain-relief \
     io.input.parquet_path=../data/example_ligboundconf_input.parquet \
-    io.output.output_file=../data/example_ligboundconf_output.parquet \
+    io.output.parquet_path=../data/example_ligboundconf_output.parquet \
     model=mace \
     model.model_paths=s3://prescient-data-dev/strain_relief/models/MACE.model \
     minimisation@local_min=mace \

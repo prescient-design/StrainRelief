@@ -177,7 +177,7 @@ def save_parquet(
     local_min_mols: dict,
     global_min_mols: dict,
     threshold: float,
-    output_file: str,
+    parquet_path: str,
     id_col_name: str | None = None,
     mol_col_name: str | None = None,
 ) -> pd.DataFrame:
@@ -195,7 +195,7 @@ def save_parquet(
         Dictionary containing the poses of globally minimised molecules using strain_relief.
     threshold: float
         Threshold for the ligand strain filter.
-    output_file: str
+    parquet_path: str
         Path to the output parquet file.
     id_col_name: str
         Name of the column containing the molecule IDs.
@@ -263,9 +263,9 @@ def save_parquet(
     final_results = input_df.merge(results, left_on=id_col_name, right_on="id", how="outer")
     final_results.drop(columns=[mol_col_name], inplace=True)
 
-    if output_file is not None:
-        final_results.to_parquet(output_file)
-        logging.info(f"Data saved to {output_file}")
+    if parquet_path is not None:
+        final_results.to_parquet(parquet_path)
+        logging.info(f"Data saved to {parquet_path}")
     else:
         logging.info("Output file not provided, data not saved.")
 
