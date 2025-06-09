@@ -121,6 +121,8 @@ Logging is set to the `INFO` level by default which logs only aggregate informat
 - `pytest tests/ -m "not gpu"` - excludes all MACE tests
 - `pytest tests/ -m "not integration"` - runs all unit tests
 
+**NB** Tests requiring the eSEN model will be skipped if an eSEN model is not located in `tests/models/eSEN.pt`.
+
 ## Citations
 If you use StrainRelief or adapt the StrainRelief code for any purpose, please cite:
 
