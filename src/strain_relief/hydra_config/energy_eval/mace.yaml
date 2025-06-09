@@ -2,4 +2,4 @@ defaults:
   - ../model/mace@_here_
 
 method: MACE
-model_path: ${model.model_paths}
+model_paths: ${model.model_paths}

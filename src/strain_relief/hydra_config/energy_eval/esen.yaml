@@ -2,4 +2,4 @@ defaults:
   - ../model/esen@_here_
 
 method: eSEN
-model_path: ${model.model_paths}
+model_paths: ${model.model_paths}
