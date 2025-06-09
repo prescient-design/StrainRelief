@@ -1,5 +1,5 @@
 # StrainRelief 💊
-StrainRelief calculates the ligand strain of uncharged docked poses and has a suite of different force fields with which to do this. This includes a MACE neural network potential trained on SPICE2.
+StrainRelief calculates the ligand strain of uncharged docked poses and has a suite of different force fields with which to do this. This includes our own MACE neural network potential trained on SPICE2 and the eSEN neural network potential from the [OMol25](https://arxiv.org/abs/2505.08762) paper (request access [here](https://huggingface.co/facebook/OMol25)).
 
 The pre-print can be found [here](https://arxiv.org/abs/2503.13352) and all relevant datasets [here](https://huggingface.co/datasets/erwallace/LigBoundConf2.0).
 
@@ -9,7 +9,7 @@ The pre-print can be found [here](https://arxiv.org/abs/2503.13352) and all rele
 
 From the root directory, run the following commands to install the package and its dependencies in editable mode:
 
-(`mace-torch==0.3.x` requires `e3nn==0.4.4` (only for training, not inference). `fairchem-core` requires `e3nn>=0.5`. So until `mace-torch==0.4` is released we will have to do this finicky way of installing [[issue](https://github.com/ACEsuit/mace/issues/555)])
+(`mace-torch==0.3.x` requires `e3nn==0.4.4` (only for training, not inference). `fairchem-core` requires `e3nn>=0.5`. So until `mace-torch==0.4` is released we will have to do this finicky way of installing [[GitHub issue](https://github.com/ACEsuit/mace/issues/555)])
 
 ```bash
 mamba env create -f env.yml
@@ -32,7 +32,7 @@ uv sync
 
 ## The Protocol
 
-The protocol used in StrainRelief is designed to be simple, fast and model agnostic - all that is needed to apply a new force field is to write an ASE calculator wrapper (such as `calculators/_mmff94.py:RDKitMMFFCalculator`). Additionally you can use any MACE model, such as these from the [MACE-OFF23](https://github.com/ACEsuit/mace-off/tree/main/mace_off23) repository.
+The protocol used in StrainRelief is designed to be simple, fast and model agnostic - all that is needed to apply a new force field is to write an ASE calculator wrapper. Additionally you can use any MACE model, such as these from the [MACE-OFF23](https://github.com/ACEsuit/mace-off/tree/main/mace_off23) repository.
 
 ![Strain Relief Protocol](assets/strain_relief_protocol.png)
 
@@ -47,7 +47,7 @@ The protocol consists of 5 steps:
 **N.B.** energies returned are in kcal/mol.
 
 ## Usage
-Choose a minimisation and energy evalation force field from `mmff94`, `mmff94s`, `mace`.
+Choose a minimisation and energy evalation force field from `mmff94`, `mmff94s`, `mace`, `esen`.
 
 The calculator works best when the same force field is used for both methods. If this is the case, `energy_eval` does not need to be specified.
 
