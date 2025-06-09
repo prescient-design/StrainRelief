@@ -7,7 +7,7 @@ from strain_relief.energy_eval._mmff94 import MMFF94_energy, _MMFF94_energy
 @pytest.mark.parametrize("force_field", ["MMFF94", "MMFF94s"])
 def test_MMFF94_energy(request, fixture: dict[str, Chem.Mol], force_field: str):
     mols = request.getfixturevalue(fixture)
-    result = MMFF94_energy(mols, {"mmffVariant": force_field}, {})
+    result = MMFF94_energy(mols, "MMFF94", {"mmffVariant": force_field}, {})
     assert result is not None
     assert isinstance(result, dict)
     assert len(result) == len(mols)

@@ -52,9 +52,13 @@ def test_predict_energy_nnp(
 ):
     model_path = request.getfixturevalue(model_path_fixture)
     kwargs = {
-        "device": "cuda",
         "model_paths": str(model_path),
         "energy_units": "eV",
+        "calculator_kwargs": {
+            "device": "cuda",
+            "default_dtype": "float32",
+            "model_paths": str(model_path),
+        },
     }
     result = predict_energy(mols, architecture, **kwargs)
     assert result is not None
