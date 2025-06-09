@@ -3,6 +3,6 @@ input:
   mol_col_name: null
   id_col_name: null
 output:
-  output_file: null
+  parquet_path: null
   id_col_name: ${..input.id_col_name}
   mol_col_name: ${..input.mol_col_name}
