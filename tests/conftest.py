@@ -2,11 +2,10 @@ import os
 
 import numpy as np
 import pytest
-from fairchem.core import FAIRChemCalculator
-from fairchem.core.units.mlip_unit import load_predict_unit
-from mace.calculators import MACECalculator
 from rdkit import Chem
 from strain_relief import test_dir
+from strain_relief.calculators import esen_calculator as eSEN_calculator
+from strain_relief.calculators import mace_calculator as MACE_calculator
 from strain_relief.constants import EV_TO_KCAL_PER_MOL
 from strain_relief.io import load_parquet, to_mols_dict
 
@@ -122,16 +121,10 @@ def esen_model_path() -> str:
 @pytest.fixture(scope="session")
 def mace_calculator(mace_model_path):
     """The MACE ASE calculator."""
-    return MACECalculator(model_paths=mace_model_path, device="cuda", default_dtype="float32")
+    return MACE_calculator(model_paths=mace_model_path, device="cuda", default_dtype="float32")
 
 
 @pytest.fixture(scope="session")
 def esen_calculator(esen_model_path):
-    """The MACE ASE calculator."""
-    esen_predictor = load_predict_unit(path=esen_model_path, device="cuda")
-    calculator = FAIRChemCalculator(esen_predictor, task_name="omol")
-
-    if hasattr(calculator, "predictor") and hasattr(calculator.predictor, "model"):
-        calculator.predictor.model = calculator.predictor.model.float()
-
-    return calculator
+    """The eSEN ASE calculator."""
+    return eSEN_calculator(model_paths=esen_model_path, device="cuda", default_dtype="float32")

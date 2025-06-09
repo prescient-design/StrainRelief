@@ -5,9 +5,9 @@ from loguru import logger as logging
 from rdkit import Chem
 
 from strain_relief.constants import ENERGY_PROPERTY_NAME
-from strain_relief.minimisation import MACE_min, MMFF94_min, eSEN_min
+from strain_relief.minimisation import MMFF94_min, NNP_min
 
-METHODS_DICT = {"MACE": MACE_min, "eSEN": eSEN_min, "MMFF94": MMFF94_min, "MMFF94s": MMFF94_min}
+METHODS_DICT = {"MACE": NNP_min, "eSEN": NNP_min, "MMFF94": MMFF94_min, "MMFF94s": MMFF94_min}
 
 
 def minimise_conformers(
@@ -37,7 +37,7 @@ def minimise_conformers(
     logging.info(f"Minimising conformers using {method} and removing non-converged conformers...")
     # Select method and run minimisation
     min_method = METHODS_DICT[method]
-    energies, mols = min_method(mols, **kwargs)
+    energies, mols = min_method(mols, method, **kwargs)
 
     # Store the predicted energies as a property on each conformer
     for id, mol in mols.items():

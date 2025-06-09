@@ -7,6 +7,10 @@ from strain_relief.constants import KCAL_PER_MOL_TO_EV
 from strain_relief.io import ase_to_rdkit
 
 
+def mmff94_calculator(MMFFGetMoleculeProperties: dict, MMFFGetMoleculeForceField: dict, **kwargs):
+    return RDKitMMFFCalculator(MMFFGetMoleculeProperties, MMFFGetMoleculeForceField, **kwargs)
+
+
 class RDKitMMFFCalculator(Calculator):
     implemented_properties = ["energy", "forces"]
 
