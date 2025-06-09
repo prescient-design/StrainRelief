@@ -11,7 +11,6 @@ from strain_relief.constants import EV_TO_KCAL_PER_MOL
 from strain_relief.io import load_parquet, to_mols_dict
 
 
-## LITLMOL TEST MOLECULES
 @pytest.fixture(scope="function")
 def mols() -> dict[str, Chem.Mol]:
     """Two posed molecules from an internal target."""
@@ -130,4 +129,9 @@ def mace_calculator(mace_model_path):
 def esen_calculator(esen_model_path):
     """The MACE ASE calculator."""
     esen_predictor = load_predict_unit(path=esen_model_path, device="cuda")
-    return FAIRChemCalculator(esen_predictor, task_name="omol")
+    calculator = FAIRChemCalculator(esen_predictor, task_name="omol")
+
+    if hasattr(calculator, "predictor") and hasattr(calculator.predictor, "model"):
+        calculator.predictor.model = calculator.predictor.model.float()
+
+    return calculator

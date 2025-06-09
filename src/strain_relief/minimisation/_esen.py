@@ -18,6 +18,7 @@ def eSEN_min(
     fmax: float,
     fexit: float,
     device=Literal["cpu", "cuda"],
+    default_dtype: Literal["float32", "float64"] = "float32",
     energy_units: Literal["eV", "Hartrees", "kcal/mol"] = "eV",
 ) -> tuple[dict[str : dict[str:float]], dict[str : Chem.Mol]]:
     """Minimise all conformers of a Chem.Mol using eSEN.
@@ -34,7 +35,7 @@ def eSEN_min(
         Convergence criteria, converged when max(forces) < fmax.
     fexit : float
         Exit criteria, exit when max(forces) > fexit.
-    default_dtype : str
+    default_dtype : Literal["float32", "float64"]
         The default data type to use for energy calculation.
     device : Literal["cpu", "cuda"]
         The device to use for energy calculation.
@@ -68,6 +69,10 @@ def eSEN_min(
 
     esen_predictor = load_predict_unit(path=model_paths, device=device)
     calculator = FAIRChemCalculator(esen_predictor, task_name="omol")
+
+    if default_dtype == "float32":
+        if hasattr(calculator, "predictor") and hasattr(calculator.predictor, "model"):
+            calculator.predictor.model = calculator.predictor.model.float()
 
     energies, mols = method_min(mols, calculator, maxIters, fmax, fexit, conversion_factor)
 

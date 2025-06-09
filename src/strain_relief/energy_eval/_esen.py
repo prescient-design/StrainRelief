@@ -16,6 +16,7 @@ def eSEN_energy(
     mols: dict[str : Chem.Mol],
     model_paths: str,
     device: str = Literal["cpu", "cuda"],
+    default_dtype: Literal["float32", "float64"] = "float32",
     energy_units: Literal["eV", "Hartrees", "kcal/mol"] = "eV",
 ) -> dict[dict]:
     """Calculate the eSEN energy for all conformers of all molecules.
@@ -61,6 +62,10 @@ def eSEN_energy(
 
     esen_predictor = load_predict_unit(path=model_paths, device=device)
     calculator = FAIRChemCalculator(esen_predictor, task_name="omol")
+
+    if default_dtype == "float32":
+        if hasattr(calculator, "predictor") and hasattr(calculator.predictor, "model"):
+            calculator.predictor.model = calculator.predictor.model.float()
 
     mol_energies = {}
     for id, mol in mols.items():
