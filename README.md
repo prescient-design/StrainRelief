@@ -32,7 +32,7 @@ uv sync
 
 ## The Protocol
 
-The protocol used in StrainRelief is designed to be simple, fast and model agnostic - all that is needed to apply a new force field is to write an ASE calculator wrapper. Additionally you can use any MACE model, such as these from the [MACE-OFF23](https://github.com/ACEsuit/mace-off/tree/main/mace_off23) repository.
+The protocol used in StrainRelief is designed to be simple, fast and model agnostic - all that is needed to apply a new force field is to write an ASE calculator wrapper (such as `calculators/_mmff94.py:RDKitMMFFCalculator`). Additionally you can use any MACE model, such as these from the [MACE-OFF23](https://github.com/ACEsuit/mace-off/tree/main/mace_off23) repository.
 
 ![Strain Relief Protocol](assets/strain_relief_protocol.png)
 
