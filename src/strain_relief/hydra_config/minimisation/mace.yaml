@@ -5,3 +5,4 @@ method: MACE
 maxIters: 250
 fmax: 0.05
 fexit: 250
+model_path: ${model.model_paths}
