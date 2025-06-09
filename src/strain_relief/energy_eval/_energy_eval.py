@@ -5,11 +5,11 @@ from loguru import logger as logging
 from rdkit import Chem
 
 from strain_relief.constants import ENERGY_PROPERTY_NAME
-from strain_relief.energy_eval import MACE_energy, MMFF94_energy, eSEN_energy
+from strain_relief.energy_eval import MMFF94_energy, NNP_energy
 
 METHODS_DICT = {
-    "MACE": MACE_energy,
-    "eSEN": eSEN_energy,
+    "MACE": NNP_energy,
+    "eSEN": NNP_energy,
     "MMFF94": MMFF94_energy,
     "MMFF94s": MMFF94_energy,
 }
@@ -43,7 +43,7 @@ def predict_energy(
     logging.info(f"Predicting energies using {method}")
     # Select method and run energy evaluation
     energy_method = METHODS_DICT[method]
-    energies = energy_method(mols, **kwargs)
+    energies = energy_method(mols, method, **kwargs)
 
     # Store the predicted energies as a property on each conformer
     for id, mol in mols.items():

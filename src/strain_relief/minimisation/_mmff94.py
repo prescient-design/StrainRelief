@@ -6,6 +6,7 @@ from strain_relief.minimisation.utils_minimisation import method_min
 
 def MMFF94_min(
     mols: dict[str : Chem.Mol],
+    method: str,
     MMFFGetMoleculeProperties: dict,
     MMFFGetMoleculeForceField: dict,
     maxIters: int,
@@ -18,6 +19,8 @@ def MMFF94_min(
     ----------
     mols : dict[str:Chem.Mol]
         Dictionary of molecules to minimise.
+    method : str
+        [PLACEHOLDER] Needed for NNP_min compatibility.
     MMFFGetMoleculeProperties: dict
         Additional keyword arguments to pass to the MMFFGetMoleculeProperties function.
     MMFFGetMoleculeForceField: dict
