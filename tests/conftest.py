@@ -1,13 +1,15 @@
+import os
+
 import numpy as np
 import pytest
-from mace.calculators import MACECalculator
 from rdkit import Chem
 from strain_relief import test_dir
+from strain_relief.calculators import esen_calculator as eSEN_calculator
+from strain_relief.calculators import mace_calculator as MACE_calculator
 from strain_relief.constants import EV_TO_KCAL_PER_MOL
 from strain_relief.io import load_parquet, to_mols_dict
 
 
-## LITLMOL TEST MOLECULES
 @pytest.fixture(scope="function")
 def mols() -> dict[str, Chem.Mol]:
     """Two posed molecules from an internal target."""
@@ -92,12 +94,37 @@ def mace_energies() -> list[float]:
 
 
 @pytest.fixture(scope="session")
-def model_path() -> str:
+def esen_energies() -> list[float]:
+    """The MACE energies as calculated using the mace repo (in eV)."""
+    return {
+        idx: E
+        for idx, E in zip(
+            ["0", "1"], np.array([-19772.31732206841, -29376.818942909442]) * EV_TO_KCAL_PER_MOL
+        )
+    }
+
+
+@pytest.fixture(scope="session")
+def mace_model_path() -> str:
     """This is the MACE_SPICE2_NEUTRAL.model"""
     return str(test_dir / "models" / "MACE.model")
 
 
 @pytest.fixture(scope="session")
-def calculator(model_path):
+def esen_model_path() -> str:
+    """This is the OMol25 eSEN small conserving model."""
+    if os.path.exists(test_dir / "models" / "eSEN.pt"):
+        return str(test_dir / "models" / "eSEN.pt")
+    return pytest.skip(f"eSEN model not found at {test_dir / 'models' / 'eSEN.pt'}")
+
+
+@pytest.fixture(scope="session")
+def mace_calculator(mace_model_path):
     """The MACE ASE calculator."""
-    return MACECalculator(model_paths=model_path, device="cuda", default_dtype="float32")
+    return MACE_calculator(model_paths=mace_model_path, device="cuda", default_dtype="float32")
+
+
+@pytest.fixture(scope="session")
+def esen_calculator(esen_model_path):
+    """The eSEN ASE calculator."""
+    return eSEN_calculator(model_paths=esen_model_path, device="cuda", default_dtype="float32")

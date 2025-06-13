@@ -43,11 +43,11 @@ def strain_relief(df: pd.DataFrame, cfg: DictConfig) -> pd.DataFrame:
     logging.info(f"STRAIN RELIEF RUN CONFIG: \n{OmegaConf.to_yaml(cfg)}")
 
     if (
-        cfg.local_min.method == "MACE"
-        or cfg.global_min.method == "MACE"
-        or cfg.energy_eval.method == "MACE"
+        cfg.local_min.method in ["MACE", "eSEN"]
+        or cfg.global_min.method in ["MACE", "eSEN"]
+        or cfg.energy_eval.method in ["MACE", "eSEN"]
     ) and cfg.model.model_paths is None:
-        raise ValueError("Model path must be provided if using MACE")
+        raise ValueError("Model path must be provided if using a NNP")
 
     # Load data
     docked = to_mols_dict(df, cfg.io.input.mol_col_name, cfg.io.input.id_col_name)

@@ -4,7 +4,10 @@ from rdkit.Chem import rdDetermineBonds, rdForceFieldHelpers
 
 
 def MMFF94_energy(
-    mols: dict[str : Chem.Mol], MMFFGetMoleculeProperties: dict, MMFFGetMoleculeForceField: dict
+    mols: dict[str : Chem.Mol],
+    method: str,
+    MMFFGetMoleculeProperties: dict,
+    MMFFGetMoleculeForceField: dict,
 ) -> dict[dict]:
     """Calculate the MMFF94(s) energy for all conformers of all molecules.
 
@@ -12,6 +15,12 @@ def MMFF94_energy(
     ----------
     mols : dict[str:Chem.Mol]
         A dictionary of molecules.
+    method : str
+        [PLACEHOLDER] Needed for NNP_energy compatibility.
+    MMFFGetMoleculeProperties : dict
+        Additional keyword arguments for MMFFGetMoleculeProperties.
+    MMFFGetMoleculeForceField : dict
+        Additional keyword arguments for MMFFGetMoleculeForceField.
 
     Returns
     -------
@@ -45,6 +54,10 @@ def _MMFF94_energy(
         A molecule.
     id : str
         ID of the molecule. Used for logging.
+    MMFFGetMoleculeProperties : dict
+        Additional keyword arguments for MMFFGetMoleculeProperties.
+    MMFFGetMoleculeForceField : dict
+        Additional keyword arguments for MMFFGetMoleculeForceField.
 
     Returns
     -------

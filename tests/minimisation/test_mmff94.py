@@ -9,6 +9,7 @@ def test_MMFF94_min(request, fixture: dict[str, Chem.Mol], force_field: str):
     mols = request.getfixturevalue(fixture)
     results, mols = MMFF94_min(
         mols=mols,
+        method="MMFF94",
         MMFFGetMoleculeProperties={"mmffVariant": force_field},
         MMFFGetMoleculeForceField={},
         maxIters=1,
