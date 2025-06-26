@@ -1,9 +1,19 @@
 # StrainRelief 💊
-StrainRelief calculates the ligand strain of uncharged docked poses and has a suite of different force fields with which to do this. This includes our own MACE neural network potential trained on SPICE2 and the eSEN neural network potential from the [OMol25](https://arxiv.org/abs/2505.08762) paper (request access [here](https://huggingface.co/facebook/OMol25)).
+StrainRelief calculates the ligand strain of uncharged docked poses and has a suite of different force fields with which to do this. This includes a MACE neural network potential trained on SPICE2.
 
-The pre-print can be found [here](https://arxiv.org/abs/2503.13352) and all relevant datasets [here](https://huggingface.co/datasets/erwallace/LigBoundConf2.0).
+- 📄 The publication can be found [here](https://pubs.acs.org/doi/10.1021/acs.jcim.5c00586).
+- 📊 All relevant datasets [here](https://huggingface.co/datasets/erwallace/LigBoundConf2.0).
+- 💬 RAG [chatbot](https://strain-relief.streamlit.app/) for questions about the paper and references.
+- 💻 Chatbot source [code](https://github.com/erwallace/paper_query).
 
 ![Strain Relief Logo](assets/strain_relief_logo.png)
+
+## Update: v0.4
+- Inclusion of NNP ASE calcualtors is more modular, making it easier to add your own.
+- Meta's FairChem [e-SEN](https://arxiv.org/html/2502.12147v1) NNP from [OMol25](https://arxiv.org/abs/2505.08762) has been added giving a significant performance boost! Requested access [here](https://huggingface.co/facebook/OMol25).
+- Improved hydra configurations mean `model.model_paths` now only has to be specified once.
+- Our [paper](https://pubs.acs.org/doi/10.1021/acs.jcim.5c00586) has been published in the *Journal of Chemical Information and Modelling*!
+- We have written a RAG [chatbot](https://strain-relief.streamlit.app/) to answer questions about the code, paper and any of its references.
 
 ## Installation
 
