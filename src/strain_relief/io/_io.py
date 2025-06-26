@@ -112,7 +112,7 @@ def _calculate_charge(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
     df[CHARGE_COL_NAME] = df[mol_col_name].apply(lambda x: int(Chem.GetFormalCharge(x)))
     if all(df[CHARGE_COL_NAME] != 0):
         logging.error(
-        # raise ValueError(
+            # raise ValueError(
             "All molecules are charged. StrainRelief only calculates ligand strain for neutral "
             "molecules."
         )
@@ -132,7 +132,7 @@ def _process_molecule_data(
 ) -> dict:
     """Helper function to process data for a single molecule."""
     local_min_energy, local_min_conf = np.nan, np.nan
-    
+
     if local_min_mol.GetNumConformers() != 0:
         local_min_energy = local_min_mol.GetConformer().GetDoubleProp(ENERGY_PROPERTY_NAME)
         local_min_conf = local_min_mol.ToBinary()
@@ -177,7 +177,7 @@ def save_parquet(
     local_min_mols: dict,
     global_min_mols: dict,
     threshold: float,
-    output_file: str,
+    parquet_path: str,
     id_col_name: str | None = None,
     mol_col_name: str | None = None,
 ) -> pd.DataFrame:
@@ -195,7 +195,7 @@ def save_parquet(
         Dictionary containing the poses of globally minimised molecules using strain_relief.
     threshold: float
         Threshold for the ligand strain filter.
-    output_file: str
+    parquet_path: str
         Path to the output parquet file.
     id_col_name: str
         Name of the column containing the molecule IDs.
@@ -225,8 +225,14 @@ def save_parquet(
 
     # Define columns upfront to ensure correct order and handle empty DataFrame creation
     result_columns = [
-        "id", "local_min_mol", "local_min_e", "global_min_mol",
-        "global_min_e", "ligand_strain", "passes_strain_filter", "nconfs_converged"
+        "id",
+        "local_min_mol",
+        "local_min_e",
+        "global_min_mol",
+        "global_min_e",
+        "ligand_strain",
+        "passes_strain_filter",
+        "nconfs_converged",
     ]
     results = pd.DataFrame(dicts, columns=result_columns)
 
@@ -249,15 +255,17 @@ def save_parquet(
             f"(avg. {total_n_confs / len(results):.2f} per molecule)"
         )
     else:
-        logging.error("Ligand strain calculation failed for all molecules or no molecules were processed.")
+        logging.error(
+            "Ligand strain calculation failed for all molecules or no molecules were processed."
+        )
 
     # Merge and drop original molecule column
     final_results = input_df.merge(results, left_on=id_col_name, right_on="id", how="outer")
     final_results.drop(columns=[mol_col_name], inplace=True)
 
-    if output_file is not None:
-        final_results.to_parquet(output_file)
-        logging.info(f"Data saved to {output_file}")
+    if parquet_path is not None:
+        final_results.to_parquet(parquet_path)
+        logging.info(f"Data saved to {parquet_path}")
     else:
         logging.info("Output file not provided, data not saved.")
 

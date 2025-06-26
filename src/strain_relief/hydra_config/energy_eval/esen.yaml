@@ -1,5 +1,5 @@
 defaults:
-  - ../model/mace@_here_
+  - ../model/esen@_here_
 
-method: MACE
+method: eSEN
 model_paths: ${model.model_paths}

@@ -5,3 +5,5 @@ data/*
 .DS_Store
 __pycache__/
 *.pyc
+
+tests/models/eSEN.pt

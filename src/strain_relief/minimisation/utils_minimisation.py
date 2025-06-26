@@ -166,7 +166,6 @@ def run_minimisation(
         The convergence status of the minimisation (0 = converged).
     float
         The final energy of the minimised conformer
-        (Note: this is in eV be default as MACE is trained on eV).
     """
     atoms.calc = calculator
     dyn = StrainReliefBFGS(atoms)
