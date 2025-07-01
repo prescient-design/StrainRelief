@@ -1,7 +1,5 @@
 from typing import Literal
 
-from fairchem.core import FAIRChemCalculator
-from fairchem.core.units.mlip_unit import load_predict_unit
 from mace.calculators import MACECalculator
 
 
@@ -11,6 +9,15 @@ def esen_calculator(
     default_dtype: Literal["float32", "float64"] = "float32",
     **kwargs,
 ):
+    try:  # Required while mace-torch and fairchem-core have conflicting e3nn dependencies.
+        from fairchem.core import FAIRChemCalculator
+        from fairchem.core.units.mlip_unit import load_predict_unit
+    except ImportError:
+        raise ImportError(
+            "fairchem is required for esen_calculator(). "
+            "Install with: pip install --force-reinstall e3nn==0.5 fairchem-core"
+        )
+
     esen_predictor = load_predict_unit(path=model_paths, device=device)
     calculator = FAIRChemCalculator(esen_predictor, task_name="omol", **kwargs)
 
