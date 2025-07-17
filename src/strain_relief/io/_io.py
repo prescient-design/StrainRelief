@@ -3,7 +3,16 @@ import pandas as pd
 from loguru import logger as logging
 from rdkit import Chem
 
-from strain_relief.constants import CHARGE_COL_NAME, ENERGY_PROPERTY_NAME, ID_COL_NAME, MOL_COL_NAME
+from strain_relief.constants import (
+    CHARGE_COL_NAME,
+    CHARGE_KEY,
+    ENERGY_PROPERTY_NAME,
+    ID_COL_NAME,
+    MOL_COL_NAME,
+    MOL_KEY,
+    SPIN_COL_NAME,
+    SPIN_KEY,
+)
 
 
 def load_parquet(
@@ -38,6 +47,7 @@ def load_parquet(
 
     _check_columns(df, mol_col_name, id_col_name)
     df = _calculate_charge(df, mol_col_name)
+    df = _calculate_spin(df, mol_col_name)
 
     return df
 
@@ -57,7 +67,15 @@ def to_mols_dict(df: pd.DataFrame, mol_col_name: str, id_col_name: str) -> dict:
     Returns
     -------
     dict
-        Dictionary containing the molecule IDs and RDKit.Mol objects.
+        Dictionary containing the molecule IDs, RDKit.Mol objects, charges and spins.
+        {
+            "molecule_id": {
+                "mol": RDKit.Mol,
+                "charge": int,
+                "spin": int
+            },
+            ...
+        }
     """
     if mol_col_name is None:
         mol_col_name = MOL_COL_NAME
@@ -70,7 +88,17 @@ def to_mols_dict(df: pd.DataFrame, mol_col_name: str, id_col_name: str) -> dict:
     if CHARGE_COL_NAME not in df.columns:  # needed for deployment code
         df = _calculate_charge(df, mol_col_name)
 
-    return {r[id_col_name]: r[mol_col_name] for _, r in df[df[CHARGE_COL_NAME] == 0].iterrows()}
+    if SPIN_COL_NAME not in df.columns:  # needed for deployment code
+        df = _calculate_spin(df, mol_col_name)
+
+    return {
+        r[id_col_name]: {
+            MOL_KEY: r[mol_col_name],
+            CHARGE_KEY: r[CHARGE_COL_NAME],
+            SPIN_KEY: r[SPIN_COL_NAME],
+        }
+        for _, r in df.iterrows()
+    }
 
 
 def _check_columns(df: pd.DataFrame, mol_col_name: str, id_col_name: str):
@@ -121,6 +149,38 @@ def _calculate_charge(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
             f"Dataset contains {len(df[df[CHARGE_COL_NAME] != 0])} charged molecules. Ligand "
             "strains will not be calculated for these."
         )
+    return df
+
+
+def _calculate_spin(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
+    """Calculate spin multiplicity of molecules.
+
+    The spin multiplicity is calculated from the number of free radical electrons using Hund's rule
+    of maximum multiplicity defined as 2S + 1 where S is the total electron spin. The total spin is
+    1/2 the number of free radical electrons in a molecule using Hund's rule.
+
+    Parameters
+    ----------
+    df: pd.DataFrame
+        DataFrame containing molecules.
+    mol_col_name: str
+        Name of the column containing the RDKit.Mol objects OR binary strings.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with spin multiplicity column.
+    """
+
+    def hunds_rule(mol: Chem.Mol) -> int:
+        """Calculate spin multiplicity using Hund's rule."""
+        num_radical_electrons = sum(atom.GetNumRadicalElectrons() for atom in mol.GetAtoms())
+        total_electronic_spin = num_radical_electrons / 2
+        spin_multiplicity = 2 * total_electronic_spin + 1
+        return int(spin_multiplicity)
+
+    df[SPIN_COL_NAME] = df[mol_col_name].apply(lambda x: hunds_rule(x))
+
     return df
 
 
