@@ -2,9 +2,8 @@ from timeit import default_timer as timer
 from typing import Literal
 
 from loguru import logger as logging
-from rdkit import Chem
 
-from strain_relief.constants import ENERGY_PROPERTY_NAME
+from strain_relief.constants import ENERGY_PROPERTY_NAME, MOL_KEY
 from strain_relief.energy_eval import MMFF94_energy, NNP_energy
 
 METHODS_DICT = {
@@ -16,14 +15,14 @@ METHODS_DICT = {
 
 
 def predict_energy(
-    mols: dict[str : Chem.Mol], method: Literal["MACE", "eSEN", "MMFF94", "MMFF94s"], **kwargs
+    mols: dict[str:dict], method: Literal["MACE", "eSEN", "MMFF94", "MMFF94s"], **kwargs
 ):
     """Predict the energy of all conformers of molecules in mols using a specified method.
 
     Parameters
     ----------
-    mols : dict[str:Chem.Mol]
-        A dictionary of molecules.
+    mols : dict[str:dict]
+        Nested dictionary of molecules.
     method : Literal["MACE", "eSEN", "MMFF94", "MMFF94s"]
         The method to use for energy prediction.
     **kwargs
@@ -31,8 +30,8 @@ def predict_energy(
 
     Returns
     -------
-    dict[str:Chem.Mol]
-        A dictionary of molecules with the predicted energies stored as a property on each
+    dict[str:dict]
+        Nested dictionary of molecules with the predicted energies stored as a property on each
         conformer.
     """
     start = timer()
@@ -46,9 +45,11 @@ def predict_energy(
     energies = energy_method(mols, method, **kwargs)
 
     # Store the predicted energies as a property on each conformer
-    for id, mol in mols.items():
+    for id, mol_properties in mols.items():
         [
-            mol.GetConformer(conf_id).SetDoubleProp(ENERGY_PROPERTY_NAME, energy)
+            mol_properties[MOL_KEY]
+            .GetConformer(conf_id)
+            .SetDoubleProp(ENERGY_PROPERTY_NAME, energy)
             for conf_id, energy in energies[id].items()
         ]
     logging.info(

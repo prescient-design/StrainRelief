@@ -2,9 +2,11 @@ from loguru import logger as logging
 from rdkit import Chem
 from rdkit.Chem import rdDetermineBonds, rdForceFieldHelpers
 
+from strain_relief.constants import CHARGE_KEY, MOL_KEY
+
 
 def MMFF94_energy(
-    mols: dict[str : Chem.Mol],
+    mols: dict[str:dict],
     method: str,
     MMFFGetMoleculeProperties: dict,
     MMFFGetMoleculeForceField: dict,
@@ -13,7 +15,7 @@ def MMFF94_energy(
 
     Parameters
     ----------
-    mols : dict[str:Chem.Mol]
+    mols : dict[str:dict]
         A dictionary of molecules.
     method : str
         [PLACEHOLDER] Needed for NNP_energy compatibility.
@@ -34,9 +36,11 @@ def MMFF94_energy(
         }
     """
     mol_energies = {}
-    for id, mol in mols.items():
+    for id, mol_properties in mols.items():
+        mol = mol_properties[MOL_KEY]
+        charge = mol_properties[CHARGE_KEY]
         if mol.GetNumBonds() == 0:
-            rdDetermineBonds.DetermineBonds(mol)
+            rdDetermineBonds.DetermineBonds(mol, charge=charge)
         mol_energies[id] = _MMFF94_energy(
             mol, id, MMFFGetMoleculeProperties, MMFFGetMoleculeForceField
         )
