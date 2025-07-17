@@ -6,7 +6,7 @@ from loguru import logger as logging
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdDetermineBonds
 
-from strain_relief.constants import MOL_KEY
+from strain_relief.constants import CHARGE_KEY, MOL_KEY
 
 
 def generate_conformers(
@@ -59,9 +59,10 @@ def generate_conformers(
 
     for id, mol_properties in mols.items():
         mol = mol_properties[MOL_KEY]
+        charge = mol_properties[CHARGE_KEY]
         if mol.GetNumBonds() == 0:
             logging.debug(f"Adding bonds to {id}")
-            rdDetermineBonds.DetermineBonds(mol)
+            rdDetermineBonds.DetermineBonds(mol, charge=charge)
         AllChem.EmbedMultipleConfs(
             mol,
             randomSeed=randomSeed,

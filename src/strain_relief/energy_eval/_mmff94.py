@@ -73,6 +73,7 @@ def _MMFF94_energy(
     """
     conformer_energies = {}
     for conf in mol.GetConformers():
+        print(mol, MMFFGetMoleculeProperties)
         mp = rdForceFieldHelpers.MMFFGetMoleculeProperties(mol, **MMFFGetMoleculeProperties)
         ff = rdForceFieldHelpers.MMFFGetMoleculeForceField(
             mol, mp, confId=conf.GetId(), **MMFFGetMoleculeForceField

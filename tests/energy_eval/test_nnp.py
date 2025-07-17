@@ -1,8 +1,7 @@
 import ase
 import numpy as np
 import pytest
-from rdkit import Chem
-from strain_relief.constants import EV_TO_KCAL_PER_MOL
+from strain_relief.constants import EV_TO_KCAL_PER_MOL, MOL_KEY
 from strain_relief.energy_eval._nnp import NNP_energy, _NNP_energy
 
 
@@ -12,7 +11,7 @@ from strain_relief.energy_eval._nnp import NNP_energy, _NNP_energy
     [("eSEN", "esen_model_path", "esen_energies"), ("MACE", "mace_model_path", "mace_energies")],
 )
 def test_nnp_energy(
-    mols_wo_bonds: dict[str, Chem.Mol], method: str, model_path: str, energies: list[float], request
+    mols_wo_bonds: dict[str, dict], method: str, model_path: str, energies: list[float], request
 ):
     model_path = request.getfixturevalue(model_path)
     energies = request.getfixturevalue(energies)
@@ -35,7 +34,7 @@ def test_nnp_energy(
 
     for id, mol in result.items():
         assert isinstance(mol, dict)
-        assert len(mol) == mols[id].GetNumConformers()
+        assert len(mol) == mols[id][MOL_KEY].GetNumConformers()
 
         for conf_id, energy in mol.items():
             assert isinstance(conf_id, int)
@@ -48,7 +47,7 @@ def test_nnp_energy(
 
     assert result.keys() == expected.keys()
     for mol_id in result.keys():
-        for conf_id in result[mol_id].keys():
+        for conf_id in expected[mol_id].keys():
             assert np.isclose(result[mol_id][conf_id], expected[mol_id][conf_id], atol=1e-6), (
                 f"{result[mol_id][conf_id]} != {expected[mol_id][conf_id]} "
                 f"(diff = {result[mol_id][conf_id] - expected[mol_id][conf_id]})"
@@ -61,7 +60,7 @@ def test_nnp_energy(
     [("esen_calculator", "esen_energies"), ("mace_calculator", "mace_energies")],
 )
 def test__NNP_energy(
-    mol_wo_bonds_w_confs: Chem.Mol, calculator: ase.calculators, energies: list[float], request
+    mol_wo_bonds_w_confs: dict, calculator: ase.calculators, energies: list[float], request
 ):
     calculator = request.getfixturevalue(calculator)
     energies = request.getfixturevalue(energies)
@@ -70,7 +69,7 @@ def test__NNP_energy(
     result = _NNP_energy(mol, "id", calculator, EV_TO_KCAL_PER_MOL)
     assert result is not None
     assert isinstance(result, dict)
-    assert len(result) == mol.GetNumConformers()
+    assert len(result) == mol[MOL_KEY].GetNumConformers()
 
     for conf_id, energy in result.items():
         assert isinstance(conf_id, int)
@@ -79,7 +78,8 @@ def test__NNP_energy(
     expected = {0: energies["0"], 1: energies["0"]}
 
     assert result.keys() == expected.keys()
-    for conf_if in result.keys():
+
+    for conf_id in result.keys():
         assert np.isclose(result[conf_id], expected[conf_id], atol=1e-6), (
             f"{result[conf_id]} != {expected[conf_id]} "
             f"(diff = {result[conf_id] - energies[conf_id]})"

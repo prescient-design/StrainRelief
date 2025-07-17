@@ -19,7 +19,7 @@ def load_parquet(
     parquet_path: str,
     id_col_name: str | None = None,
     mol_col_name: str | None = None,
-    allow_charged: bool = True,
+    include_charged: bool = True,
 ) -> pd.DataFrame:
     """Load a parquet file containing molecules.
 
@@ -31,7 +31,7 @@ def load_parquet(
         Name of the column containing the molecule IDs.
     mol_col_name: str
         Name of the column containing the RDKit.Mol objects OR binary string.
-    allow_charged: bool
+    include_charged: bool
         If False, filters out charged molecules.
 
     Returns
@@ -49,7 +49,7 @@ def load_parquet(
     logging.info(f"Loaded {len(df)} posed molecules")
 
     _check_columns(df, mol_col_name, id_col_name)
-    df = _calculate_charge(df, mol_col_name, allow_charged)
+    df = _calculate_charge(df, mol_col_name, include_charged)
     df = _calculate_spin(df, mol_col_name)
 
     return df
