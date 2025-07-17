@@ -50,7 +50,7 @@ def strain_relief(df: pd.DataFrame, cfg: DictConfig) -> pd.DataFrame:
         raise ValueError("Model path must be provided if using a NNP")
 
     # Load data
-    docked = to_mols_dict(df, cfg.io.input.mol_col_name, cfg.io.input.id_col_name)
+    docked = to_mols_dict(df, **cfg.io.input)
     local_minima = {id: deepcopy(mol) for id, mol in docked.items()}
     global_minimia = {id: deepcopy(mol) for id, mol in docked.items()}
 

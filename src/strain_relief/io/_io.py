@@ -19,6 +19,7 @@ def load_parquet(
     parquet_path: str,
     id_col_name: str | None = None,
     mol_col_name: str | None = None,
+    allow_charged: bool = True,
 ) -> pd.DataFrame:
     """Load a parquet file containing molecules.
 
@@ -30,6 +31,8 @@ def load_parquet(
         Name of the column containing the molecule IDs.
     mol_col_name: str
         Name of the column containing the RDKit.Mol objects OR binary string.
+    allow_charged: bool
+        If False, filters out charged molecules.
 
     Returns
     -------
@@ -46,23 +49,29 @@ def load_parquet(
     logging.info(f"Loaded {len(df)} posed molecules")
 
     _check_columns(df, mol_col_name, id_col_name)
-    df = _calculate_charge(df, mol_col_name)
+    df = _calculate_charge(df, mol_col_name, allow_charged)
     df = _calculate_spin(df, mol_col_name)
 
     return df
 
 
-def to_mols_dict(df: pd.DataFrame, mol_col_name: str, id_col_name: str) -> dict:
+def to_mols_dict(
+    df: pd.DataFrame, parquet_path: str, mol_col_name: str, id_col_name: str, include_charged: bool
+) -> dict:
     """Converts a DataFrame to a dictionary of RDKit.Mol objects.
 
     Parameters
     ----------
     df: pd.DataFrame
         DataFrame containing molecules.
+    parquet_path: str
+        [PLACEHOLDER] Needed for simplicity of arg parsing.
     mol_col_name: str
         Name of the column containing the RDKit.Mol objects OR binary strings.
     id_col_name: str
         Name of the column containing the molecule IDs.
+    include_charged: bool
+        If False, filters out charged molecules.
 
     Returns
     -------
@@ -86,7 +95,7 @@ def to_mols_dict(df: pd.DataFrame, mol_col_name: str, id_col_name: str) -> dict:
         df[mol_col_name] = df["mol_bytes"].apply(Chem.Mol)
 
     if CHARGE_COL_NAME not in df.columns:  # needed for deployment code
-        df = _calculate_charge(df, mol_col_name)
+        df = _calculate_charge(df, mol_col_name, include_charged)
 
     if SPIN_COL_NAME not in df.columns:  # needed for deployment code
         df = _calculate_spin(df, mol_col_name)
@@ -125,30 +134,32 @@ def _check_columns(df: pd.DataFrame, mol_col_name: str, id_col_name: str):
     logging.info(f"ID column is '{id_col_name}'")
 
 
-def _calculate_charge(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
+def _calculate_charge(df: pd.DataFrame, mol_col_name: str, include_charged: bool) -> pd.DataFrame:
     """Calculate charge of molecules.
 
     Parameters
     ----------
     df: pd.DataFrame
         DataFrame containing molecules.
+    mol_col_name: str
+        Name of the column containing the RDKit.Mol objects OR binary strings.
+    include_charged: bool
+        If False, filters out charged molecules.
 
     Returns
     -------
         DataFrame with charge column.
     """
     df[CHARGE_COL_NAME] = df[mol_col_name].apply(lambda x: int(Chem.GetFormalCharge(x)))
-    if all(df[CHARGE_COL_NAME] != 0):
-        logging.error(
-            # raise ValueError(
-            "All molecules are charged. StrainRelief only calculates ligand strain for neutral "
-            "molecules."
-        )
-    elif any(df[CHARGE_COL_NAME] != 0):
-        logging.info(
-            f"Dataset contains {len(df[df[CHARGE_COL_NAME] != 0])} charged molecules. Ligand "
-            "strains will not be calculated for these."
-        )
+    logging.info(f"Dataset contains {len(df[df[CHARGE_COL_NAME] != 0])} charged molecules.")
+
+    if not include_charged:
+        df = df[df[CHARGE_COL_NAME] == 0]
+        if len(df) == 0:
+            logging.error("No neutral molecules found after charge filtering.")
+        else:
+            logging.info(f"Dataset contains {len(df)} neutral molecules after charge filtering.")
+
     return df
 
 

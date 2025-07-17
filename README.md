@@ -90,6 +90,7 @@ This is the script as used for most calculations in the StrainRelief paper. MACE
 strain-relief \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
     io.output.parquet_path=data/example_ligboundconf_output.parquet \
+    io.input.include_charged=False \
     minimisation@global_min=mace \
     minimisation@local_min=mace \
     local_min.fmax=0.50 \
@@ -113,6 +114,7 @@ The hydra config is set up to allow additional kwargs to be passed to these func
 - `conformers.numConfs`
 - `global_min.maxIters`/`local_min.maxIters`
 - `global_min.fmax`/`local_min.maxIters`
+- `io.input.include_charged`
 - `hydra.verbose`
 - `seed`
 
