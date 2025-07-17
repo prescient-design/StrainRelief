@@ -244,9 +244,9 @@ def _process_molecule_data(
 
 def save_parquet(
     input_df: pd.DataFrame,
-    docked_mols: dict,
-    local_min_mols: dict,
-    global_min_mols: dict,
+    docked_mols: dict[str:dict],
+    local_min_mols: dict[str:dict],
+    global_min_mols: dict[str:dict],
     threshold: float,
     parquet_path: str,
     id_col_name: str | None = None,
@@ -258,12 +258,12 @@ def save_parquet(
     ----------
     input_df: pd.DataFrame
         Input DataFrame containing the StrainRelief's original input.
-    docked_mols: dict
-        Dictionary containing the poses of docked molecules.
-    local_min_mols: dict
-        Dictionary containing the poses of locally minimised molecules using strain_relief.
-    global_min_mols: dict
-        Dictionary containing the poses of globally minimised molecules using strain_relief.
+    docked_mols: dict[str: dict]
+        Nested dictionary containing the poses of docked molecules.
+    local_min_mols: dict[str: dict]
+        Nested dictionary containing the poses of locally minimised molecules using strain_relief.
+    global_min_mols: dict[str: dict]
+        Nested dictionary containing the poses of globally minimised molecules using strain_relief.
     threshold: float
         Threshold for the ligand strain filter.
     parquet_path: str
@@ -288,8 +288,8 @@ def save_parquet(
         dicts.append(
             _process_molecule_data(
                 mol_id,
-                local_min_mols[mol_id],
-                global_min_mols[mol_id],
+                local_min_mols[mol_id][MOL_KEY],
+                global_min_mols[mol_id][MOL_KEY],
                 threshold,
             )
         )
