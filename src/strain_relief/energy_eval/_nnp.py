@@ -3,16 +3,21 @@ from typing import Literal
 
 import ase
 from loguru import logger as logging
-from rdkit import Chem
 
 from strain_relief.calculators import CALCULATORS_DICT
-from strain_relief.constants import EV_TO_KCAL_PER_MOL, HARTREE_TO_KCAL_PER_MOL
+from strain_relief.constants import (
+    CHARGE_KEY,
+    EV_TO_KCAL_PER_MOL,
+    HARTREE_TO_KCAL_PER_MOL,
+    MOL_KEY,
+    SPIN_KEY,
+)
 from strain_relief.io import rdkit_to_ase
 from strain_relief.io.utils_s3 import copy_from_s3
 
 
 def NNP_energy(
-    mols: dict[str : Chem.Mol],
+    mols: dict[str:dict],
     method: Literal["MACE", "eSEN"],
     calculator_kwargs: dict,
     model_paths: str,
@@ -22,7 +27,7 @@ def NNP_energy(
 
     Parameters
     ----------
-    mols : dict[str:Chem.Mol]
+    mols : dict[str:dict]
         A dictionary of molecules.
     method : Literal["MACE", "eSEN"]
         The NNP to use for energy calculation.
@@ -69,13 +74,13 @@ def NNP_energy(
 
     # Calculate energies for each molecule
     mol_energies = {}
-    for id, mol in mols.items():
-        mol_energies[id] = _NNP_energy(mol, id, calculator, conversion_factor)
+    for id, mol_properties in mols.items():
+        mol_energies[id] = _NNP_energy(mol_properties, id, calculator, conversion_factor)
     return mol_energies
 
 
 def _NNP_energy(
-    mol: Chem.Mol,
+    mol_properties: dict,
     id: str,
     calculator: ase.calculators,
     conversion_factor: float,
@@ -84,8 +89,8 @@ def _NNP_energy(
 
     Parameters
     ----------
-    mol : Chem.Mol
-        A molecule.
+    mol_properties : dict
+        Dict of molecule and it's properties.
     id : str
         ID of the molecule. Used for logging
     calculator : ase.calculators
@@ -102,8 +107,15 @@ def _NNP_energy(
             "conf_id": energy
         }
     """
+    mol, charge, spin = (
+        mol_properties[MOL_KEY],
+        mol_properties[CHARGE_KEY],
+        mol_properties[SPIN_KEY],
+    )
+
     confs_and_ids = rdkit_to_ase(mol)
     for _, atoms in confs_and_ids:
+        atoms.info = {"charge": charge, "spin": spin}
         atoms.calc = calculator
     conf_energies = {
         conf_id: atoms.get_potential_energy() * conversion_factor

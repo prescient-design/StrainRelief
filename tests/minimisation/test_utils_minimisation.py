@@ -3,6 +3,7 @@ import pytest
 from mace.calculators import MACECalculator
 from rdkit import Chem
 from strain_relief.calculators import RDKitMMFFCalculator
+from strain_relief.constants import MOL_KEY
 from strain_relief.io import rdkit_to_ase
 from strain_relief.minimisation.utils_minimisation import (
     _method_min,
@@ -14,7 +15,7 @@ from strain_relief.minimisation.utils_minimisation import (
 
 @pytest.mark.gpu
 @pytest.mark.parametrize("calculator_fixture", ["mace_calculator", "esen_calculator"])
-def test_method_min_nnp(mols: dict[str : Chem.Mol], calculator_fixture: str, request):
+def test_method_min_nnp(mols: dict[str:dict], calculator_fixture: str, request):
     calculator = request.getfixturevalue(calculator_fixture)
     energies, mols = method_min(
         mols,
@@ -26,7 +27,9 @@ def test_method_min_nnp(mols: dict[str : Chem.Mol], calculator_fixture: str, req
     )
     # Conformers will not have been minimised in 1 iteration and so will be removed.
     assert all([energy == {} for energy in energies.values()])
-    assert all([mol.GetNumConformers() == 0 for mol in mols.values()])
+    assert all(
+        [mol_properties[MOL_KEY].GetNumConformers() == 0 for mol_properties in mols.values()]
+    )
 
 
 @pytest.mark.parametrize("fixture", ["mols", "mols_wo_bonds"])
@@ -46,7 +49,9 @@ def test_method_min_mmff(request, fixture: dict[str : Chem.Mol], force_field: st
     )
     # Conformers will not have been minimised in 1 iteration and so will be removed.
     assert all([energy == {} for energy in energies.values()])
-    assert all([mol.GetNumConformers() == 0 for mol in mols.values()])
+    assert all(
+        [mol_properties[MOL_KEY].GetNumConformers() == 0 for mol_properties in mols.values()]
+    )
 
 
 @pytest.mark.gpu
@@ -64,7 +69,7 @@ def test__method_min_nnp(mol_w_confs: Chem.Mol, calculator_fixture: str, request
     )
     # Conformers will not have been minimised in 1 iteration and so will be removed.
     assert energies == {}
-    assert mol.GetNumConformers() == 0
+    assert mol[MOL_KEY].GetNumConformers() == 0
 
 
 @pytest.mark.parametrize("maxIts", [1, 1000])
@@ -82,7 +87,7 @@ def test__method_min_mmff(mol_w_confs: Chem.Mol, maxIts: int, force_field: str):
         fexit=250,
         conversion_factor=1,
     )
-    assert mol.GetNumConformers() == len(energies)
+    assert mol[MOL_KEY].GetNumConformers() == len(energies)
 
 
 @pytest.mark.parametrize(
@@ -92,7 +97,7 @@ def test__method_min_mmff(mol_w_confs: Chem.Mol, maxIts: int, force_field: str):
 def test_remove_non_converged(
     mol_w_confs: Chem.Mol, results: list[tuple[int, float]], expected: list[tuple[int, float]]
 ):
-    mol = mol_w_confs
+    mol = mol_w_confs[MOL_KEY]
     results = remove_non_converged(mol, "id", results)
 
     assert mol.GetNumConformers() == len(results)
@@ -115,6 +120,6 @@ def test_run_minimisation(
     calculator = MACECalculator(
         model_paths=str(mace_model_path), device="cuda", default_dtype="float32", fmax=fmax
     )
-    [(_, conf)] = rdkit_to_ase(mol)
+    [(_, conf)] = rdkit_to_ase(mol[MOL_KEY])
     _, converged, _ = run_minimisation(conf, calculator, maxIters, fmax, fexit)
     assert converged == expected

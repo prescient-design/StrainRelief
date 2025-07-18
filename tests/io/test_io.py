@@ -4,9 +4,10 @@ import pandas as pd
 import pytest
 from rdkit import Chem
 from strain_relief import test_dir
-from strain_relief.constants import CHARGE_COL_NAME
+from strain_relief.constants import CHARGE_COL_NAME, SPIN_COL_NAME
 from strain_relief.io._io import (
     _calculate_charge,
+    _calculate_spin,
     load_parquet,
     to_mols_dict,
 )
@@ -26,14 +27,20 @@ def test_load_parquet(parquet_path: Path, id_col_name: str | None):
 
 def test_calculate_charge():
     df = pd.DataFrame({"mol": [Chem.MolFromSmiles("C"), Chem.MolFromSmiles("C[O-]")]})
-    df = _calculate_charge(df, "mol")
+    df = _calculate_charge(df, "mol", True)
     assert df[CHARGE_COL_NAME].to_list() == [0, -1]
+
+
+def test_calculate_spin():
+    df = pd.DataFrame({"mol": [Chem.MolFromSmiles("CC"), Chem.MolFromSmiles("C[CH]")]})
+    df = _calculate_spin(df, "mol")
+    assert df[SPIN_COL_NAME].to_list() == [1, 3]
 
 
 def test_to_mols_dict():
     df = pd.DataFrame({"mol": [Chem.MolFromSmiles("C"), Chem.MolFromSmiles("C[O-]")], "id": [1, 2]})
-    df = _calculate_charge(df, "mol")
-    mols = to_mols_dict(df, "mol", "id")
+    df = _calculate_charge(df, "mol", False)
+    mols = to_mols_dict(df, "", "mol", "id", False)
     assert len(mols) == 1
 
 

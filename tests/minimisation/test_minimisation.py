@@ -1,6 +1,6 @@
 import pytest
 from rdkit import Chem
-from strain_relief.constants import ENERGY_PROPERTY_NAME
+from strain_relief.constants import ENERGY_PROPERTY_NAME, MOL_KEY
 from strain_relief.minimisation import minimise_conformers
 
 
@@ -44,7 +44,8 @@ def test_minimise_conformers(
         result = minimise_conformers(mols, method, **kwargs)
         assert result is not None
         assert isinstance(result, dict)
-        assert isinstance(result[smile], Chem.Mol)
+        assert isinstance(result[smile], dict)
+        assert isinstance(result[smile][MOL_KEY], Chem.Mol)
 
-        for conf in result[smile].GetConformers():
+        for conf in result[smile][MOL_KEY].GetConformers():
             assert conf.HasProp(ENERGY_PROPERTY_NAME)

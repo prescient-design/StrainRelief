@@ -50,13 +50,14 @@ class RDKitMMFFCalculator(Calculator):
             The system changes to calculate, by default all_changes
         """
         Calculator.calculate(self, atoms, properties, system_changes)
+        charge = atoms.info.get("charge", 0)
 
         mol = ase_to_rdkit([(0, atoms)])
 
         # Determine bonds for each new molecule. Bond information remains constant during MD.
         new_smiles = Chem.MolToSmiles(mol)
         if new_smiles != self.smiles:
-            rdDetermineBonds.DetermineBonds(mol)
+            rdDetermineBonds.DetermineBonds(mol, charge=charge)
             self.bond_info = [
                 (bond.GetBeginAtomIdx(), bond.GetEndAtomIdx(), bond.GetBondType())
                 for bond in mol.GetBonds()

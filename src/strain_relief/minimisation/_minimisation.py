@@ -4,20 +4,20 @@ from typing import Literal
 from loguru import logger as logging
 from rdkit import Chem
 
-from strain_relief.constants import ENERGY_PROPERTY_NAME
+from strain_relief.constants import ENERGY_PROPERTY_NAME, MOL_KEY
 from strain_relief.minimisation import MMFF94_min, NNP_min
 
 METHODS_DICT = {"MACE": NNP_min, "eSEN": NNP_min, "MMFF94": MMFF94_min, "MMFF94s": MMFF94_min}
 
 
 def minimise_conformers(
-    mols: dict[str : Chem.Mol], method: Literal["MACE", "eSEN", "MMFF94s", "MMFF94"], **kwargs
+    mols: dict[str:dict], method: Literal["MACE", "eSEN", "MMFF94s", "MMFF94"], **kwargs
 ) -> dict[str : Chem.Mol]:
     """Minimise all conformers of all molecules using a force field.
 
     Parameters
     ----------
-    mols : dict[str:Chem.Mol]
+    mols : dict[str:dict]
         Dictionary of molecules to minimise.
     method : Literal["MACE", "eSEN", "MMFF94s", "MMFF94"]
         Method to use for minimisation.
@@ -26,7 +26,7 @@ def minimise_conformers(
 
     Returns
     -------
-    mols : dict[str:Chem.Mol]
+    mols : dict[str:dict]
         List of molecules with the conformers minimised.
     """
     start = timer()
@@ -40,16 +40,20 @@ def minimise_conformers(
     energies, mols = min_method(mols, method, **kwargs)
 
     # Store the predicted energies as a property on each conformer
-    for id, mol in mols.items():
+    for id, mol_properties in mols.items():
         [
-            mol.GetConformer(conf_id).SetDoubleProp(ENERGY_PROPERTY_NAME, energy)
+            mol_properties[MOL_KEY]
+            .GetConformer(conf_id)
+            .SetDoubleProp(ENERGY_PROPERTY_NAME, energy)
             for conf_id, energy in energies[id].items()
         ]
     logging.info(
         f"Predicted energies stored as '{ENERGY_PROPERTY_NAME}' property on each conformer"
     )
 
-    no_confs = sum([mol.GetNumConformers() == 0 for mol in mols.values()])
+    no_confs = sum(
+        [mol_properties[MOL_KEY].GetNumConformers() == 0 for mol_properties in mols.values()]
+    )
     if no_confs > 0:
         logging.warning(f"{no_confs} molecules have 0 converged confomers after minimisation.")
 
