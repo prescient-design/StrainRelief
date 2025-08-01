@@ -3,7 +3,7 @@ from typing import Literal
 from mace.calculators import MACECalculator
 
 
-def esen_calculator(
+def fairchem_calculator(
     model_paths: str,
     device: str = Literal["cpu", "cuda"],
     default_dtype: Literal["float32", "float64"] = "float32",
@@ -14,7 +14,7 @@ def esen_calculator(
         from fairchem.core.units.mlip_unit import load_predict_unit
     except ImportError:
         raise ImportError(
-            "fairchem is required for esen_calculator(). "
+            "fairchem is required for fairchem_calculator(). "
             "Install with: pip install --force-reinstall e3nn==0.5 fairchem-core"
         )
 

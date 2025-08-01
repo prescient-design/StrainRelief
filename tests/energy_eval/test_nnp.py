@@ -57,7 +57,7 @@ def test_nnp_energy(
 @pytest.mark.gpu
 @pytest.mark.parametrize(
     "calculator, energies",
-    [("esen_calculator", "esen_energies"), ("mace_calculator", "mace_energies")],
+    [("fairchem_calculator", "esen_energies"), ("mace_calculator", "mace_energies")],
 )
 def test__NNP_energy(
     mol_wo_bonds_w_confs: dict, calculator: ase.calculators, energies: list[float], request

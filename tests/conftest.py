@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 from strain_relief import test_dir
-from strain_relief.calculators import esen_calculator as eSEN_calculator
+from strain_relief.calculators import fairchem_calculator as FairChem_calculator
 from strain_relief.calculators import mace_calculator as MACE_calculator
 from strain_relief.constants import EV_TO_KCAL_PER_MOL, MOL_KEY
 from strain_relief.io import load_parquet, to_mols_dict
@@ -126,6 +126,6 @@ def mace_calculator(mace_model_path):
 
 
 @pytest.fixture(scope="session")
-def esen_calculator(esen_model_path):
+def fairchem_calculator(esen_model_path):
     """The eSEN ASE calculator."""
-    return eSEN_calculator(model_paths=esen_model_path, device="cuda", default_dtype="float32")
+    return FairChem_calculator(model_paths=esen_model_path, device="cuda", default_dtype="float32")

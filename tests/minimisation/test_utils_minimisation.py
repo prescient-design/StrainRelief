@@ -14,7 +14,7 @@ from strain_relief.minimisation.utils_minimisation import (
 
 
 @pytest.mark.gpu
-@pytest.mark.parametrize("calculator_fixture", ["mace_calculator", "esen_calculator"])
+@pytest.mark.parametrize("calculator_fixture", ["mace_calculator", "fairchem_calculator"])
 def test_method_min_nnp(mols: dict[str:dict], calculator_fixture: str, request):
     calculator = request.getfixturevalue(calculator_fixture)
     energies, mols = method_min(
@@ -55,7 +55,7 @@ def test_method_min_mmff(request, fixture: dict[str : Chem.Mol], force_field: st
 
 
 @pytest.mark.gpu
-@pytest.mark.parametrize("calculator_fixture", ["mace_calculator", "esen_calculator"])
+@pytest.mark.parametrize("calculator_fixture", ["mace_calculator", "fairchem_calculator"])
 def test__method_min_nnp(mol_w_confs: Chem.Mol, calculator_fixture: str, request):
     calculator = request.getfixturevalue(calculator_fixture)
     energies, mol = _method_min(
