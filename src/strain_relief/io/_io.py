@@ -17,9 +17,9 @@ from strain_relief.constants import (
 
 def load_parquet(
     parquet_path: str,
+    include_charged: bool,
     id_col_name: str | None = None,
     mol_col_name: str | None = None,
-    include_charged: bool = True,
 ) -> pd.DataFrame:
     """Load a parquet file containing molecules.
 
@@ -27,12 +27,12 @@ def load_parquet(
     ----------
     parquet_path: str
         Path to the parquet file containing the molecules.
+    include_charged: bool
+        [PLACEHOLDER] Needed for simplicity of arg parsing.
     id_col_name: str
         Name of the column containing the molecule IDs.
     mol_col_name: str
         Name of the column containing the RDKit.Mol objects OR binary string.
-    include_charged: bool
-        If False, filters out charged molecules.
 
     Returns
     -------
@@ -49,9 +49,6 @@ def load_parquet(
     logging.info(f"Loaded {len(df)} posed molecules")
 
     _check_columns(df, mol_col_name, id_col_name)
-    df = _calculate_charge(df, mol_col_name, include_charged)
-    df = _calculate_spin(df, mol_col_name)
-
     return df
 
 
@@ -94,11 +91,16 @@ def to_mols_dict(
     if mol_col_name not in df.columns:  # needed for deployment code
         df[mol_col_name] = df["mol_bytes"].apply(Chem.Mol)
 
-    if CHARGE_COL_NAME not in df.columns:  # needed for deployment code
+    if CHARGE_COL_NAME not in df.columns:
         df = _calculate_charge(df, mol_col_name, include_charged)
 
-    if SPIN_COL_NAME not in df.columns:  # needed for deployment code
+    if SPIN_COL_NAME not in df.columns:
         df = _calculate_spin(df, mol_col_name)
+
+    for _, r in df.iterrows():
+        logging.debug(
+            f"Mol ID: {r[id_col_name]}, Charge: {r[CHARGE_COL_NAME]}, Spin: {r[SPIN_COL_NAME]}"
+        )
 
     return {
         r[id_col_name]: {
