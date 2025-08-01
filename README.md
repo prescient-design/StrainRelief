@@ -9,8 +9,8 @@ StrainRelief calculates the ligand strain of uncharged docked poses and has a su
 ![Strain Relief Logo](assets/strain_relief_logo.png)
 
 ## Update: v0.4
-- Inclusion of NNP ASE calcualtors is more modular, making it easier to add your own.
-- Meta's FairChem [e-SEN](https://arxiv.org/html/2502.12147v1) NNP from [OMol25](https://arxiv.org/abs/2505.08762) has been added giving a significant performance boost! Request access [here](https://huggingface.co/facebook/OMol25).
+- Inclusion of NNP ASE calculators is more modular, making it easier to add your own.
+- Meta's FairChem [e-SEN](https://arxiv.org/html/2502.12147v1) NNP from [OMol25](https://arxiv.org/abs/2505.08762) has been added giving a significant performance boost! Request access to the model weights [here](https://huggingface.co/facebook/OMol25).
 - Improved hydra configurations mean `model.model_paths` now only has to be specified once.
 - Our [paper](https://pubs.acs.org/doi/10.1021/acs.jcim.5c00586) has been published in the *Journal of Chemical Information and Modelling*!
 - We have written a RAG [chatbot](https://strain-relief.streamlit.app/) to answer questions about the code, paper and any of its references.
@@ -144,17 +144,6 @@ If you use StrainRelief or adapt the StrainRelief code for any purpose, please c
       archivePrefix={arXiv},
       primaryClass={physics.chem-ph},
       url={https://arxiv.org/abs/2503.13352},
-}
-```
-
-```bibtex
-@article{batatia2022mace,
-  title={MACE: Higher order equivariant message passing neural networks for fast and accurate force fields},
-  author={Batatia, Ilyes and Kovacs, David P and Simm, Gregor and Ortner, Christoph and Cs{\'a}nyi, G{\'a}bor},
-  journal={Advances in neural information processing systems},
-  volume={35},
-  pages={11423--11436},
-  year={2022}
 }
 ```
 
