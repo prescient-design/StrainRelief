@@ -105,8 +105,8 @@ def to_mols_dict(
     return {
         r[id_col_name]: {
             MOL_KEY: r[mol_col_name],
-            CHARGE_KEY: r[CHARGE_COL_NAME],
-            SPIN_KEY: r[SPIN_COL_NAME],
+            CHARGE_KEY: int(r[CHARGE_COL_NAME]),
+            SPIN_KEY: int(r[SPIN_COL_NAME]),
         }
         for _, r in df.iterrows()
     }
