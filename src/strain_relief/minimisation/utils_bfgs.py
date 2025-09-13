@@ -1,5 +1,4 @@
-from math import sqrt
-
+import numpy as np
 from ase.optimize import BFGS
 from loguru import logger as logging
 
@@ -79,24 +78,42 @@ class StrainReliefBFGS(BFGS):
         self.max_steps = self.nsteps + steps
 
         # compute the initial step
-        forces = self.optimizable.get_forces()
-        self.n_fmax = sqrt((forces**2).sum(axis=1).max())
+        self.gradient = self.optimizable.get_gradient()
+        self.n_fmax = float(np.linalg.norm(self.gradient.reshape(-1, 3), axis=1).max())
 
         # check exit condition
         is_exit = self.exit()
-        yield self.converged(forces=forces)
+        yield self.converged(self.gradient)
 
         while not is_exit:
             # compute the next step
             self.step()
             self.nsteps += 1
 
-            forces = self.optimizable.get_forces()
-            self.n_fmax = sqrt((forces**2).sum(axis=1).max())
+            self.gradient = self.optimizable.get_gradient()
+            self.n_fmax = float(np.linalg.norm(self.gradient.reshape(-1, 3), axis=1).max())
 
             # check exit conditions
             is_exit = self.exit()
-            yield self.converged(forces=forces)
+            yield self.converged()
+
+    def converged(self, gradient=None):
+        """Did the optimization converge?
+
+        Parameters
+        ----------
+        gradient : np.ndarray, optional
+            The gradient to check for convergence, by default None (will use the current gradient).
+
+        Returns
+        -------
+        bool
+            True if the forces on atoms are converged.
+        """
+        if gradient is None:
+            gradient = self.gradient
+        assert gradient.ndim == 1
+        return self.optimizable.converged(gradient, self.fmax)
 
     def exit(self):
         """Check exit conditions.
@@ -112,7 +129,7 @@ class StrainReliefBFGS(BFGS):
         return False
 
     def log(self):
-        e = self.optimizable.get_potential_energy()
+        e = self.optimizable.get_value()
         name = self.__class__.__name__
 
         if self.nsteps >= self.max_steps:
