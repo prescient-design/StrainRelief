@@ -34,9 +34,6 @@ select = [
     "UP", # pyupgrade
 ]
 
-[tool.ruff.lint.isort]
-known-first-party = ["litlmol"]
-
 [tool.ruff]
 line-length = 100
 
