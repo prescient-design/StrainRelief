@@ -1,8 +1,7 @@
 import numpy as np
 import pytest
-from mace.calculators import MACECalculator
 from rdkit import Chem
-from strain_relief.calculators import RDKitMMFFCalculator
+from strain_relief.calculators import RDKitMMFFCalculator, mace_calculator
 from strain_relief.io import rdkit_to_ase
 from strain_relief.minimisation.utils_minimisation import (
     _method_min,
@@ -112,7 +111,7 @@ def test_remove_non_converged(
 def test_run_minimisation(
     mol: Chem.Mol, mace_model_path: str, maxIters: int, fmax: float, fexit: float, expected: int
 ):
-    calculator = MACECalculator(
+    calculator = mace_calculator(
         model_paths=str(mace_model_path), device="cuda", default_dtype="float32", fmax=fmax
     )
     [(_, conf)] = rdkit_to_ase(mol)

@@ -57,7 +57,7 @@ The protocol consists of 5 steps:
 **N.B.** energies returned are in kcal/mol.
 
 ## Usage
-Choose a minimisation and energy evalation force field from `mmff94`, `mmff94s`, `mace`, `esen`.
+Choose a minimisation and energy evalation force field from `mmff94`, `mmff94s`, `mace`, `fairchem`.
 
 The calculator works best when the same force field is used for both methods. If this is the case, `energy_eval` does not need to be specified.
 
@@ -128,7 +128,7 @@ Logging is set to the `INFO` level by default which logs only aggregate informat
 - `pytest tests/ -m "not gpu"` - excludes all MACE tests
 - `pytest tests/ -m "not integration"` - runs all unit tests
 
-**NB** Tests requiring the eSEN model will be skipped if an eSEN model is not located in `tests/models/eSEN.pt`.
+**NB** Tests requiring a FAIRChem model will be skipped if the OMol25 eSEN small conserving model is not located in `tests/models/eSEN.pt`. This model can be downloaded [here](https://huggingface.co/facebook/OMol25).
 
 ## Citations
 If you use StrainRelief or adapt the StrainRelief code for any purpose, please cite:

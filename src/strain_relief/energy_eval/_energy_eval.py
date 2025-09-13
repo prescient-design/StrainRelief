@@ -9,14 +9,14 @@ from strain_relief.energy_eval import MMFF94_energy, NNP_energy
 
 METHODS_DICT = {
     "MACE": NNP_energy,
-    "eSEN": NNP_energy,
+    "FAIRChem": NNP_energy,
     "MMFF94": MMFF94_energy,
     "MMFF94s": MMFF94_energy,
 }
 
 
 def predict_energy(
-    mols: dict[str : Chem.Mol], method: Literal["MACE", "eSEN", "MMFF94", "MMFF94s"], **kwargs
+    mols: dict[str : Chem.Mol], method: Literal["MACE", "FAIRChem", "MMFF94", "MMFF94s"], **kwargs
 ):
     """Predict the energy of all conformers of molecules in mols using a specified method.
 
@@ -24,7 +24,7 @@ def predict_energy(
     ----------
     mols : dict[str:Chem.Mol]
         A dictionary of molecules.
-    method : Literal["MACE", "eSEN", "MMFF94", "MMFF94s"]
+    method : Literal["MACE", "FAIRChem", "MMFF94", "MMFF94s"]
         The method to use for energy prediction.
     **kwargs
         Additional keyword arguments to pass to the energy prediction method.

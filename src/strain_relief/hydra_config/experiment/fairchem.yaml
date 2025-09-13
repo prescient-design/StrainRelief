@@ -1,9 +1,9 @@
 # @package _global_
 
 defaults:
-  - override /minimisation@local_min: esen
-  - override /minimisation@global_min: esen
-  - override /model: esen
+  - override /minimisation@local_min: fairchem
+  - override /minimisation@global_min: fairchem
+  - override /model: fairchem
 
 conformers:
   numConfs: 20
