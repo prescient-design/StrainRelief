@@ -26,6 +26,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.in
+        pip install -r requirements-dev.in
         pip install -e .
         pre-commit install
     - name: Lint with pre-commit
