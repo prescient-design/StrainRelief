@@ -2,7 +2,7 @@
 name = "strain-relief"
 description = "Calculates ligand strain of small molecules from their docked poses."
 authors = [{name = "Ewan Wallace", email = "erw@wallace2.com"}]
-license = "Apache 2.0"
+license = {text = "Apache 2.0"}
 dynamic = ["version", "readme", "dependencies", "optional-dependencies"]
 requires-python = ">=3.11"
 
