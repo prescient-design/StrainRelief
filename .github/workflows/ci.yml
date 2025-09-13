@@ -36,10 +36,6 @@ jobs:
       run: |
         python -m pip install pytest
         python -m pytest tests -m "not gpu"
-    - name: Clean workspace run
-      run: |
-        git clean -xfd
-        rm -rf .egg-info src/.egg-info
     - name: Build publishable package
       run: |
         python -m pip install -U build twine
