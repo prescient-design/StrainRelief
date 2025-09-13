@@ -1,7 +1,7 @@
 import numpy as np
 from ase.calculators.calculator import Calculator, all_changes
 from rdkit import Chem
-from rdkit.Chem import rdDetermineBonds, rdForceFieldHelpers
+from rdkit.Chem import AllChem, rdDetermineBonds
 
 from strain_relief.constants import KCAL_PER_MOL_TO_EV
 from strain_relief.io import ase_to_rdkit
@@ -68,10 +68,8 @@ class RDKitMMFFCalculator(Calculator):
         Chem.SanitizeMol(mol)
 
         # Calculate MMFF energy
-        mp = rdForceFieldHelpers.MMFFGetMoleculeProperties(mol, **self.MMFFGetMoleculeProperties)
-        ff = rdForceFieldHelpers.MMFFGetMoleculeForceField(
-            mol, mp, **self.MMFFGetMoleculeForceField
-        )
+        mp = AllChem.MMFFGetMoleculeProperties(mol, **self.MMFFGetMoleculeProperties)
+        ff = AllChem.MMFFGetMoleculeForceField(mol, mp, **self.MMFFGetMoleculeForceField)
         energy = ff.CalcEnergy()
         grad = ff.CalcGrad()
 

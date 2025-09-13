@@ -34,12 +34,10 @@ known-first-party = ["litlmol"]
 [tool.ruff]
 line-length = 100
 
-
 [tool.setuptools_scm]
 local_scheme = "node-and-date"
 search_parent_directories = true
 version_scheme = "no-guess-dev"
-fallback_version = "0.0.1"
 
 [project.scripts]
 strain-relief = "strain_relief.cmdline:strain_relief"

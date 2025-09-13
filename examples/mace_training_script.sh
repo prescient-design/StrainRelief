@@ -42,4 +42,3 @@ srun python ../scripts/run_train.py \
     --save_cpu \
     --distributed \
     --energy_key='energy' \
-

@@ -25,12 +25,14 @@ jobs:
         python-version: "3.11"
     - name: Install dependencies
       run: |
-        pip install -r requirements.in
-        pip install -e .
-        pre-commit install
+        python -m pip install -U pip
+        python -m pip install -e .
     - name: Lint with pre-commit
       run: |
-        pre-commit run --files ./**/*
+        python -m pip install pre-commit
+        python -m pre_commit install
+        python -m pre_commit run --all-files
     - name: CPU Unit test
       run: |
-        pytest test -m "not gpu"
+        python -m pip install pytest
+        python -m pytest tests -m "not gpu"
