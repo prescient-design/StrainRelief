@@ -1,10 +1,16 @@
 [project]
-name = "prescient-strain-relief"
-description = "Calculates torsional strain of small molecules from their docked poses."
+name = "strain-relief"
+description = "Calculates ligand strain of small molecules from their docked poses."
 authors = [{name = "Ewan Wallace", email = "erw@wallace2.com"}]
-license = {text = "Apache 2.0"}
 dynamic = ["version", "readme", "dependencies", "optional-dependencies"]
 requires-python = ">=3.11"
+
+[project.urls]
+Homepage = "https://github.com/prescient-design/StrainRelief"
+Issues = "https://github.com/prescient-design/StrainRelief/issues"
+
+[tools.setuptools]
+license-files = ["LICENSE"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

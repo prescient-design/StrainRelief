@@ -1,3 +1,5 @@
 pytest
 pytest-cov
-pre_commit
+pre-commit
+torch
+mace-torch>=0.3.13

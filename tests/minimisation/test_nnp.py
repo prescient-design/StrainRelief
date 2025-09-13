@@ -6,7 +6,7 @@ from strain_relief.minimisation._nnp import NNP_min
 @pytest.mark.gpu
 @pytest.mark.parametrize(
     "method, model_path",
-    [("MACE", "mace_model_path"), ("eSEN", "esen_model_path")],
+    [("MACE", "mace_model_path"), ("FAIRChem", "esen_model_path")],
 )
 def test_NNP_min(mols: dict[str, Chem.Mol], method: str, model_path: str, request):
     """Test minimisation with NNPs."""

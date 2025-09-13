@@ -1,5 +1,0 @@
-defaults:
-  - ../model/esen@_here_
-
-method: eSEN
-model_paths: ${model.model_paths}

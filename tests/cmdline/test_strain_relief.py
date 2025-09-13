@@ -57,10 +57,10 @@ def test_strain_relief_w_esen(esen_model_path: str):
             overrides=[
                 f"io.input.parquet_path={test_dir}/data/target.parquet",
                 "io.input.id_col_name=SMILES",
-                "minimisation@local_min=esen",
-                "minimisation@global_min=esen",
+                "minimisation@local_min=fairchem",
+                "minimisation@global_min=fairchem",
                 "local_min.fmax=0.50",
-                "model=esen",
+                "model=fairchem",
                 f"local_min.model_paths={test_dir}/models/eSEN.pt",
                 f"global_min.model_paths={test_dir}/models/eSEN.pt",
                 f"model.model_paths={test_dir}/models/eSEN.pt",
