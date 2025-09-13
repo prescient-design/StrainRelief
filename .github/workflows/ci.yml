@@ -28,9 +28,9 @@ jobs:
         pip install -r requirements.in
         pip install -r requirements-dev.in
         pip install -e .
-        pre-commit install
     - name: Lint with pre-commit
       run: |
+        pre-commit install
         pre-commit run --files ./**/*
     - name: CPU Unit test
       run: |
