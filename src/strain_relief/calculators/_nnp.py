@@ -33,7 +33,7 @@ def mace_calculator(
     **kwargs,
 ):
     try:
-        from mace import MACECalculator
+        from mace.calculators import MACECalculator
     except ImportError:
         raise ImportError(
             "mace is required for mace_calculator(). "
