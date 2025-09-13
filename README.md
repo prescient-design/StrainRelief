@@ -39,7 +39,6 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 uv sync
 ```
 
-
 ## The Protocol
 
 The protocol used in StrainRelief is designed to be simple, fast and model agnostic - all that is needed to apply a new force field is to write an ASE calculator wrapper. Additionally you can use any MACE model, such as these from the [MACE-OFF23](https://github.com/ACEsuit/mace-off/tree/main/mace_off23) repository.
@@ -64,7 +63,7 @@ The calculator works best when the same force field is used for both methods. If
 See the example scripts in [examples](./examples/examples.sh) along with a [tutorial](./examples/tutorial.ipynb) to explain StrainRelief's output and some handy helper functions.
 
 This is the simplest and fastest implementation of StrainRelief using MMFF94s and a minimial example dataset.
-```
+```bash
 strain-relief \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
     io.output.parquet_path=data/example_ligboundconf_output.parquet \
@@ -74,7 +73,7 @@ strain-relief \
 ```
 
 This script demonstrates using different force fields for minimisation (MMFF94s) and energy evaluations (MACE).
-```
+```bash
 strain-relief \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
     io.output.parquet_path=data/example_ligboundconf_output.parquet \
@@ -86,7 +85,7 @@ strain-relief \
 ```
 
 This is the script as used for most calculations in the StrainRelief paper. MACE is used for minimisation (and energy evalutions implicitly). A looser convergence criteria is used for local minimisation. Note: a gpu is required by default to run calculations with MACE.
-```
+```bash
 strain-relief \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
     io.output.parquet_path=data/example_ligboundconf_output.parquet \
