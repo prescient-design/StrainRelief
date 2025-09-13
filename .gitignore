@@ -1,6 +1,7 @@
 notebooks/*
 models/*
 data/*
+**/*.egg-info/
 *.egg-info
 .DS_Store
 __pycache__/

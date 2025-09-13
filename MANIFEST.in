@@ -14,5 +14,8 @@ prune dist
 prune build
 prune .github
 
+recursive-exclude src *.egg-info
+recursive-exclude . *.egg-info
+
 # Strip common junk
 global-exclude *.py[cod] __pycache__ .DS_Store *~
