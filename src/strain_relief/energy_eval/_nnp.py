@@ -18,7 +18,7 @@ from strain_relief.io.utils_s3 import copy_from_s3
 
 def NNP_energy(
     mols: dict[str:dict],
-    method: Literal["MACE", "eSEN"],
+    method: Literal["MACE", "FAIRChem"],
     calculator_kwargs: dict,
     model_paths: str,
     energy_units: Literal["eV", "Hartrees", "kcal/mol"] = "eV",
@@ -29,13 +29,13 @@ def NNP_energy(
     ----------
     mols : dict[str:dict]
         A dictionary of molecules.
-    method : Literal["MACE", "eSEN"]
+    method : Literal["MACE", "FAIRChem"]
         The NNP to use for energy calculation.
     calculator_kwargs : dict
         Additional keyword arguments to pass to the NNP calculator.
         For example, for MACE, this should include `model_path`, `device` and `default_dtype`.
     model_paths : str
-        Path to the eSEN model to use for energy calculation.
+        Path to the NNP model to use for energy calculation.
     energy_units : Literal["eV", "Hartrees", "kcal/mol"]
         The units output from the energy calculation.
 

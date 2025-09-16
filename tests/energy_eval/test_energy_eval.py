@@ -46,7 +46,8 @@ def test_predict_energy(mols: dict[str, dict], method: str, expected_exception, 
 
 @pytest.mark.gpu
 @pytest.mark.parametrize(
-    "model_path_fixture,architecture", [("mace_model_path", "MACE"), ("esen_model_path", "eSEN")]
+    "model_path_fixture,architecture",
+    [("mace_model_path", "MACE"), ("esen_model_path", "FAIRChem")],
 )
 def test_predict_energy_nnp(
     mols: dict[str, dict], model_path_fixture: str, architecture: str, request

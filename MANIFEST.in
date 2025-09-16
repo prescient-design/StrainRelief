@@ -1,0 +1,21 @@
+include README.md
+include LICENSE
+include pyproject.toml
+include requirements.in
+include requirements-dev.in
+
+# Include images referenced by the README
+recursive-include assets *
+
+# Don’t ship built or metadata artifacts
+prune *.egg-info
+prune src/*.egg-info
+prune dist
+prune build
+prune .github
+
+recursive-exclude src *.egg-info
+recursive-exclude . *.egg-info
+
+# Strip common junk
+global-exclude *.py[cod] __pycache__ .DS_Store *~

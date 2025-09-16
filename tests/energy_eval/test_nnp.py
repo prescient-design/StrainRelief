@@ -8,7 +8,10 @@ from strain_relief.energy_eval._nnp import NNP_energy, _NNP_energy
 @pytest.mark.gpu
 @pytest.mark.parametrize(
     "method, model_path, energies",
-    [("eSEN", "esen_model_path", "esen_energies"), ("MACE", "mace_model_path", "mace_energies")],
+    [
+        ("FAIRChem", "esen_model_path", "esen_energies"),
+        ("MACE", "mace_model_path", "mace_energies"),
+    ],
 )
 def test_nnp_energy(
     mols_wo_bonds: dict[str, dict], method: str, model_path: str, energies: list[float], request

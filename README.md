@@ -19,7 +19,7 @@ StrainRelief calculates the ligand strain of uncharged docked poses and has a su
 
 From the root directory, run the following commands to install the package and its dependencies in editable mode:
 
-(`mace-torch==0.3.x` requires `e3nn==0.4.4` (only for training, not inference). `fairchem-core` requires `e3nn>=0.5`. So until `mace-torch==0.4` is released we will have to do this finicky way of installing [[GitHub issue](https://github.com/ACEsuit/mace/issues/555)])
+(`mace-torch==0.3.x` requires `e3nn==0.4.4` (only for training, not inference). `fairchem-core` requires `e3nn>=0.5`. So until `mace-torch==0.4` is released we will have to do this finicky way of installing ([GitHub issue](https://github.com/ACEsuit/mace/issues/555)).)
 
 ```bash
 mamba env create -f env.yml
@@ -39,7 +39,6 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 uv sync
 ```
 
-
 ## The Protocol
 
 The protocol used in StrainRelief is designed to be simple, fast and model agnostic - all that is needed to apply a new force field is to write an ASE calculator wrapper. Additionally you can use any MACE model, such as these from the [MACE-OFF23](https://github.com/ACEsuit/mace-off/tree/main/mace_off23) repository.
@@ -57,14 +56,14 @@ The protocol consists of 5 steps:
 **N.B.** energies returned are in kcal/mol.
 
 ## Usage
-Choose a minimisation and energy evalation force field from `mmff94`, `mmff94s`, `mace`, `esen`.
+Choose a minimisation and energy evalation force field from `mmff94`, `mmff94s`, `mace`, `fairchem`.
 
 The calculator works best when the same force field is used for both methods. If this is the case, `energy_eval` does not need to be specified.
 
 See the example scripts in [examples](./examples/examples.sh) along with a [tutorial](./examples/tutorial.ipynb) to explain StrainRelief's output and some handy helper functions.
 
 This is the simplest and fastest implementation of StrainRelief using MMFF94s and a minimial example dataset.
-```
+```bash
 strain-relief \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
     io.output.parquet_path=data/example_ligboundconf_output.parquet \
@@ -74,7 +73,7 @@ strain-relief \
 ```
 
 This script demonstrates using different force fields for minimisation (MMFF94s) and energy evaluations (MACE).
-```
+```bash
 strain-relief \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
     io.output.parquet_path=data/example_ligboundconf_output.parquet \
@@ -86,7 +85,7 @@ strain-relief \
 ```
 
 This is the script as used for most calculations in the StrainRelief paper. MACE is used for minimisation (and energy evalutions implicitly). A looser convergence criteria is used for local minimisation. Note: a gpu is required by default to run calculations with MACE.
-```
+```bash
 strain-relief \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
     io.output.parquet_path=data/example_ligboundconf_output.parquet \
@@ -130,7 +129,7 @@ Logging is set to the `INFO` level by default which logs only aggregate informat
 - `pytest tests/ -m "not gpu"` - excludes all MACE tests
 - `pytest tests/ -m "not integration"` - runs all unit tests
 
-**NB** Tests requiring the eSEN model will be skipped if an eSEN model is not located in `tests/models/eSEN.pt`.
+**NB** Tests requiring a FAIRChem model will be skipped if the OMol25 eSEN small conserving model is not located in `tests/models/eSEN.pt`. This model can be downloaded [here](https://huggingface.co/facebook/OMol25).
 
 ## Citations
 If you use StrainRelief or adapt the StrainRelief code for any purpose, please cite:

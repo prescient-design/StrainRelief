@@ -1,17 +1,20 @@
 [project]
-name = "prescient-strain-relief"
-description = "Calculates torsional strain of small molecules from their docked poses."
+name = "strain-relief"
+description = "Calculates ligand strain of small molecules from their docked poses."
 authors = [{name = "Ewan Wallace", email = "erw@wallace2.com"}]
-license = {text = "Apache 2.0"}
-dynamic = ["version", "readme", "dependencies", "optional-dependencies"]
+license = "Apache-2.0"
+dynamic = ["version", "dependencies", "optional-dependencies"]
 requires-python = ">=3.11"
+readme = {file = "README.md", content-type = "text/markdown"}
+
+[project.urls]
+Homepage = "https://github.com/prescient-design/StrainRelief"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.in"]}
-readme = {file = "README.md"}
 
 [tool.setuptools.dynamic.optional-dependencies]
 dev = {file = ["requirements-dev.in"]}
@@ -28,18 +31,13 @@ select = [
     "UP", # pyupgrade
 ]
 
-[tool.ruff.lint.isort]
-known-first-party = ["litlmol"]
-
 [tool.ruff]
 line-length = 100
-
 
 [tool.setuptools_scm]
 local_scheme = "node-and-date"
 search_parent_directories = true
 version_scheme = "no-guess-dev"
-fallback_version = "0.0.1"
 
 [project.scripts]
 strain-relief = "strain_relief.cmdline:strain_relief"

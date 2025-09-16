@@ -7,11 +7,11 @@ from rdkit import Chem
 from strain_relief.constants import ENERGY_PROPERTY_NAME, MOL_KEY
 from strain_relief.minimisation import MMFF94_min, NNP_min
 
-METHODS_DICT = {"MACE": NNP_min, "eSEN": NNP_min, "MMFF94": MMFF94_min, "MMFF94s": MMFF94_min}
+METHODS_DICT = {"MACE": NNP_min, "FAIRChem": NNP_min, "MMFF94": MMFF94_min, "MMFF94s": MMFF94_min}
 
 
 def minimise_conformers(
-    mols: dict[str:dict], method: Literal["MACE", "eSEN", "MMFF94s", "MMFF94"], **kwargs
+    mols: dict[str:dict], method: Literal["MACE", "FAIRChem", "MMFF94s", "MMFF94"], **kwargs
 ) -> dict[str : Chem.Mol]:
     """Minimise all conformers of all molecules using a force field.
 
@@ -19,7 +19,7 @@ def minimise_conformers(
     ----------
     mols : dict[str:dict]
         Dictionary of molecules to minimise.
-    method : Literal["MACE", "eSEN", "MMFF94s", "MMFF94"]
+    method : Literal["MACE", "FAIRChem", "MMFF94s", "MMFF94"]
         Method to use for minimisation.
     kwargs : dict
         Additional keyword arguments to pass to the minimisation function.

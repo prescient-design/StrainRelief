@@ -11,7 +11,7 @@ from strain_relief.minimisation.utils_minimisation import method_min
 
 def NNP_min(
     mols: dict[str:dict],
-    method: Literal["MACE", "eSEN"],
+    method: Literal["MACE", "FAIRChem"],
     calculator_kwargs: dict,
     model_paths: str,
     maxIters: int,
@@ -25,7 +25,7 @@ def NNP_min(
     ----------
     mols : dict[str:dict]
         Dictionary of molecules to minimise.
-    method : Literal["MACE", "eSEN"]
+    method : Literal["MACE", "FAIRChem"]
         The NNP to use for MD calculation.
     calculator_kwargs : dict
         Additional keyword arguments to pass to the NNP calculator.
