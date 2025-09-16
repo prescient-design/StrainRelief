@@ -2,6 +2,7 @@ import pytest
 from rdkit import Chem
 from strain_relief.constants import ENERGY_PROPERTY_NAME, MOL_KEY
 from strain_relief.energy_eval import predict_energy
+from strain_relief.types import MolsDict
 
 
 @pytest.mark.parametrize(
@@ -26,7 +27,7 @@ from strain_relief.energy_eval import predict_energy
         ("XXX", ValueError, {}),
     ],
 )
-def test_predict_energy(mols: dict[str, dict], method: str, expected_exception, kwargs: dict):
+def test_predict_energy(mols: MolsDict, method: str, expected_exception, kwargs: dict):
     mols = mols
     if expected_exception:
         with pytest.raises(expected_exception):
@@ -49,9 +50,7 @@ def test_predict_energy(mols: dict[str, dict], method: str, expected_exception, 
     "model_path_fixture,architecture",
     [("mace_model_path", "MACE"), ("esen_model_path", "FAIRChem")],
 )
-def test_predict_energy_nnp(
-    mols: dict[str, dict], model_path_fixture: str, architecture: str, request
-):
+def test_predict_energy_nnp(mols: MolsDict, model_path_fixture: str, architecture: str, request):
     model_path = request.getfixturevalue(model_path_fixture)
     kwargs = {
         "model_paths": str(model_path),

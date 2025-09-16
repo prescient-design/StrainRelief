@@ -20,9 +20,9 @@ def MMFF94_min(
         Dictionary of molecules to minimise.
     method : str
         [PLACEHOLDER] Needed for NNP_min compatibility.
-    MMFFGetMoleculeProperties: dict
+    MMFFGetMoleculeProperties: Dict
         Additional keyword arguments to pass to the MMFFGetMoleculeProperties function.
-    MMFFGetMoleculeForceField: dict
+    MMFFGetMoleculeForceField: Dict
         Additional keyword arguments to pass to the MMFFGetMoleculeForceField function.
     maxIters : int
         Maximum number of iterations for the minimisation.

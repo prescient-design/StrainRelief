@@ -2,10 +2,11 @@ import numpy as np
 import pytest
 from strain_relief.conformers import generate_conformers
 from strain_relief.constants import MOL_KEY
+from strain_relief.types import MolPropertiesDict
 
 
 @pytest.mark.parametrize("fixture", ["mol", "mol_wo_bonds"])
-def test_generate_conformers(request, fixture: dict):
+def test_generate_conformers(request, fixture: MolPropertiesDict):
     mol = request.getfixturevalue(fixture)
     initial_mol = mol[MOL_KEY]
 

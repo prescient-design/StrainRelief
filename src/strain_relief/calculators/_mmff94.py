@@ -22,9 +22,9 @@ class RDKitMMFFCalculator(Calculator):
 
         Parameters
         ----------
-        MMFFGetMoleculeProperties : dict, optional
+        MMFFGetMoleculeProperties : Dict, optional
             Additional keyword arguments for MMFFGetMoleculeProperties, by default {}
-        MMFFGetMoleculeForceField : dict, optional
+        MMFFGetMoleculeForceField : Dict, optional
             Additional keyword arguments for MMFFGetMoleculeForceField, by default {}
         kwargs
             Additional keyword arguments for Calculator

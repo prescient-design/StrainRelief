@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 from strain_relief.constants import EV_TO_KCAL_PER_MOL, MOL_KEY
 from strain_relief.energy_eval._nnp import NNP_energy, _NNP_energy
+from strain_relief.types import MolPropertiesDict, MolsDict
 
 
 @pytest.mark.gpu
@@ -14,7 +15,7 @@ from strain_relief.energy_eval._nnp import NNP_energy, _NNP_energy
     ],
 )
 def test_nnp_energy(
-    mols_wo_bonds: dict[str, dict], method: str, model_path: str, energies: list[float], request
+    mols_wo_bonds: MolsDict, method: str, model_path: str, energies: list[float], request
 ):
     model_path = request.getfixturevalue(model_path)
     energies = request.getfixturevalue(energies)
@@ -63,7 +64,10 @@ def test_nnp_energy(
     [("fairchem_calculator", "esen_energies"), ("mace_calculator", "mace_energies")],
 )
 def test__NNP_energy(
-    mol_wo_bonds_w_confs: dict, calculator: ase.calculators, energies: list[float], request
+    mol_wo_bonds_w_confs: MolPropertiesDict,
+    calculator: ase.calculators,
+    energies: list[float],
+    request,
 ):
     calculator = request.getfixturevalue(calculator)
     energies = request.getfixturevalue(energies)
@@ -71,7 +75,7 @@ def test__NNP_energy(
 
     result = _NNP_energy(mol, "id", calculator, EV_TO_KCAL_PER_MOL)
     assert result is not None
-    assert isinstance(result, dict)
+    assert isinstance(result, MolPropertiesDict)
     assert len(result) == mol[MOL_KEY].GetNumConformers()
 
     for conf_id, energy in result.items():

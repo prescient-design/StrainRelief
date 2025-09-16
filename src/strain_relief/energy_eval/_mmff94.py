@@ -20,9 +20,9 @@ def MMFF94_energy(
         A dictionary of molecules.
     method : str
         [PLACEHOLDER] Needed for NNP_energy compatibility.
-    MMFFGetMoleculeProperties : dict
+    MMFFGetMoleculeProperties : Dict
         Additional keyword arguments for MMFFGetMoleculeProperties.
-    MMFFGetMoleculeForceField : dict
+    MMFFGetMoleculeForceField : Dict
         Additional keyword arguments for MMFFGetMoleculeForceField.
 
     Returns
@@ -59,9 +59,9 @@ def _MMFF94_energy(
         A molecule.
     id : str
         ID of the molecule. Used for logging.
-    MMFFGetMoleculeProperties : dict
+    MMFFGetMoleculeProperties : Dict
         Additional keyword arguments for MMFFGetMoleculeProperties.
-    MMFFGetMoleculeForceField : dict
+    MMFFGetMoleculeForceField : Dict
         Additional keyword arguments for MMFFGetMoleculeForceField.
 
     Returns

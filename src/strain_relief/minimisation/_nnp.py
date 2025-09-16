@@ -28,7 +28,7 @@ def NNP_min(
         Dictionary of molecules to minimise.
     method : Literal["MACE", "FAIRChem"]
         The NNP to use for MD calculation.
-    calculator_kwargs : dict
+    calculator_kwargs : Dict
         Additional keyword arguments to pass to the NNP calculator.
         For example, for MACE, this should include `model_path`, `device` and `default_dtype`.
     model_path : str

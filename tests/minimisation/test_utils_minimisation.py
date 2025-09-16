@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-from rdkit import Chem
 from strain_relief.calculators import RDKitMMFFCalculator, mace_calculator
 from strain_relief.constants import MOL_KEY
 from strain_relief.io import rdkit_to_ase
@@ -10,7 +9,7 @@ from strain_relief.minimisation.utils_minimisation import (
     remove_non_converged,
     run_minimisation,
 )
-from strain_relief.types import MolsDict
+from strain_relief.types import MolPropertiesDict, MolsDict
 
 
 @pytest.mark.gpu
@@ -34,7 +33,7 @@ def test_method_min_nnp(mols: MolsDict, calculator_fixture: str, request):
 
 @pytest.mark.parametrize("fixture", ["mols", "mols_wo_bonds"])
 @pytest.mark.parametrize("force_field", ["MMFF94", "MMFF94s"])
-def test_method_min_mmff(request, fixture: dict[str : Chem.Mol], force_field: str):
+def test_method_min_mmff(request, fixture: MolsDict, force_field: str):
     mols = request.getfixturevalue(fixture)
     calculator = RDKitMMFFCalculator(
         MMFFGetMoleculeProperties={"mmffVariant": force_field}, MMFFGetMoleculeForceField={}
@@ -56,7 +55,7 @@ def test_method_min_mmff(request, fixture: dict[str : Chem.Mol], force_field: st
 
 @pytest.mark.gpu
 @pytest.mark.parametrize("calculator_fixture", ["mace_calculator", "fairchem_calculator"])
-def test__method_min_nnp(mol_w_confs: Chem.Mol, calculator_fixture: str, request):
+def test__method_min_nnp(mol_w_confs: MolPropertiesDict, calculator_fixture: str, request):
     calculator = request.getfixturevalue(calculator_fixture)
     energies, mol = _method_min(
         mol_w_confs,
@@ -74,7 +73,7 @@ def test__method_min_nnp(mol_w_confs: Chem.Mol, calculator_fixture: str, request
 
 @pytest.mark.parametrize("maxIts", [1, 1000])
 @pytest.mark.parametrize("force_field", ["MMFF94", "MMFF94s"])
-def test__method_min_mmff(mol_w_confs: Chem.Mol, maxIts: int, force_field: str):
+def test__method_min_mmff(mol_w_confs: MolPropertiesDict, maxIts: int, force_field: str):
     calculator = RDKitMMFFCalculator(
         MMFFGetMoleculeProperties={"mmffVariant": force_field}, MMFFGetMoleculeForceField={}
     )
@@ -95,7 +94,9 @@ def test__method_min_mmff(mol_w_confs: Chem.Mol, maxIts: int, force_field: str):
     [([(0, -10), (1, -5)], np.array([[0, -10]])), ([(1, -5), (1, -5)], np.empty((0, 2)))],
 )
 def test_remove_non_converged(
-    mol_w_confs: Chem.Mol, results: list[tuple[int, float]], expected: list[tuple[int, float]]
+    mol_w_confs: MolPropertiesDict,
+    results: list[tuple[int, float]],
+    expected: list[tuple[int, float]],
 ):
     mol = mol_w_confs[MOL_KEY]
     results = remove_non_converged(mol, "id", results)
@@ -115,7 +116,12 @@ def test_remove_non_converged(
     ],
 )
 def test_run_minimisation(
-    mol: Chem.Mol, mace_model_path: str, maxIters: int, fmax: float, fexit: float, expected: int
+    mol: MolPropertiesDict,
+    mace_model_path: str,
+    maxIters: int,
+    fmax: float,
+    fexit: float,
+    expected: int,
 ):
     calculator = mace_calculator(
         model_paths=str(mace_model_path), device="cuda", default_dtype="float32", fmax=fmax

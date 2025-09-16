@@ -32,7 +32,7 @@ def NNP_energy(
         A dictionary of molecules.
     method : Literal["MACE", "FAIRChem"]
         The NNP to use for energy calculation.
-    calculator_kwargs : dict
+    calculator_kwargs : Dict
         Additional keyword arguments to pass to the NNP calculator.
         For example, for MACE, this should include `model_path`, `device` and `default_dtype`.
     model_paths : str
