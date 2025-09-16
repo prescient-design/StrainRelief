@@ -3,14 +3,14 @@ from timeit import default_timer as timer
 
 import numpy as np
 from loguru import logger as logging
-from rdkit import Chem
 from rdkit.Chem import AllChem, rdDetermineBonds
 
 from strain_relief.constants import CHARGE_KEY, MOL_KEY
+from strain_relief.types import MolsDict
 
 
 def generate_conformers(
-    mols: dict[str:dict],
+    mols: MolsDict,
     randomSeed: int = -1,
     numConfs: int = 10,
     maxAttempts: int = 200,
@@ -18,7 +18,7 @@ def generate_conformers(
     clearConfs: bool = False,
     numThreads: int = 0,
     **kwargs,
-) -> dict[str : Chem.Mol]:
+) -> MolsDict:
     """Generate conformers for a molecule. The 0th conformer is the original molecule.
 
     This function uses RDKit's ETKDGv2 method to generate conformers with the execption of
@@ -26,7 +26,7 @@ def generate_conformers(
 
     Parameters
     ----------
-    mols : dict[str:dict]
+    mols : MolsDict
             Nested dictionary of molecules for which to generate conformers.
     randomSeed : int, optional
             The random seed to use. The default is -1.
@@ -43,8 +43,8 @@ def generate_conformers(
 
     Returns
     -------
-    dict[str:Chem.Mol]
-            List of molecules with multiple conformers.
+    MolsDict
+        Nested dictionary of molecules with multiple conformers.
     """
     start = timer()
     # Check that each molecule only has one conformer before generation.

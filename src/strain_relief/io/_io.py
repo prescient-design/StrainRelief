@@ -13,6 +13,7 @@ from strain_relief.constants import (
     SPIN_COL_NAME,
     SPIN_KEY,
 )
+from strain_relief.types import MolsDict
 
 
 def load_parquet(
@@ -125,7 +126,7 @@ def _check_columns(df: pd.DataFrame, mol_col_name: str, id_col_name: str):
         Name of the column containing the molecule IDs.
     """
     if "mol_bytes" not in df.columns:
-        raise ValueError("Column 'mol_bytes' not found in dataframe")
+        raise ValueError(f"'mol_bytes' not found in dataframe columns {df.columns}")
     df[mol_col_name] = df["mol_bytes"].apply(Chem.Mol)
     logging.info(f"RDKit.Mol column is '{mol_col_name}'")
 
@@ -246,9 +247,9 @@ def _process_molecule_data(
 
 def save_parquet(
     input_df: pd.DataFrame,
-    docked_mols: dict[str:dict],
-    local_min_mols: dict[str:dict],
-    global_min_mols: dict[str:dict],
+    docked_mols: MolsDict,
+    local_min_mols: MolsDict,
+    global_min_mols: MolsDict,
     threshold: float,
     parquet_path: str,
     id_col_name: str | None = None,
@@ -260,11 +261,11 @@ def save_parquet(
     ----------
     input_df: pd.DataFrame
         Input DataFrame containing the StrainRelief's original input.
-    docked_mols: dict[str: dict]
+    docked_mols: MolsDict
         Nested dictionary containing the poses of docked molecules.
-    local_min_mols: dict[str: dict]
+    local_min_mols: MolsDict
         Nested dictionary containing the poses of locally minimised molecules using strain_relief.
-    global_min_mols: dict[str: dict]
+    global_min_mols: MolsDict
         Nested dictionary containing the poses of globally minimised molecules using strain_relief.
     threshold: float
         Threshold for the ligand strain filter.

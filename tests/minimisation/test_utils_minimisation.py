@@ -10,11 +10,12 @@ from strain_relief.minimisation.utils_minimisation import (
     remove_non_converged,
     run_minimisation,
 )
+from strain_relief.types import MolsDict
 
 
 @pytest.mark.gpu
 @pytest.mark.parametrize("calculator_fixture", ["mace_calculator", "fairchem_calculator"])
-def test_method_min_nnp(mols: dict[str:dict], calculator_fixture: str, request):
+def test_method_min_nnp(mols: MolsDict, calculator_fixture: str, request):
     calculator = request.getfixturevalue(calculator_fixture)
     energies, mols = method_min(
         mols,

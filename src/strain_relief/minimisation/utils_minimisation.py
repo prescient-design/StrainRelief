@@ -6,21 +6,22 @@ from rdkit import Chem
 from strain_relief.constants import CHARGE_KEY, MOL_KEY, SPIN_KEY
 from strain_relief.io import ase_to_rdkit, rdkit_to_ase
 from strain_relief.minimisation.utils_bfgs import StrainReliefBFGS
+from strain_relief.types import ConfEnergiesDict, EnergiesDict, MolPropertiesDict, MolsDict
 
 
 def method_min(
-    mols: dict[str : Chem.Mol],
+    mols: MolsDict,
     calculator: ase.calculators,
     maxIters: int,
     fmax: float,
     fexit: float,
     conversion_factor: float = 1,
-) -> tuple[dict[str : dict[str:float]], dict[str : Chem.Mol]]:
+) -> tuple[EnergiesDict, MolsDict]:
     """Minimise all conformers of a Chem.Mol using the given calculator.
 
     Parameters
     ----------
-    mols : dict[str:dict]
+    mols : MolsDict
         Dictionary of molecules to minimise.
     calculator : ase.calculators
         The ASE calculator to use for energy calculation.
@@ -33,7 +34,7 @@ def method_min(
     conversion_factor: float
         Scale factor to convert energy to kcal/mol.
 
-    energies, mols : dict[str:dict[str: float]], dict[str:dict]
+    energies, mols : EnergiesDict, MolsDict
         energies is a dict of final energy of each molecular conformer in eV (i.e. 0 = converged).
         mols contains the dictionary of molecules with the conformers minimised.
 
@@ -52,14 +53,14 @@ def method_min(
 
 
 def _method_min(
-    mol_properties: dict,
+    mol_properties: MolPropertiesDict,
     id: str,
     calculator: ase.calculators,
     maxIters: int,
     fmax: float,
     fexit: float,
     conversion_factor: float,
-) -> dict[int:float]:
+) -> ConfEnergiesDict:
     """Minimise conformers of a single molecule using the given calculator.
 
     Parameters
@@ -79,7 +80,7 @@ def _method_min(
 
     Returns
     -------
-    dict[int: float]
+    ConfEnergiesDict
         The final energy of each sucessfully converged conformer in the molecule in kcal/mol.
         {conf_id, energy}
     """

@@ -5,6 +5,7 @@ from loguru import logger as logging
 
 from strain_relief.constants import ENERGY_PROPERTY_NAME, MOL_KEY
 from strain_relief.energy_eval import MMFF94_energy, NNP_energy
+from strain_relief.types import MolsDict
 
 METHODS_DICT = {
     "MACE": NNP_energy,
@@ -15,13 +16,13 @@ METHODS_DICT = {
 
 
 def predict_energy(
-    mols: dict[str:dict], method: Literal["MACE", "FAIRChem", "MMFF94", "MMFF94s"], **kwargs
+    mols: MolsDict, method: Literal["MACE", "FAIRChem", "MMFF94", "MMFF94s"], **kwargs
 ):
     """Predict the energy of all conformers of molecules in mols using a specified method.
 
     Parameters
     ----------
-    mols : dict[str:dict]
+    mols : MolsDict
         Nested dictionary of molecules.
     method : Literal["MACE", "FAIRChem", "MMFF94", "MMFF94s"]
         The method to use for energy prediction.
@@ -30,7 +31,7 @@ def predict_energy(
 
     Returns
     -------
-    dict[str:dict]
+    MolsDict
         Nested dictionary of molecules with the predicted energies stored as a property on each
         conformer.
     """

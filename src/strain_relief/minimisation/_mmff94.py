@@ -1,21 +1,22 @@
 from strain_relief.calculators import RDKitMMFFCalculator
 from strain_relief.minimisation.utils_minimisation import method_min
+from strain_relief.types import EnergiesDict, MolsDict
 
 
 def MMFF94_min(
-    mols: dict[str:dict],
+    mols: MolsDict,
     method: str,
     MMFFGetMoleculeProperties: dict,
     MMFFGetMoleculeForceField: dict,
     maxIters: int,
     fmax: float,
     fexit: float,
-) -> tuple[dict[str : dict[str:float]], dict[str:dict]]:
+) -> tuple[EnergiesDict, MolsDict]:
     """Minimise all conformers of a Chem.Mol using MMFF94(s).
 
     Parameters
     ----------
-    mols : dict[str:dict]
+    mols : MolsDict
         Dictionary of molecules to minimise.
     method : str
         [PLACEHOLDER] Needed for NNP_min compatibility.
@@ -30,7 +31,7 @@ def MMFF94_min(
     fexit : float
         Exit criteria, exit when max(forces) > fexit.
 
-    energies, mols : dict[str:dict[str: float]], dict[str:dict]
+    energies, mols : EnergiesDict, MolsDict
         energies is a dict of final energy of each molecular conformer in eV (i.e. 0 = converged).
         mols contains a nested dictionary of molecules with the conformers minimised.
 

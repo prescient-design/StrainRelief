@@ -14,20 +14,21 @@ from strain_relief.constants import (
 )
 from strain_relief.io import rdkit_to_ase
 from strain_relief.io.utils_s3 import copy_from_s3
+from strain_relief.types import ConfEnergiesDict, EnergiesDict, MolPropertiesDict, MolsDict
 
 
 def NNP_energy(
-    mols: dict[str:dict],
+    mols: MolsDict,
     method: Literal["MACE", "FAIRChem"],
     calculator_kwargs: dict,
     model_paths: str,
     energy_units: Literal["eV", "Hartrees", "kcal/mol"] = "eV",
-) -> dict[dict]:
+) -> EnergiesDict:
     """Calculate the NNP energy for all conformers of all molecules.
 
     Parameters
     ----------
-    mols : dict[str:dict]
+    mols : MolsDict
         A dictionary of molecules.
     method : Literal["MACE", "FAIRChem"]
         The NNP to use for energy calculation.
@@ -41,7 +42,7 @@ def NNP_energy(
 
     Returns
     -------
-    dict[str: dict[int: float]]
+    EnergiesDict
         A dictionary of dictionaries of conformer energies for each molecule.
 
         mol_energies = {
@@ -80,16 +81,16 @@ def NNP_energy(
 
 
 def _NNP_energy(
-    mol_properties: dict,
+    mol_properties: MolPropertiesDict,
     id: str,
     calculator: ase.calculators,
     conversion_factor: float,
-) -> dict[int:float]:
+) -> ConfEnergiesDict:
     """Calculate the NNP energy for all conformers of a molecule.
 
     Parameters
     ----------
-    mol_properties : dict
+    mol_properties : MolPropertiesDict
         Dict of molecule and it's properties.
     id : str
         ID of the molecule. Used for logging
@@ -100,7 +101,7 @@ def _NNP_energy(
 
     Returns
     -------
-    dict[int: float]
+    ConfEnergiesDict
         A dictionary of conformer energies.
 
         conf_energies = {

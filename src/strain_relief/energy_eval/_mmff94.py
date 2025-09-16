@@ -3,19 +3,20 @@ from rdkit import Chem
 from rdkit.Chem import rdDetermineBonds, rdForceFieldHelpers
 
 from strain_relief.constants import CHARGE_KEY, MOL_KEY
+from strain_relief.types import ConfEnergiesDict, EnergiesDict, MolsDict
 
 
 def MMFF94_energy(
-    mols: dict[str:dict],
+    mols: MolsDict,
     method: str,
     MMFFGetMoleculeProperties: dict,
     MMFFGetMoleculeForceField: dict,
-) -> dict[dict]:
+) -> EnergiesDict:
     """Calculate the MMFF94(s) energy for all conformers of all molecules.
 
     Parameters
     ----------
-    mols : dict[str:dict]
+    mols : MolsDict
         A dictionary of molecules.
     method : str
         [PLACEHOLDER] Needed for NNP_energy compatibility.
@@ -26,7 +27,7 @@ def MMFF94_energy(
 
     Returns
     -------
-    dict[str: dict[int: float]]
+    EnergiesDict
         A dictionary of dictionaries of conformer energies for each molecule.
 
         mol_energies = {
@@ -49,7 +50,7 @@ def MMFF94_energy(
 
 def _MMFF94_energy(
     mol: Chem.Mol, id: str, MMFFGetMoleculeProperties: dict, MMFFGetMoleculeForceField: dict
-) -> dict[int:float]:
+) -> ConfEnergiesDict:
     """Calculate the MMFF94 energy for all conformers of a molecule.
 
     Parameters
@@ -65,7 +66,7 @@ def _MMFF94_energy(
 
     Returns
     -------
-    dict[int: float]
+    ConfEnergiesDict
         A dictionary of conformer energies.
 
         conf_energies = {
