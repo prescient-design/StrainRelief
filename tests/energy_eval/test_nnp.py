@@ -14,7 +14,7 @@ from strain_relief.types import MolPropertiesDict, MolsDict
         ("MACE", "mace_model_path", "mace_energies"),
     ],
 )
-def test_nnp_energy(
+def test_NNP_energy(
     mols_wo_bonds: MolsDict, method: str, model_path: str, energies: list[float], request
 ):
     model_path = request.getfixturevalue(model_path)
@@ -75,7 +75,7 @@ def test__NNP_energy(
 
     result = _NNP_energy(mol, "id", calculator, EV_TO_KCAL_PER_MOL)
     assert result is not None
-    assert isinstance(result, MolPropertiesDict)
+    assert isinstance(result, dict)
     assert len(result) == mol[MOL_KEY].GetNumConformers()
 
     for conf_id, energy in result.items():

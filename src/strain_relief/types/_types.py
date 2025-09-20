@@ -4,9 +4,9 @@ MolsDict = NewType("MolsDict", dict[str, dict])
 """
 mols = {
     "mol_id": {
-        "charge": charge_val,
-        "spin": spin_val,
-        "mol": Chem.Mol,
+        "charge": int,
+        "spin": int,
+        "mol": RDKit.Mol,
     }
 }
 """
@@ -14,9 +14,9 @@ mols = {
 MolPropertiesDict = NewType("MolPropertiesDict", dict)
 """
 mol_properties = {
-    "charge": charge_val,
-    "spin": spin_val,
-    "mol": Chem.Mol,
+    "charge": int,
+    "spin": int,
+    "mol": RDKit.Mol,
 }
 """
 
@@ -25,7 +25,7 @@ EnergiesDict = NewType("EnergiesDict", dict[str, dict[str, float]])
 """
 energies = {
     "mol_id": {
-        "conf_id": energy
+        "conf_id": float
     }
 }
 """
@@ -33,6 +33,6 @@ energies = {
 ConfEnergiesDict = NewType("ConfEnergiesDict", dict[int, float])
 """
 conf_energies = {
-    "conf_id": energy
+    "conf_id": float
 }
 """
