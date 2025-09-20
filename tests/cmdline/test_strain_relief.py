@@ -21,7 +21,9 @@ def test_strain_relief(min_method: str, eval_method: str):
                 "conformers.numConfs=1",
             ],
         )
-    df = load_parquet(parquet_path=cfg.io.input.parquet_path, id_col_name="SMILES")
+    df = load_parquet(
+        parquet_path=cfg.io.input.parquet_path, id_col_name="SMILES", include_charged=True
+    )
     strain_relief(df, cfg)
 
 
@@ -44,7 +46,9 @@ def test_strain_relief_w_mace():
                 "conformers.numConfs=1",
             ],
         )
-    df = load_parquet(parquet_path=cfg.io.input.parquet_path, id_col_name="SMILES")
+    df = load_parquet(
+        parquet_path=cfg.io.input.parquet_path, id_col_name="SMILES", include_charged=True
+    )
     strain_relief(df, cfg)
 
 
@@ -67,7 +71,9 @@ def test_strain_relief_w_esen(esen_model_path: str):
                 "conformers.numConfs=1",
             ],
         )
-    df = load_parquet(parquet_path=cfg.io.input.parquet_path, id_col_name="SMILES")
+    df = load_parquet(
+        parquet_path=cfg.io.input.parquet_path, id_col_name="SMILES", include_charged=True
+    )
     strain_relief(df, cfg)
 
 
@@ -113,7 +119,9 @@ def test_strain_relief_include_charged():
                 "conformers.numConfs=1",
             ],
         )
-    df = load_parquet(parquet_path=cfg.io.input.parquet_path, id_col_name="id")
+    df = load_parquet(
+        parquet_path=cfg.io.input.parquet_path, id_col_name="id", include_charged=True
+    )
     strain_relief(df, cfg)
 
 

@@ -21,7 +21,7 @@ from strain_relief.io._io import (
     ],
 )
 def test_load_parquet(parquet_path: Path, id_col_name: str | None):
-    df = load_parquet(parquet_path=parquet_path, id_col_name=id_col_name)
+    df = load_parquet(parquet_path=parquet_path, id_col_name=id_col_name, include_charged=True)
     assert len(df) > 0
 
 

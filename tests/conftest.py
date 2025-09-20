@@ -13,7 +13,11 @@ from strain_relief.types import EnergiesDict, MolPropertiesDict, MolsDict
 @pytest.fixture(scope="function")
 def mols() -> MolsDict:
     """Two posed molecules from an internal target."""
-    df = load_parquet(parquet_path=test_dir / "data" / "target.parquet", id_col_name="SMILES")
+    df = load_parquet(
+        parquet_path=test_dir / "data" / "target.parquet",
+        id_col_name="SMILES",
+        include_charged=True,
+    )
     return to_mols_dict(df, "", "mol", "SMILES", True)
 
 
@@ -49,7 +53,7 @@ def mols_wo_bonds() -> MolsDict:
     """This is two bound conformers taken from LigBoundConf 2.0.
 
     Bond information is determined using RDKit's DetermineBonds."""
-    df = load_parquet(parquet_path=test_dir / "data" / "ligboundconf.parquet")
+    df = load_parquet(parquet_path=test_dir / "data" / "ligboundconf.parquet", include_charged=True)
     return to_mols_dict(df, "", "mol", "id", True)
 
 

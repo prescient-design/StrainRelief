@@ -50,39 +50,37 @@ def load_parquet(
     logging.info(f"Loaded {len(df)} posed molecules")
 
     _check_columns(df, mol_col_name, id_col_name)
+    df = _calculate_charge(df, mol_col_name, include_charged)
+    df = _calculate_spin(df, mol_col_name)
     return df
 
 
 def to_mols_dict(
-    df: pd.DataFrame, parquet_path: str, mol_col_name: str, id_col_name: str, include_charged: bool
-) -> dict:
+    df: pd.DataFrame,
+    mol_col_name: str,
+    id_col_name: str,
+    include_charged: bool,
+    parquet_path: str = "",
+) -> MolsDict:
     """Converts a DataFrame to a dictionary of RDKit.Mol objects.
 
     Parameters
     ----------
     df: pd.DataFrame
         DataFrame containing molecules.
-    parquet_path: str
-        [PLACEHOLDER] Needed for simplicity of arg parsing.
     mol_col_name: str
         Name of the column containing the RDKit.Mol objects OR binary strings.
     id_col_name: str
         Name of the column containing the molecule IDs.
     include_charged: bool
         If False, filters out charged molecules.
+    parquet_path: str
+        [PLACEHOLDER] Needed for simplicity of arg parsing.
 
     Returns
     -------
-    dict
+    MolsDict
         Dictionary containing the molecule IDs, RDKit.Mol objects, charges and spins.
-        {
-            "molecule_id": {
-                "mol": RDKit.Mol,
-                "charge": int,
-                "spin": int
-            },
-            ...
-        }
     """
     if mol_col_name is None:
         mol_col_name = MOL_COL_NAME
