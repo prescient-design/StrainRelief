@@ -2,6 +2,7 @@ input:
   parquet_path: ???
   mol_col_name: null
   id_col_name: null
+  include_charged: true
 output:
   parquet_path: null
   mol_col_name: ${..input.mol_col_name}

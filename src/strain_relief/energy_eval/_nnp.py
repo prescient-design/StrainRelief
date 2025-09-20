@@ -3,30 +3,36 @@ from typing import Literal
 
 import ase
 from loguru import logger as logging
-from rdkit import Chem
 
 from strain_relief.calculators import CALCULATORS_DICT
-from strain_relief.constants import EV_TO_KCAL_PER_MOL, HARTREE_TO_KCAL_PER_MOL
+from strain_relief.constants import (
+    CHARGE_KEY,
+    EV_TO_KCAL_PER_MOL,
+    HARTREE_TO_KCAL_PER_MOL,
+    MOL_KEY,
+    SPIN_KEY,
+)
 from strain_relief.io import rdkit_to_ase
 from strain_relief.io.utils_s3 import copy_from_s3
+from strain_relief.types import ConfEnergiesDict, EnergiesDict, MolPropertiesDict, MolsDict
 
 
 def NNP_energy(
-    mols: dict[str : Chem.Mol],
+    mols: MolsDict,
     method: Literal["MACE", "FAIRChem"],
     calculator_kwargs: dict,
     model_paths: str,
     energy_units: Literal["eV", "Hartrees", "kcal/mol"] = "eV",
-) -> dict[dict]:
+) -> EnergiesDict:
     """Calculate the NNP energy for all conformers of all molecules.
 
     Parameters
     ----------
-    mols : dict[str:Chem.Mol]
+    mols : MolsDict
         A dictionary of molecules.
     method : Literal["MACE", "FAIRChem"]
         The NNP to use for energy calculation.
-    calculator_kwargs : dict
+    calculator_kwargs : Dict
         Additional keyword arguments to pass to the NNP calculator.
         For example, for MACE, this should include `model_path`, `device` and `default_dtype`.
     model_paths : str
@@ -36,7 +42,7 @@ def NNP_energy(
 
     Returns
     -------
-    dict[str: dict[int: float]]
+    EnergiesDict
         A dictionary of dictionaries of conformer energies for each molecule.
 
         mol_energies = {
@@ -69,23 +75,23 @@ def NNP_energy(
 
     # Calculate energies for each molecule
     mol_energies = {}
-    for id, mol in mols.items():
-        mol_energies[id] = _NNP_energy(mol, id, calculator, conversion_factor)
+    for id, mol_properties in mols.items():
+        mol_energies[id] = _NNP_energy(mol_properties, id, calculator, conversion_factor)
     return mol_energies
 
 
 def _NNP_energy(
-    mol: Chem.Mol,
+    mol_properties: MolPropertiesDict,
     id: str,
     calculator: ase.calculators,
     conversion_factor: float,
-) -> dict[int:float]:
+) -> ConfEnergiesDict:
     """Calculate the NNP energy for all conformers of a molecule.
 
     Parameters
     ----------
-    mol : Chem.Mol
-        A molecule.
+    mol_properties : MolPropertiesDict
+        Dict of molecule and it's properties.
     id : str
         ID of the molecule. Used for logging
     calculator : ase.calculators
@@ -95,15 +101,22 @@ def _NNP_energy(
 
     Returns
     -------
-    dict[int: float]
+    ConfEnergiesDict
         A dictionary of conformer energies.
 
         conf_energies = {
             "conf_id": energy
         }
     """
+    mol, charge, spin = (
+        mol_properties[MOL_KEY],
+        mol_properties[CHARGE_KEY],
+        mol_properties[SPIN_KEY],
+    )
+
     confs_and_ids = rdkit_to_ase(mol)
     for _, atoms in confs_and_ids:
+        atoms.info = {"charge": charge, "spin": spin}
         atoms.calc = calculator
     conf_energies = {
         conf_id: atoms.get_potential_energy() * conversion_factor
