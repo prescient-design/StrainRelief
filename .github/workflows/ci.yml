@@ -52,6 +52,7 @@ jobs:
         uv --version
         uv venv
         uv pip install -e ".[dev]"
+        uv run pre-commit install
         df -h
 
     - name: Lint with pre-commit
