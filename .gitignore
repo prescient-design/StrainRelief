@@ -1,6 +1,7 @@
 notebooks/*
 models/*
 data/*
+dist/*
 **/*.egg-info/
 *.egg-info
 .DS_Store
