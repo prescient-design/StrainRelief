@@ -2,58 +2,63 @@ import os
 
 import numpy as np
 import pytest
-from rdkit import Chem
 from strain_relief import test_dir
 from strain_relief.calculators import fairchem_calculator as FAIRChem_calculator
 from strain_relief.calculators import mace_calculator as MACE_calculator
-from strain_relief.constants import EV_TO_KCAL_PER_MOL
+from strain_relief.constants import EV_TO_KCAL_PER_MOL, MOL_KEY
 from strain_relief.io import load_parquet, to_mols_dict
+from strain_relief.types import EnergiesDict, MolPropertiesDict, MolsDict
 
 
 @pytest.fixture(scope="function")
-def mols() -> dict[str, Chem.Mol]:
+def mols() -> MolsDict:
     """Two posed molecules from an internal target."""
-    df = load_parquet(parquet_path=test_dir / "data" / "target.parquet", id_col_name="SMILES")
-    return to_mols_dict(df, "mol", "SMILES")
+    df = load_parquet(
+        parquet_path=test_dir / "data" / "target.parquet",
+        id_col_name="SMILES",
+        include_charged=True,
+    )
+    return to_mols_dict(df, "", "mol", "SMILES", True)
 
 
 @pytest.fixture(scope="function")
-def mol(mols) -> Chem.Mol:
+def mol(mols) -> MolPropertiesDict:
     k = list(mols.keys())[0]
     return mols[k]
 
 
 @pytest.fixture(scope="function")
-def mols_w_confs(mols) -> dict[str, Chem.Mol]:
+def mols_w_confs(mols) -> MolsDict:
     """Two posed molecules from an internal target.
 
     Each molecule has two conformers."""
-    for m in mols.values():
+    for mol_properties in mols.values():
+        m = mol_properties["mol"]
         m.AddConformer(m.GetConformer(0), assignId=True)
     return mols
 
 
 @pytest.fixture(scope="function")
-def mol_w_confs(mol) -> Chem.Mol:
+def mol_w_confs(mol) -> MolPropertiesDict:
     """Two posed molecules from an internal target.
 
     Each molecule has two conformers."""
-    mol.AddConformer(mol.GetConformer(0), assignId=True)
+    mol[MOL_KEY].AddConformer(mol[MOL_KEY].GetConformer(0), assignId=True)
     return mol
 
 
 ## LIGBOUNDCONF TEST MOLECULES
 @pytest.fixture(scope="function")
-def mols_wo_bonds() -> dict[str, Chem.Mol]:
+def mols_wo_bonds() -> MolsDict:
     """This is two bound conformers taken from LigBoundConf 2.0.
 
     Bond information is determined using RDKit's DetermineBonds."""
-    df = load_parquet(parquet_path=test_dir / "data" / "ligboundconf.parquet")
-    return to_mols_dict(df, "mol", "id")
+    df = load_parquet(parquet_path=test_dir / "data" / "ligboundconf.parquet", include_charged=True)
+    return to_mols_dict(df, "", "mol", "id", True)
 
 
 @pytest.fixture(scope="function")
-def mol_wo_bonds(mols_wo_bonds) -> Chem.Mol:
+def mol_wo_bonds(mols_wo_bonds) -> MolPropertiesDict:
     """Bound conformer from LigBoundConf 2.0.
 
     Bond information is determined using RDKit's DetermineBonds."""
@@ -62,28 +67,29 @@ def mol_wo_bonds(mols_wo_bonds) -> Chem.Mol:
 
 
 @pytest.fixture(scope="function")
-def mols_wo_bonds_w_confs(mols_wo_bonds) -> dict[str, Chem.Mol]:
+def mols_wo_bonds_w_confs(mols_wo_bonds) -> MolsDict:
     """Two bound conformers from LigBoundConf 2.0.
 
     Bond information is determined using RDKit's DetermineBonds.
     Each molecule has two conformers."""
-    for m in mols_wo_bonds.values():
+    for mol_properties in mols_wo_bonds.values():
+        m = mol_properties[MOL_KEY]
         m.AddConformer(m.GetConformer(0), assignId=True)
     return mols_wo_bonds
 
 
 @pytest.fixture(scope="function")
-def mol_wo_bonds_w_confs(mol_wo_bonds) -> Chem.Mol:
+def mol_wo_bonds_w_confs(mol_wo_bonds) -> MolPropertiesDict:
     """Bound conformer from LigBoundConf 2.0.
 
     Bond information is determined using RDKit's DetermineBonds.
     Has two conformers."""
-    mol_wo_bonds.AddConformer(mol_wo_bonds.GetConformer(0), assignId=True)
+    mol_wo_bonds[MOL_KEY].AddConformer(mol_wo_bonds[MOL_KEY].GetConformer(0), assignId=True)
     return mol_wo_bonds
 
 
 @pytest.fixture(scope="session")
-def mace_energies() -> list[float]:
+def mace_energies() -> EnergiesDict:
     """The MACE energies as calculated using the mace repo (in eV)."""
     return {
         idx: E
@@ -94,7 +100,7 @@ def mace_energies() -> list[float]:
 
 
 @pytest.fixture(scope="session")
-def esen_energies() -> list[float]:
+def esen_energies() -> EnergiesDict:
     """The MACE energies as calculated using the mace repo (in eV)."""
     return {
         idx: E
@@ -125,6 +131,6 @@ def mace_calculator(mace_model_path):
 
 
 @pytest.fixture(scope="session")
-def esen_calculator(esen_model_path):
+def fairchem_calculator(esen_model_path):
     """The eSEN ASE calculator."""
     return FAIRChem_calculator(model_paths=esen_model_path, device="cuda", default_dtype="float32")

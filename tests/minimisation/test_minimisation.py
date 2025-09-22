@@ -1,7 +1,8 @@
 import pytest
 from rdkit import Chem
-from strain_relief.constants import ENERGY_PROPERTY_NAME
+from strain_relief.constants import ENERGY_PROPERTY_NAME, MOL_KEY
 from strain_relief.minimisation import minimise_conformers
+from strain_relief.types import MolsDict
 
 
 @pytest.mark.parametrize(
@@ -32,9 +33,7 @@ from strain_relief.minimisation import minimise_conformers
         ("XXX", ValueError, {}),
     ],
 )
-def test_minimise_conformers(
-    method: str, expected_exception, kwargs: dict, mols: dict[str, Chem.Mol]
-):
+def test_minimise_conformers(method: str, expected_exception, kwargs: dict, mols: MolsDict):
     mols = mols
     smile = "CN(c1n[nH]c2nc(OC3CC3)ccc12)S(=O)(=O)c1cccc(Cl)c1F"
     if expected_exception:
@@ -44,7 +43,8 @@ def test_minimise_conformers(
         result = minimise_conformers(mols, method, **kwargs)
         assert result is not None
         assert isinstance(result, dict)
-        assert isinstance(result[smile], Chem.Mol)
+        assert isinstance(result[smile], dict)
+        assert isinstance(result[smile][MOL_KEY], Chem.Mol)
 
-        for conf in result[smile].GetConformers():
+        for conf in result[smile][MOL_KEY].GetConformers():
             assert conf.HasProp(ENERGY_PROPERTY_NAME)
