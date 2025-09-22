@@ -3,9 +3,31 @@ name = "strain-relief"
 description = "Calculates ligand strain of small molecules from their docked poses."
 authors = [{name = "Ewan Wallace", email = "erw@wallace2.com"}]
 license = "Apache-2.0"
-dynamic = ["version", "dependencies", "optional-dependencies"]
+dynamic = ["version"]
 requires-python = ">=3.11"
 readme = {file = "README.md", content-type = "text/markdown"}
+
+dependencies = [
+    "rdkit",
+    "ase",
+    "numpy",
+    "pandas",
+    "omegaconf",
+    "hydra-core",
+    "pyarrow",
+    "fastparquet",
+    "universal-pathlib",
+    "boto3",
+    "loguru",
+    "mace-torch",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pre-commit",
+]
 
 [project.urls]
 Homepage = "https://github.com/prescient-design/StrainRelief"

@@ -5,6 +5,7 @@ StrainRelief calculates the ligand strain of uncharged docked poses and has a su
 - 📊 All relevant datasets [here](https://huggingface.co/datasets/erwallace/LigBoundConf2.0).
 - 💬 RAG [chatbot](https://strain-relief.streamlit.app/) for questions about the paper and references.
 - 💻 Chatbot source [code](https://github.com/erwallace/paper_query).
+- 🐍 Published python [package](https://pypi.org/project/strain-relief/)
 
 ![Strain Relief Logo](assets/strain_relief_logo.png)
 
@@ -17,19 +18,29 @@ StrainRelief calculates the ligand strain of uncharged docked poses and has a su
 
 ## Installation
 
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if not already installed. Create a new `uv` enviroment using:
+
+```bash
+uv venv
+source .venv/bin/activate
+```
+
 From the root directory, run the following commands to install the package and its dependencies in editable mode:
 
 (`mace-torch==0.3.x` requires `e3nn==0.4.4` (only for training, not inference). `fairchem-core` requires `e3nn>=0.5`. So until `mace-torch==0.4` is released we will have to do this finicky way of installing ([GitHub issue](https://github.com/ACEsuit/mace/issues/555)).)
 
 ```bash
-mamba env create -f env.yml
-mamba activate strain
-pip install -e .
-
-pip install --force-reinstall e3nn==0.5 fairchem-core
-
-pre-commit install
+uv pip install -e ".[dev]"
+uv pip install --force-reinstall e3nn==0.5 fairchem-core
+uv run pre-commit install
 ```
+
+or if you have a `uv.lock` file:
+
+```bash
+uv sync --extra dev --editable
+```
+
 
 ### Installation with uv
 Install `uv` and from the root directory run:
