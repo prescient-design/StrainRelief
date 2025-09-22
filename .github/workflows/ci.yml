@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 env:
-  UV_VERSION: "0.5"
+  UV_VERSION: "0.8"
   UV_LINK_MODE: "copy"
 
 jobs:
