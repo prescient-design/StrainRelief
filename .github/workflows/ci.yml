@@ -65,11 +65,11 @@ jobs:
 
     - name: Build sdist/wheel
       run: |
-        uv run pip install -U build
+        uv pip install -U build
         rm -rf ./*.egg-info */*.egg-info */*/*.egg-info src/*.egg-info
         uv run python -m build
 
     - name: Check metadata
       run: |
-        uv run pip install -U twine readme_renderer[md]
+        uv pip install -U twine readme_renderer[md]
         uv run twine check dist/*
