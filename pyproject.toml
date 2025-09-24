@@ -27,6 +27,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "pre-commit",
+    "ipykernel",
 ]
 
 [project.urls]
