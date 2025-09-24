@@ -118,9 +118,9 @@ The hydra config is set up to allow additional kwargs to be passed to these func
 Logging is set to the `INFO` level by default which logs only aggregate information. `hydra.verbose=true` can be used to activate `DEBUG` level logging which includes information for every molecule and conformer.
 
 ## Unit Tests
-- `pytest tests/` - runs all tests (unit and integration)
-- `pytest tests/ -m "not gpu"` - excludes all MACE tests
-- `pytest tests/ -m "not integration"` - runs all unit tests
+- `uv run pytest tests/` - runs all tests (unit and integration)
+- `uv run pytest tests/ -m "not gpu"` - excludes all MACE tests
+- `uv run pytest tests/ -m "not integration"` - runs all unit tests
 
 **NB** Tests requiring a FAIRChem model will be skipped if the OMol25 eSEN small conserving model is not located in `tests/models/eSEN.pt`. This model can be downloaded [here](https://huggingface.co/facebook/OMol25).
 
