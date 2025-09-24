@@ -10,7 +10,7 @@ from strain_relief.io import load_parquet
 @pytest.mark.parametrize("eval_method", ["mmff94", "mmff94s"])
 @pytest.mark.parametrize("min_method", ["mmff94", "mmff94s"])
 def test_strain_relief(min_method: str, eval_method: str):
-    with initialize(version_base="1.1", config_path="../../src/strain_relief/hydra_config"):
+    with initialize(version_base="1.1", config_path="../src/strain_relief/hydra_config"):
         cfg = compose(
             config_name="default",
             overrides=[
@@ -23,13 +23,13 @@ def test_strain_relief(min_method: str, eval_method: str):
             ],
         )
     df = load_parquet(parquet_path=cfg.io.input.parquet_path, id_col_name="SMILES")
-    compute_strain(df, cfg)
+    compute_strain(df=df, cfg=cfg)
 
 
 @pytest.mark.integration
 @pytest.mark.gpu
 def test_strain_relief_w_mace():
-    with initialize(version_base="1.1", config_path="../../src/strain_relief/hydra_config"):
+    with initialize(version_base="1.1", config_path="../src/strain_relief/hydra_config"):
         cfg = compose(
             config_name="default",
             overrides=[
@@ -46,13 +46,13 @@ def test_strain_relief_w_mace():
             ],
         )
     df = load_parquet(parquet_path=cfg.io.input.parquet_path, id_col_name="SMILES")
-    compute_strain(df, cfg)
+    compute_strain(df=df, cfg=cfg)
 
 
 @pytest.mark.integration
 @pytest.mark.gpu
 def test_strain_relief_w_esen(esen_model_path: str):
-    with initialize(version_base="1.1", config_path="../../src/strain_relief/hydra_config"):
+    with initialize(version_base="1.1", config_path="../src/strain_relief/hydra_config"):
         cfg = compose(
             config_name="default",
             overrides=[
@@ -69,12 +69,12 @@ def test_strain_relief_w_esen(esen_model_path: str):
             ],
         )
     df = load_parquet(parquet_path=cfg.io.input.parquet_path, id_col_name="SMILES")
-    compute_strain(df, cfg)
+    compute_strain(df=df, cfg=cfg)
 
 
 @pytest.mark.integration
 def test_strain_relief_all_charged():
-    with initialize(version_base="1.1", config_path="../../src/strain_relief/hydra_config"):
+    with initialize(version_base="1.1", config_path="../src/strain_relief/hydra_config"):
         cfg = compose(
             config_name="default",
             overrides=[
@@ -86,16 +86,9 @@ def test_strain_relief_all_charged():
             ],
         )
     df = load_parquet(parquet_path=cfg.io.input.parquet_path, id_col_name="id")
-    results = compute_strain(df, cfg)
+    results = compute_strain(df=df, cfg=cfg)
     assert results["ligand_strain"].isna().all()
     assert results["passes_strain_filter"].isna().all()
-
-
-# df correct
-
-# mols correct w and w/o ids and mols as bytes or mols
-
-# errors: no df or mols, mix of bytes and chem.mol
 
 
 def test_parse_args():
