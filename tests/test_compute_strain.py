@@ -1,7 +1,8 @@
 import pytest
 from hydra import compose, initialize
+from rdkit import Chem
 from strain_relief import test_dir
-from strain_relief.cmdline._strain_relief import compute_strain
+from strain_relief.compute_strain import _parse_args, compute_strain
 from strain_relief.io import load_parquet
 
 
@@ -88,3 +89,29 @@ def test_strain_relief_all_charged():
     results = compute_strain(df, cfg)
     assert results["ligand_strain"].isna().all()
     assert results["passes_strain_filter"].isna().all()
+
+
+# df correct
+
+# mols correct w and w/o ids and mols as bytes or mols
+
+# errors: no df or mols, mix of bytes and chem.mol
+
+
+def test_parse_args():
+    df = load_parquet(parquet_path=test_dir / "data" / "target.parquet", id_col_name="SMILES")
+    df2 = _parse_args(df=df)
+    assert df.equals(df2)
+
+
+@pytest.mark.parametrize(
+    "mols,ids",
+    [
+        ([Chem.MolFromSmiles("C"), Chem.MolFromSmiles("CC")], [0, 1]),
+        ([Chem.MolFromSmiles("C").ToBinary(), Chem.MolFromSmiles("CC").ToBinary()], None),
+    ],
+)
+def test_parse_args_mols(mols, ids):
+    df = _parse_args(mols=mols, ids=ids)
+    assert len(df) == 2
+    assert df.id.to_list() == [0, 1]
