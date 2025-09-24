@@ -69,6 +69,8 @@ The protocol consists of 5 steps:
 
 ## Usage
 
+StrainRelief runs are configured using hydra configs.
+
 ### Python Package
 
 ```
