@@ -64,7 +64,7 @@ def compute_strain(
     df = _parse_args(df=df, mols=mols, ids=ids)
 
     # Load data
-    docked = to_mols_dict(df, cfg.io.input.mol_col_name, cfg.io.input.id_col_name)
+    docked = to_mols_dict(df, **cfg.io.input)
     local_minima = {id: deepcopy(mol) for id, mol in docked.items()}
     global_minimia = {id: deepcopy(mol) for id, mol in docked.items()}
 

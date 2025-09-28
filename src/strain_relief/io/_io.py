@@ -3,11 +3,22 @@ import pandas as pd
 from loguru import logger as logging
 from rdkit import Chem
 
-from strain_relief.constants import CHARGE_COL_NAME, ENERGY_PROPERTY_NAME, ID_COL_NAME, MOL_COL_NAME
+from strain_relief.constants import (
+    CHARGE_COL_NAME,
+    CHARGE_KEY,
+    ENERGY_PROPERTY_NAME,
+    ID_COL_NAME,
+    MOL_COL_NAME,
+    MOL_KEY,
+    SPIN_COL_NAME,
+    SPIN_KEY,
+)
+from strain_relief.types import MolsDict
 
 
 def load_parquet(
     parquet_path: str,
+    include_charged: bool,
     id_col_name: str | None = None,
     mol_col_name: str | None = None,
 ) -> pd.DataFrame:
@@ -17,6 +28,8 @@ def load_parquet(
     ----------
     parquet_path: str
         Path to the parquet file containing the molecules.
+    include_charged: bool
+        [PLACEHOLDER] Needed for simplicity of arg parsing.
     id_col_name: str
         Name of the column containing the molecule IDs.
     mol_col_name: str
@@ -37,12 +50,18 @@ def load_parquet(
     logging.info(f"Loaded {len(df)} posed molecules")
 
     _check_columns(df, mol_col_name, id_col_name)
-    df = _calculate_charge(df, mol_col_name)
-
+    df = _calculate_charge(df, mol_col_name, include_charged)
+    df = _calculate_spin(df, mol_col_name)
     return df
 
 
-def to_mols_dict(df: pd.DataFrame, mol_col_name: str, id_col_name: str) -> dict:
+def to_mols_dict(
+    df: pd.DataFrame,
+    mol_col_name: str,
+    id_col_name: str,
+    include_charged: bool,
+    parquet_path: str = "",
+) -> MolsDict:
     """Converts a DataFrame to a dictionary of RDKit.Mol objects.
 
     Parameters
@@ -53,11 +72,15 @@ def to_mols_dict(df: pd.DataFrame, mol_col_name: str, id_col_name: str) -> dict:
         Name of the column containing the RDKit.Mol objects OR binary strings.
     id_col_name: str
         Name of the column containing the molecule IDs.
+    include_charged: bool
+        If False, filters out charged molecules.
+    parquet_path: str
+        [PLACEHOLDER] Needed for simplicity of arg parsing.
 
     Returns
     -------
-    dict
-        Dictionary containing the molecule IDs and RDKit.Mol objects.
+    MolsDict
+        Dictionary containing the molecule IDs, RDKit.Mol objects, charges and spins.
     """
     if mol_col_name is None:
         mol_col_name = MOL_COL_NAME
@@ -67,10 +90,25 @@ def to_mols_dict(df: pd.DataFrame, mol_col_name: str, id_col_name: str) -> dict:
     if mol_col_name not in df.columns:  # needed for deployment code
         df[mol_col_name] = df["mol_bytes"].apply(Chem.Mol)
 
-    if CHARGE_COL_NAME not in df.columns:  # needed for deployment code
-        df = _calculate_charge(df, mol_col_name)
+    if CHARGE_COL_NAME not in df.columns:
+        df = _calculate_charge(df, mol_col_name, include_charged)
 
-    return {r[id_col_name]: r[mol_col_name] for _, r in df[df[CHARGE_COL_NAME] == 0].iterrows()}
+    if SPIN_COL_NAME not in df.columns:
+        df = _calculate_spin(df, mol_col_name)
+
+    for _, r in df.iterrows():
+        logging.debug(
+            f"Mol ID: {r[id_col_name]}, Charge: {r[CHARGE_COL_NAME]}, Spin: {r[SPIN_COL_NAME]}"
+        )
+
+    return {
+        r[id_col_name]: {
+            MOL_KEY: r[mol_col_name],
+            CHARGE_KEY: int(r[CHARGE_COL_NAME]),
+            SPIN_KEY: int(r[SPIN_COL_NAME]),
+        }
+        for _, r in df.iterrows()
+    }
 
 
 def _check_columns(df: pd.DataFrame, mol_col_name: str, id_col_name: str):
@@ -86,7 +124,7 @@ def _check_columns(df: pd.DataFrame, mol_col_name: str, id_col_name: str):
         Name of the column containing the molecule IDs.
     """
     if "mol_bytes" not in df.columns:
-        raise ValueError("Column 'mol_bytes' not found in dataframe")
+        raise ValueError(f"'mol_bytes' not found in dataframe columns {df.columns}")
     df[mol_col_name] = df["mol_bytes"].apply(Chem.Mol)
     logging.info(f"RDKit.Mol column is '{mol_col_name}'")
 
@@ -97,30 +135,64 @@ def _check_columns(df: pd.DataFrame, mol_col_name: str, id_col_name: str):
     logging.info(f"ID column is '{id_col_name}'")
 
 
-def _calculate_charge(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
+def _calculate_charge(df: pd.DataFrame, mol_col_name: str, include_charged: bool) -> pd.DataFrame:
     """Calculate charge of molecules.
 
     Parameters
     ----------
     df: pd.DataFrame
         DataFrame containing molecules.
+    mol_col_name: str
+        Name of the column containing the RDKit.Mol objects OR binary strings.
+    include_charged: bool
+        If False, filters out charged molecules.
 
     Returns
     -------
         DataFrame with charge column.
     """
     df[CHARGE_COL_NAME] = df[mol_col_name].apply(lambda x: int(Chem.GetFormalCharge(x)))
-    if all(df[CHARGE_COL_NAME] != 0):
-        logging.error(
-            # raise ValueError(
-            "All molecules are charged. StrainRelief only calculates ligand strain for neutral "
-            "molecules."
-        )
-    elif any(df[CHARGE_COL_NAME] != 0):
-        logging.info(
-            f"Dataset contains {len(df[df[CHARGE_COL_NAME] != 0])} charged molecules. Ligand "
-            "strains will not be calculated for these."
-        )
+    logging.info(f"Dataset contains {len(df[df[CHARGE_COL_NAME] != 0])} charged molecules.")
+
+    if not include_charged:
+        df = df[df[CHARGE_COL_NAME] == 0]
+        if len(df) == 0:
+            logging.error("No neutral molecules found after charge filtering.")
+        else:
+            logging.info(f"Dataset contains {len(df)} neutral molecules after charge filtering.")
+
+    return df
+
+
+def _calculate_spin(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
+    """Calculate spin multiplicity of molecules.
+
+    The spin multiplicity is calculated from the number of free radical electrons using Hund's rule
+    of maximum multiplicity defined as 2S + 1 where S is the total electron spin. The total spin is
+    1/2 the number of free radical electrons in a molecule using Hund's rule.
+
+    Parameters
+    ----------
+    df: pd.DataFrame
+        DataFrame containing molecules.
+    mol_col_name: str
+        Name of the column containing the RDKit.Mol objects OR binary strings.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with spin multiplicity column.
+    """
+
+    def hunds_rule(mol: Chem.Mol) -> int:
+        """Calculate spin multiplicity using Hund's rule."""
+        num_radical_electrons = sum(atom.GetNumRadicalElectrons() for atom in mol.GetAtoms())
+        total_electronic_spin = num_radical_electrons / 2
+        spin_multiplicity = 2 * total_electronic_spin + 1
+        return int(spin_multiplicity)
+
+    df[SPIN_COL_NAME] = df[mol_col_name].apply(lambda x: hunds_rule(x))
+
     return df
 
 
@@ -173,9 +245,9 @@ def _process_molecule_data(
 
 def save_parquet(
     input_df: pd.DataFrame,
-    docked_mols: dict,
-    local_min_mols: dict,
-    global_min_mols: dict,
+    docked_mols: MolsDict,
+    local_min_mols: MolsDict,
+    global_min_mols: MolsDict,
     threshold: float,
     parquet_path: str,
     id_col_name: str | None = None,
@@ -187,12 +259,12 @@ def save_parquet(
     ----------
     input_df: pd.DataFrame
         Input DataFrame containing the StrainRelief's original input.
-    docked_mols: dict
-        Dictionary containing the poses of docked molecules.
-    local_min_mols: dict
-        Dictionary containing the poses of locally minimised molecules using strain_relief.
-    global_min_mols: dict
-        Dictionary containing the poses of globally minimised molecules using strain_relief.
+    docked_mols: MolsDict
+        Nested dictionary containing the poses of docked molecules.
+    local_min_mols: MolsDict
+        Nested dictionary containing the poses of locally minimised molecules using strain_relief.
+    global_min_mols: MolsDict
+        Nested dictionary containing the poses of globally minimised molecules using strain_relief.
     threshold: float
         Threshold for the ligand strain filter.
     parquet_path: str
@@ -217,8 +289,8 @@ def save_parquet(
         dicts.append(
             _process_molecule_data(
                 mol_id,
-                local_min_mols[mol_id],
-                global_min_mols[mol_id],
+                local_min_mols[mol_id][MOL_KEY],
+                global_min_mols[mol_id][MOL_KEY],
                 threshold,
             )
         )

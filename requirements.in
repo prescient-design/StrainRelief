@@ -9,3 +9,4 @@ fastparquet
 universal-pathlib
 boto3
 loguru
+ipykernel

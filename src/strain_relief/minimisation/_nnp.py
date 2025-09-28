@@ -2,16 +2,16 @@ import tempfile
 from typing import Literal
 
 from loguru import logger as logging
-from rdkit import Chem
 
 from strain_relief.calculators import CALCULATORS_DICT
 from strain_relief.constants import EV_TO_KCAL_PER_MOL, HARTREE_TO_KCAL_PER_MOL
 from strain_relief.io.utils_s3 import copy_from_s3
 from strain_relief.minimisation.utils_minimisation import method_min
+from strain_relief.types import EnergiesDict, MolsDict
 
 
 def NNP_min(
-    mols: dict[str : Chem.Mol],
+    mols: MolsDict,
     method: Literal["MACE", "FAIRChem"],
     calculator_kwargs: dict,
     model_paths: str,
@@ -19,16 +19,16 @@ def NNP_min(
     fmax: float,
     fexit: float,
     energy_units: Literal["eV", "Hartrees", "kcal/mol"] = "eV",
-) -> tuple[dict[str : dict[str:float]], dict[str : Chem.Mol]]:
+) -> tuple[EnergiesDict, MolsDict]:
     """Minimise all conformers of a Chem.Mol using a NNP.
 
     Parameters
     ----------
-    mols : dict[str:Chem.Mol]
+    mols : MolsDict
         Dictionary of molecules to minimise.
     method : Literal["MACE", "FAIRChem"]
         The NNP to use for MD calculation.
-    calculator_kwargs : dict
+    calculator_kwargs : Dict
         Additional keyword arguments to pass to the NNP calculator.
         For example, for MACE, this should include `model_path`, `device` and `default_dtype`.
     model_path : str
@@ -42,7 +42,7 @@ def NNP_min(
     energy_units: Literal["eV", "Hartrees", "kcal/mol"]
         The units output from the energy calculation.
 
-    energies, mols : dict[str:dict[str: float]], dict[str:Chem.Mol]
+    energies, mols : EnergiesDict, MolsDict
         energies is a dict of final energy of each molecular conformer in eV (i.e. 0 = converged).
         mols contains the dictionary of molecules with the conformers minimised.
 
