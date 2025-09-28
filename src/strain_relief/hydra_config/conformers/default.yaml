@@ -1,6 +1,8 @@
-randomSeed: ${seed}
-numConfs: 20
-maxAttempts: 10
-pruneRmsThresh: 0.1
-clearConfs: False
-numThreads: ${numThreads}
+device: ${device}
+EmbedMultipleConfs:
+  randomSeed: ${seed}
+  numConfs: 20
+  maxAttempts: 10
+  pruneRmsThresh: 0.1
+  clearConfs: False
+  numThreads: ${numThreads}

@@ -99,7 +99,7 @@ More examples are given [here](./examples/examples.sh), including the command us
 **RDKit kwargs**
 
 The following dictionaries are passed directly to the function of that name.
-- `conformers` (`EmbedMultipleConfs`)
+- `conformers.EmbedMultipleConfs`
 - `minimisation.MMFFGetMoleculeProperties`
 - `minimisation.MMFFGetMoleculeForceField`
 - `energy_eval.MMFFGetMoleculeProperties`
