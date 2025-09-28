@@ -51,6 +51,9 @@ or if you have a `uv.lock` file:
 uv sync --extra dev --editable
 ```
 
+**GPU-Accelerated Conformer Generation**
+GPU accerlation for conformer generation is optionally available via `nvMolKit`. Instructions for installation this can be found [here](https://github.com/NVIDIA-Digital-Bio/nvMolKit). **Note** this has not been applied to the MMFF94 geometry optimisation because it is not currently compatible with the way we have defined our convergence criteria.
+
 ## The Protocol
 
 The protocol used in StrainRelief is designed to be simple, fast and model agnostic - all that is needed to apply a new force field is to write an ASE calculator wrapper. Additionally you can use any MACE model, such as these from the [MACE-OFF23](https://github.com/ACEsuit/mace-off/tree/main/mace_off23) repository.
@@ -76,7 +79,7 @@ StrainRelief runs are configured using hydra configs.
 ```
 from strain_relief import compute_strain
 
-strains = compute_strain(poses: list[RDKit.Mol], config: DictConfig)
+computed = compute_strain(poses: list[RDKit.Mol], config: DictConfig)
 
 for i, r in computed.iterrows():
     print(f"Pose {r['id']} has a strain of {r['ligand_strain']:.2f} kcal/mol")
@@ -99,7 +102,7 @@ More examples are given [here](./examples/examples.sh), including the command us
 **RDKit kwargs**
 
 The following dictionaries are passed directly to the function of that name.
-- `conformers` (`EmbedMultipleConfs`)
+- `conformers.EmbedMultipleConfs`
 - `minimisation.MMFFGetMoleculeProperties`
 - `minimisation.MMFFGetMoleculeForceField`
 - `energy_eval.MMFFGetMoleculeProperties`
@@ -108,8 +111,9 @@ The following dictionaries are passed directly to the function of that name.
 The hydra config is set up to allow additional kwargs to be passed to these functions e.g. `+minimisation.MMFFGetMoleculeProperties.mmffVerbosity=1`.
 
 **Common kwargs**
-- `threshold` (set by default to 16.1 kcal/mol - calibrated using [LigBoundConf 2.0](https://huggingface.co/datasets/erwallace/LigBoundConf2.0))
-- `conformers.numConfs`
+- `threshold`: set by default to 16.1 kcal/mol - calibrated using [LigBoundConf 2.0](https://huggingface.co/datasets/erwallace/LigBoundConf2.0)
+- `conformers.EmbedMultipleConfs.numConfs`
+- `conformers.device`: determines whether to use `RDKit` or GPU-accelerated `nvMolKit`
 - `global_min.maxIters`/`local_min.maxIters`
 - `global_min.fmax`/`local_min.maxIters`
 - `io.input.include_charged`

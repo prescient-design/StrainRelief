@@ -3,4 +3,4 @@ energy_units: eV
 calculator_kwargs:
   model_paths: ${..model_paths}
   default_dtype: float32
-  device: cuda
+  device: ${device}

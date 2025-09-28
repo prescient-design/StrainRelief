@@ -4,6 +4,8 @@ defaults:
   - override /minimisation@local_min: mmff94s
   - override /minimisation@global_min: mmff94s
 
+device: cpu
+
 conformers:
   numConfs: 20
 
