@@ -4,7 +4,6 @@ from typing import Literal
 
 import numpy as np
 from loguru import logger as logging
-from nvmolkit.embedMolecules import EmbedMolecules as nvMolKitEmbed
 from rdkit.Chem import AllChem, rdDetermineBonds
 
 from strain_relief.constants import CHARGE_KEY, MOL_KEY
@@ -83,6 +82,16 @@ def generate_conformers(
 
 def _generate_conformers_cuda(mols, **kwargs):
     """nvMolKit based conformer generation on GPU."""
+    logging.info("Generating conformers with GPU enabled nvMolKit...")
+    try:
+        from nvmolkit.embedMolecules import EmbedMolecules as nvMolKitEmbed
+    except ImportError:
+        raise ImportError(
+            "nvMolKit is required for GPU based conformer generation. "
+            "Install from https://github.com/NVIDIA-Digital-Bio/nvMolKit "
+            "or set cfg.conformers.device = 'cpu' to use RDKit conformer generation."
+        )
+
     mol_list = [mol_properties[MOL_KEY] for mol_properties in mols.values()]
     nvMolKitEmbed(mol_list, **kwargs)
     for i, id in enumerate(mols.keys()):
@@ -93,6 +102,7 @@ def _generate_conformers_cuda(mols, **kwargs):
 
 def _generate_conformers_cpu(mols, **kwargs):
     """RDKit based conformer generation on CPU."""
+    logging.info("Generating conformers with CPU enabled RDKit...")
     for id, mol_properties in mols.items():
         mol = mol_properties[MOL_KEY]
         AllChem.EmbedMultipleConfs(
