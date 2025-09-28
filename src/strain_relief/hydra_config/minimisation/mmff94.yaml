@@ -5,3 +5,4 @@ MMFFGetMoleculeProperties:
 MMFFGetMoleculeForceField: {}
 fmax: 0.05
 fexit: 250
+device: ${device}

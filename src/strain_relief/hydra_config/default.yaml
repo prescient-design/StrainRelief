@@ -11,3 +11,4 @@ defaults:
 seed: -1
 threshold: 16.1
 numThreads: 0
+device: cuda
