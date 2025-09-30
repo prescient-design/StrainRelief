@@ -16,6 +16,9 @@ from copy import deepcopy
 from timeit import default_timer as timer
 
 import pandas as pd
+import rich
+import rich.syntax
+import rich.tree
 from loguru import logger as logging
 from omegaconf import DictConfig, OmegaConf
 from rdkit import Chem
@@ -55,7 +58,7 @@ def compute_strain(
         Dataframe with strain energies and other metadata.
     """
     start = timer()
-    logging.info(f"STRAIN RELIEF RUN CONFIG: \n{OmegaConf.to_yaml(cfg)}")
+    _print_config_tree(cfg)
 
     if (
         cfg.local_min.method in ["MACE", "FAIRChem"]
@@ -133,3 +136,35 @@ def _parse_args(
         mols = [mol.ToBinary() for mol in mols]
 
     return pd.DataFrame({"id": ids, "mol_bytes": mols})
+
+
+def _print_config_tree(
+    cfg: DictConfig,
+    resolve: bool = False,
+) -> None:
+    """Prints content of DictConfig using Rich library and its tree structure.
+
+    Parameters
+    ----------
+    cfg: DictConfig
+        The configuration to be printed.
+    resolve: bool
+        Whether to resolve interpolations in the configuration.
+    """
+    style = "dim"
+    tree = rich.tree.Tree("CONFIG", style=style, guide_style=style)
+
+    # Generate config tree
+    for field in cfg:
+        branch = tree.add(field, style=style, guide_style=style)
+
+        config_group = cfg[field]
+        if isinstance(config_group, DictConfig):
+            branch_content = OmegaConf.to_yaml(config_group, resolve=resolve)
+        else:
+            branch_content = str(config_group)
+
+        branch.add(rich.syntax.Syntax(branch_content, "yaml"))
+
+    # Print config tree
+    rich.print(tree)
