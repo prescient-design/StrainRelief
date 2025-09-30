@@ -111,7 +111,7 @@ def to_mols_dict(
     }
 
 
-def _check_columns(df: pd.DataFrame, mol_col_name: str, id_col_name: str):
+def _check_columns(df: pd.DataFrame, mol_col_name: str, id_col_name: str) -> None:
     """Check if the required columns are present in the dataframe.
 
     Parameters
@@ -203,13 +203,17 @@ def _process_molecule_data(
     threshold: float,
 ) -> dict:
     """Helper function to process data for a single molecule."""
-    local_min_energy, local_min_conf = np.nan, np.nan
+    local_min_energy: float = float(np.nan)
+    local_min_conf: float = float(np.nan)
 
     if local_min_mol.GetNumConformers() != 0:
         local_min_energy = local_min_mol.GetConformer().GetDoubleProp(ENERGY_PROPERTY_NAME)
         local_min_conf = local_min_mol.ToBinary()
 
-    global_min_energy, global_min_conf, conf_energies = np.nan, np.nan, []
+    global_min_energy: float = float(np.nan)
+    global_min_conf: float = float(np.nan)
+    conf_energies: list[float] = []
+
     if global_min_mol.GetNumConformers() != 0:
         conf_energies = [
             conf.GetDoubleProp(ENERGY_PROPERTY_NAME) for conf in global_min_mol.GetConformers()
@@ -219,7 +223,7 @@ def _process_molecule_data(
         global_min_energy = conf_energies[min_idx]
         global_min_conf = Chem.Mol(global_min_mol, confId=conf_idxs[min_idx]).ToBinary()
 
-    strain = np.nan
+    strain: float = float(np.nan)
     if not np.isnan(local_min_energy) and not np.isnan(global_min_energy):
         strain = local_min_energy - global_min_energy
         if strain < 0:
@@ -269,9 +273,9 @@ def save_parquet(
         Threshold for the ligand strain filter.
     parquet_path: str
         Path to the output parquet file.
-    id_col_name: str
+    id_col_name: str [optional]
         Name of the column containing the molecule IDs.
-    mol_col_name: str
+    mol_col_name: str [optional]
         Name of the column containing the RDKit.Mol objects.
 
     Returns
@@ -319,7 +323,7 @@ def save_parquet(
             "for either the initial or minimised pose, so strain cannot be calculated."
         )
 
-    total_n_confs = results["nconfs_converged"].sum() if not results.empty else 0
+    total_n_confs: int = results["nconfs_converged"].sum() if not results.empty else 0
 
     if total_n_confs > 0 and not results.empty:
         logging.info(

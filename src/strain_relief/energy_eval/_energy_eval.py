@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from timeit import default_timer as timer
-from typing import Literal
+from typing import Any, Literal
 
 from loguru import logger as logging
 
@@ -7,7 +8,7 @@ from strain_relief.constants import ENERGY_PROPERTY_NAME, MOL_KEY
 from strain_relief.energy_eval import MMFF94_energy, NNP_energy
 from strain_relief.types import MolsDict
 
-METHODS_DICT = {
+METHODS_DICT: dict[str, Callable] = {
     "MACE": NNP_energy,
     "FAIRChem": NNP_energy,
     "MMFF94": MMFF94_energy,
@@ -16,8 +17,10 @@ METHODS_DICT = {
 
 
 def predict_energy(
-    mols: MolsDict, method: Literal["MACE", "FAIRChem", "MMFF94", "MMFF94s"], **kwargs
-):
+    mols: MolsDict,
+    method: Literal["MACE", "FAIRChem", "MMFF94", "MMFF94s"],
+    **kwargs: Any,
+) -> MolsDict:
     """Predict the energy of all conformers of molecules in mols using a specified method.
 
     Parameters
@@ -35,17 +38,15 @@ def predict_energy(
         Nested dictionary of molecules with the predicted energies stored as a property on each
         conformer.
     """
-    start = timer()
+    start: float = timer()
 
     if method not in METHODS_DICT:
         raise ValueError(f"method must be in {METHODS_DICT.keys()}")
 
     logging.info(f"Predicting energies using {method}")
-    # Select method and run energy evaluation
     energy_method = METHODS_DICT[method]
-    energies = energy_method(mols, method, **kwargs)
+    energies: dict[str, dict[int, float]] = energy_method(mols, method, **kwargs)
 
-    # Store the predicted energies as a property on each conformer
     for id, mol_properties in mols.items():
         [
             mol_properties[MOL_KEY]
@@ -57,7 +58,7 @@ def predict_energy(
         f"Predicted energies stored as '{ENERGY_PROPERTY_NAME}' property on each conformer"
     )
 
-    end = timer()
+    end: float = timer()
     logging.info(f"Energy prediction took {end - start:.2f} seconds. \n")
 
     return mols

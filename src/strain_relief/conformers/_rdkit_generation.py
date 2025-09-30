@@ -1,5 +1,6 @@
 from collections import Counter
 from timeit import default_timer as timer
+from typing import Any
 
 import numpy as np
 from loguru import logger as logging
@@ -17,7 +18,7 @@ def generate_conformers(
     pruneRmsThresh: float = 0.1,
     clearConfs: bool = False,
     numThreads: int = 0,
-    **kwargs,
+    **kwargs: Any,
 ) -> MolsDict:
     """Generate conformers for a molecule. The 0th conformer is the original molecule.
 
@@ -46,9 +47,8 @@ def generate_conformers(
     MolsDict
         Nested dictionary of molecules with multiple conformers.
     """
-    start = timer()
-    # Check that each molecule only has one conformer before generation.
-    n_conformers = np.array(
+    start: float = timer()
+    n_conformers: np.ndarray = np.array(
         [mol_properties[MOL_KEY].GetNumConformers() for mol_properties in mols.values()]
     )
     if not np.all((n_conformers == 1) | (n_conformers == 0)):
@@ -86,7 +86,7 @@ def generate_conformers(
         f"Min. number of conformers is {np.min(n_conformers) if len(n_conformers) > 0 else np.nan}"
     )
 
-    end = timer()
+    end: float = timer()
     logging.info(f"Conformer generation took {end - start:.2f} seconds. \n")
 
     return mols

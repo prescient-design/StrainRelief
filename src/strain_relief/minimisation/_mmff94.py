@@ -1,3 +1,6 @@
+from collections.abc import Mapping
+from typing import Any
+
 from strain_relief.calculators import RDKitMMFFCalculator
 from strain_relief.minimisation.utils_minimisation import method_min
 from strain_relief.types import EnergiesDict, MolsDict
@@ -6,8 +9,8 @@ from strain_relief.types import EnergiesDict, MolsDict
 def MMFF94_min(
     mols: MolsDict,
     method: str,
-    MMFFGetMoleculeProperties: dict,
-    MMFFGetMoleculeForceField: dict,
+    MMFFGetMoleculeProperties: Mapping[str, Any],
+    MMFFGetMoleculeForceField: Mapping[str, Any],
     maxIters: int,
     fmax: float,
     fexit: float,
@@ -20,9 +23,9 @@ def MMFF94_min(
         Dictionary of molecules to minimise.
     method : str
         [PLACEHOLDER] Needed for NNP_min compatibility.
-    MMFFGetMoleculeProperties: Dict
+    MMFFGetMoleculeProperties: Mapping[str, Any]
         Additional keyword arguments to pass to the MMFFGetMoleculeProperties function.
-    MMFFGetMoleculeForceField: Dict
+    MMFFGetMoleculeForceField: Mapping[str, Any]
         Additional keyword arguments to pass to the MMFFGetMoleculeForceField function.
     maxIters : int
         Maximum number of iterations for the minimisation.

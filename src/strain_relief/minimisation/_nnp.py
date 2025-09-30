@@ -1,5 +1,5 @@
 import tempfile
-from typing import Literal
+from typing import Any, Literal
 
 from loguru import logger as logging
 
@@ -13,7 +13,7 @@ from strain_relief.types import EnergiesDict, MolsDict
 def NNP_min(
     mols: MolsDict,
     method: Literal["MACE", "FAIRChem"],
-    calculator_kwargs: dict,
+    calculator_kwargs: dict[str, Any],
     model_paths: str,
     maxIters: int,
     fmax: float,
@@ -28,7 +28,7 @@ def NNP_min(
         Dictionary of molecules to minimise.
     method : Literal["MACE", "FAIRChem"]
         The NNP to use for MD calculation.
-    calculator_kwargs : Dict
+    calculator_kwargs : Dict[str, Any]
         Additional keyword arguments to pass to the NNP calculator.
         For example, for MACE, this should include `model_path`, `device` and `default_dtype`.
     model_path : str

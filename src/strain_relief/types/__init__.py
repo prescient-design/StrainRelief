@@ -1,5 +1,6 @@
 from ._types import (
     ConfEnergiesDict,
+    ConformerASEList,
     EnergiesDict,
     MolPropertiesDict,
     MolsDict,
@@ -10,4 +11,5 @@ __all__ = [
     "MolPropertiesDict",
     "EnergiesDict",
     "ConfEnergiesDict",
+    "ConformerASEList",
 ]

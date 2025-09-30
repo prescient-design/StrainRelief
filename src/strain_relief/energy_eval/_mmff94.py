@@ -1,3 +1,6 @@
+from collections.abc import Mapping
+from typing import Any
+
 from loguru import logger as logging
 from rdkit import Chem
 from rdkit.Chem import rdDetermineBonds, rdForceFieldHelpers
@@ -9,8 +12,8 @@ from strain_relief.types import ConfEnergiesDict, EnergiesDict, MolsDict
 def MMFF94_energy(
     mols: MolsDict,
     method: str,
-    MMFFGetMoleculeProperties: dict,
-    MMFFGetMoleculeForceField: dict,
+    MMFFGetMoleculeProperties: Mapping[str, Any],
+    MMFFGetMoleculeForceField: Mapping[str, Any],
 ) -> EnergiesDict:
     """Calculate the MMFF94(s) energy for all conformers of all molecules.
 
@@ -49,7 +52,10 @@ def MMFF94_energy(
 
 
 def _MMFF94_energy(
-    mol: Chem.Mol, id: str, MMFFGetMoleculeProperties: dict, MMFFGetMoleculeForceField: dict
+    mol: Chem.Mol,
+    id: str,
+    MMFFGetMoleculeProperties: Mapping[str, Any],
+    MMFFGetMoleculeForceField: Mapping[str, Any],
 ) -> ConfEnergiesDict:
     """Calculate the MMFF94 energy for all conformers of a molecule.
 

@@ -1,11 +1,11 @@
-from typing import Literal
+from typing import Any, Literal
 
 
 def fairchem_calculator(
     model_paths: str,
     device: str = Literal["cpu", "cuda"],
     default_dtype: Literal["float32", "float64"] = "float32",
-    **kwargs,
+    **kwargs: Any,
 ):
     try:
         from fairchem.core import FAIRChemCalculator
@@ -30,7 +30,7 @@ def mace_calculator(
     model_paths: str,
     device: str = Literal["cpu", "cuda"],
     default_dtype: Literal["float32", "float64"] = "float64",
-    **kwargs,
+    **kwargs: Any,
 ):
     try:
         from mace.calculators import MACECalculator

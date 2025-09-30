@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from timeit import default_timer as timer
-from typing import Literal
+from typing import Any, Literal
 
 from loguru import logger as logging
 
@@ -7,11 +8,16 @@ from strain_relief.constants import ENERGY_PROPERTY_NAME, MOL_KEY
 from strain_relief.minimisation import MMFF94_min, NNP_min
 from strain_relief.types import MolsDict
 
-METHODS_DICT = {"MACE": NNP_min, "FAIRChem": NNP_min, "MMFF94": MMFF94_min, "MMFF94s": MMFF94_min}
+METHODS_DICT: dict[str, Callable] = {
+    "MACE": NNP_min,
+    "FAIRChem": NNP_min,
+    "MMFF94": MMFF94_min,
+    "MMFF94s": MMFF94_min,
+}
 
 
 def minimise_conformers(
-    mols: MolsDict, method: Literal["MACE", "FAIRChem", "MMFF94s", "MMFF94"], **kwargs
+    mols: MolsDict, method: Literal["MACE", "FAIRChem", "MMFF94s", "MMFF94"], **kwargs: Any
 ) -> MolsDict:
     """Minimise all conformers of all molecules using a force field.
 
@@ -21,7 +27,7 @@ def minimise_conformers(
         Nested dictionary of molecules to minimise.
     method : Literal["MACE", "FAIRChem", "MMFF94s", "MMFF94"]
         Method to use for minimisation.
-    kwargs : dict
+    kwargs : Any
         Additional keyword arguments to pass to the minimisation function.
 
     Returns
@@ -40,13 +46,11 @@ def minimise_conformers(
     energies, mols = min_method(mols, method, **kwargs)
 
     # Store the predicted energies as a property on each conformer
-    for id, mol_properties in mols.items():
-        [
-            mol_properties[MOL_KEY]
-            .GetConformer(conf_id)
-            .SetDoubleProp(ENERGY_PROPERTY_NAME, energy)
-            for conf_id, energy in energies[id].items()
-        ]
+    for mol_id, mol_properties in mols.items():
+        for conf_id, energy in energies[mol_id].items():
+            mol_properties[MOL_KEY].GetConformer(conf_id).SetDoubleProp(
+                ENERGY_PROPERTY_NAME, energy
+            )
     logging.info(
         f"Predicted energies stored as '{ENERGY_PROPERTY_NAME}' property on each conformer"
     )

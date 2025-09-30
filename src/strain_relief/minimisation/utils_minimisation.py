@@ -1,12 +1,20 @@
 import ase
 import numpy as np
+from ase import Atoms
+from ase.calculators.calculator import Calculator
 from loguru import logger as logging
 from rdkit import Chem
 
 from strain_relief.constants import CHARGE_KEY, MOL_KEY, SPIN_KEY
 from strain_relief.io import ase_to_rdkit, rdkit_to_ase
 from strain_relief.minimisation.utils_bfgs import StrainReliefBFGS
-from strain_relief.types import ConfEnergiesDict, EnergiesDict, MolPropertiesDict, MolsDict
+from strain_relief.types import (
+    ConfEnergiesDict,
+    ConformerASEList,
+    EnergiesDict,
+    MolPropertiesDict,
+    MolsDict,
+)
 
 
 def method_min(
@@ -44,7 +52,7 @@ def method_min(
             }
         }
     """
-    energies = {}
+    energies: EnergiesDict = {}
     for id, mol_properties in mols.items():
         energies[id], mols[id] = _method_min(
             mol_properties, id, calculator, maxIters, fmax, fexit, conversion_factor
@@ -65,7 +73,7 @@ def _method_min(
 
     Parameters
     ----------
-    mol_properties : dict[str: Any]
+    mol_properties : MolPropertiesDict
         Dict of molecule to minimise and their properties.
     calculator : ase.calculators
         The ASE calculator to use for energy calculation.
@@ -85,13 +93,12 @@ def _method_min(
         {conf_id, energy}
     """
     results = []
-    conf_id_and_conf_min = []
+    conf_id_and_conf_min: ConformerASEList = []
 
-    mol, charge, spin = (
-        mol_properties[MOL_KEY],
-        mol_properties[CHARGE_KEY],
-        mol_properties[SPIN_KEY],
-    )
+    mol: Chem.Mol = mol_properties[MOL_KEY]
+    charge: int = mol_properties[CHARGE_KEY]
+    spin: int = mol_properties[SPIN_KEY]
+
     conf_id_and_conf = rdkit_to_ase(mol)
 
     for conf_id, conf in conf_id_and_conf:
@@ -147,12 +154,12 @@ def remove_non_converged(
 
 
 def run_minimisation(
-    atoms: ase.Atoms,
-    calculator: ase.calculators,
+    atoms: Atoms,
+    calculator: Calculator,
     maxIters: int,
     fmax: float = 0.05,
     fexit: float = 250,
-) -> tuple[ase.Atoms, int, float]:
+) -> tuple[Atoms, int, float]:
     """Run the minimisation of a single conformer using the given calculator.
 
     Parameters
