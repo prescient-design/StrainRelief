@@ -43,7 +43,7 @@ def minimise_conformers(
     logging.info(f"Minimising conformers using {method} and removing non-converged conformers...")
     # Select method and run minimisation
     min_method = METHODS_DICT[method]
-    energies, mols = min_method(mols, method, **kwargs)
+    energies, mols = min_method(mols=mols, method=method, **kwargs)
 
     # Store the predicted energies as a property on each conformer
     for mol_id, mol_properties in mols.items():

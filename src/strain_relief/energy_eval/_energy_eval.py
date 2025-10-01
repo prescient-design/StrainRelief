@@ -6,7 +6,7 @@ from loguru import logger as logging
 
 from strain_relief.constants import ENERGY_PROPERTY_NAME, MOL_KEY
 from strain_relief.energy_eval import MMFF94_energy, NNP_energy
-from strain_relief.types import MolsDict
+from strain_relief.types import EnergiesDict, MolsDict
 
 METHODS_DICT: dict[str, Callable] = {
     "MACE": NNP_energy,
@@ -45,7 +45,7 @@ def predict_energy(
 
     logging.info(f"Predicting energies using {method}")
     energy_method = METHODS_DICT[method]
-    energies: dict[str, dict[int, float]] = energy_method(mols, method, **kwargs)
+    energies: EnergiesDict = energy_method(mols=mols, method=method, **kwargs)
 
     for id, mol_properties in mols.items():
         [

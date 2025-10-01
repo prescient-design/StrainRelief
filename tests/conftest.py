@@ -18,7 +18,7 @@ def mols() -> MolsDict:
         id_col_name="SMILES",
         include_charged=True,
     )
-    return to_mols_dict(df, "", "mol", "SMILES", True)
+    return to_mols_dict(df=df, mol_col_name="mol", id_col_name="SMILES", include_charged=True)
 
 
 @pytest.fixture(scope="function")
@@ -54,7 +54,7 @@ def mols_wo_bonds() -> MolsDict:
 
     Bond information is determined using RDKit's DetermineBonds."""
     df = load_parquet(parquet_path=test_dir / "data" / "ligboundconf.parquet", include_charged=True)
-    return to_mols_dict(df, "", "mol", "id", True)
+    return to_mols_dict(df=df, mol_col_name="mol", id_col_name="id", include_charged=True)
 
 
 @pytest.fixture(scope="function")

@@ -38,9 +38,9 @@ def test_minimise_conformers(method: str, expected_exception, kwargs: dict, mols
     smile = "CN(c1n[nH]c2nc(OC3CC3)ccc12)S(=O)(=O)c1cccc(Cl)c1F"
     if expected_exception:
         with pytest.raises(expected_exception):
-            minimise_conformers(mols, method, **kwargs)
+            minimise_conformers(mols=mols, method=method, **kwargs)
     else:
-        result = minimise_conformers(mols, method, **kwargs)
+        result = minimise_conformers(mols=mols, method=method, **kwargs)
         assert result is not None
         assert isinstance(result, dict)
         assert isinstance(result[smile], dict)
