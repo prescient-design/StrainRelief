@@ -40,7 +40,7 @@ def test_calculate_spin():
 def test_to_mols_dict():
     df = pd.DataFrame({"mol": [Chem.MolFromSmiles("C"), Chem.MolFromSmiles("C[O-]")], "id": [1, 2]})
     df = _calculate_charge(df, "mol", False)
-    mols = to_mols_dict(df, "", "mol", "id", False)
+    mols = to_mols_dict(df=df, mol_col_name="mol", id_col_name="id", include_charged=False)
     assert len(mols) == 1
 
 
