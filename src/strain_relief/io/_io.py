@@ -19,8 +19,8 @@ from strain_relief.types import MolsDict
 def load_parquet(
     parquet_path: str,
     include_charged: bool | None = None,
-    id_col_name: None | None = None,
-    mol_col_name: None | None = None,
+    id_col_name: str | None = None,
+    mol_col_name: str | None = None,
 ) -> pd.DataFrame:
     """Load a parquet file containing molecules.
 
@@ -129,7 +129,7 @@ def _check_columns(df: pd.DataFrame, mol_col_name: str, id_col_name: str) -> Non
     logging.info(f"RDKit.Mol column is '{mol_col_name}'")
 
     if id_col_name not in df.columns:
-        raise ValueError(f"Column '{id_col_name}' not found in dataframe")
+        raise ValueError(f"Column '{id_col_name}' not found in dataframe, {df.columns}")
     if not df[id_col_name].is_unique:
         raise ValueError(f"ID column ({id_col_name}) contains duplicate values")
     logging.info(f"ID column is '{id_col_name}'")
@@ -151,7 +151,8 @@ def _calculate_charge(df: pd.DataFrame, mol_col_name: str, include_charged: bool
     -------
         DataFrame with charge column.
     """
-    df[CHARGE_COL_NAME] = df[mol_col_name].apply(lambda x: int(Chem.GetFormalCharge(x)))
+    if CHARGE_COL_NAME not in df.columns:
+        df[CHARGE_COL_NAME] = df[mol_col_name].apply(lambda x: int(Chem.GetFormalCharge(x)))
     logging.info(f"Dataset contains {len(df[df[CHARGE_COL_NAME] != 0])} charged molecules.")
 
     if not include_charged:
