@@ -1,34 +1,36 @@
 from ase import Atoms
 from rdkit import Chem
 
+from strain_relief.types import ConformerASEList
 
-def rdkit_to_ase(mol: Chem.Mol) -> list[tuple[int, Atoms]]:
-    """Convert an RDKit molecule to an ASE Atoms object.
+
+def rdkit_to_ase(mol: Chem.Mol) -> ConformerASEList:
+    """Convert an RDKit molecule (with conformers) to ASE Atoms objects.
 
     Parameters
     ----------
-    mol : RDKit molecule
-        The RDKit molecule to convert (with multiple conformers).
+    mol : Chem.Mol
+        RDKit molecule containing one or more conformers.
 
     Returns
     -------
-    list[tuple[int, Atoms]]
-        A list of tuples containing the conformer ID and the ASE Atoms object.
+    ConformerASEList
+        List of (conformer_id, Atoms) tuples.
     """
     atomic_numbers = [atom.GetAtomicNum() for atom in mol.GetAtoms()]
-    conf_id_and_conf = [
+    conf_id_and_conf: ConformerASEList = [
         (conf.GetId(), Atoms(numbers=atomic_numbers, positions=conf.GetPositions()))
         for conf in mol.GetConformers()
     ]
     return conf_id_and_conf
 
 
-def ase_to_rdkit(conf_id_and_conf: list[tuple[int, Atoms]]) -> Chem.Mol:
-    """Convert a list of ASE Atoms objects to an RDKit molecule.
+def ase_to_rdkit(conf_id_and_conf: ConformerASEList) -> Chem.Mol:
+    """Convert a list of ASE Atoms conformers back into an RDKit molecule.
 
     Parameters
     ----------
-    confs : list[tuple[int, Atoms]]
+    conf_id_and_conf : ConformerASEList
         A list of tuples containing the conformer ID and the ASE Atoms object.
 
     Returns

@@ -1,22 +1,25 @@
 from collections import Counter
 from timeit import default_timer as timer
+from typing import Any
 
 import numpy as np
 from loguru import logger as logging
-from rdkit import Chem
 from rdkit.Chem import AllChem, rdDetermineBonds
+
+from strain_relief.constants import CHARGE_KEY, MOL_KEY
+from strain_relief.types import MolsDict
 
 
 def generate_conformers(
-    mols: dict[str : Chem.Mol],
+    mols: MolsDict,
     randomSeed: int = -1,
     numConfs: int = 10,
     maxAttempts: int = 200,
     pruneRmsThresh: float = 0.1,
     clearConfs: bool = False,
     numThreads: int = 0,
-    **kwargs,
-) -> dict[str : Chem.Mol]:
+    **kwargs: Any,
+) -> MolsDict:
     """Generate conformers for a molecule. The 0th conformer is the original molecule.
 
     This function uses RDKit's ETKDGv2 method to generate conformers with the execption of
@@ -24,8 +27,8 @@ def generate_conformers(
 
     Parameters
     ----------
-    mols : dict[str:Chem.Mol]
-            Dictionary of molecules for which to generate conformers.
+    mols : MolsDict
+            Nested dictionary of molecules for which to generate conformers.
     randomSeed : int, optional
             The random seed to use. The default is -1.
     numConfs : int, optional
@@ -41,22 +44,25 @@ def generate_conformers(
 
     Returns
     -------
-    dict[str:Chem.Mol]
-            List of molecules with multiple conformers.
+    MolsDict
+        Nested dictionary of molecules with multiple conformers.
     """
-    start = timer()
-    # Check that each molecule only has one conformer before generation.
-    n_conformers = np.array([mol.GetNumConformers() for mol in mols.values()])
+    start: float = timer()
+    n_conformers: np.ndarray = np.array(
+        [mol_properties[MOL_KEY].GetNumConformers() for mol_properties in mols.values()]
+    )
     if not np.all((n_conformers == 1) | (n_conformers == 0)):
         logging.error(f"Conformer counts: {dict(Counter(n_conformers))}")
         raise ValueError("Some molecules have more than one conformer before conformer generation.")
 
     logging.info("Generating conformers...")
 
-    for id, mol in mols.items():
+    for id, mol_properties in mols.items():
+        mol = mol_properties[MOL_KEY]
+        charge = mol_properties[CHARGE_KEY]
         if mol.GetNumBonds() == 0:
             logging.debug(f"Adding bonds to {id}")
-            rdDetermineBonds.DetermineBonds(mol)
+            rdDetermineBonds.DetermineBonds(mol, charge=charge)
         AllChem.EmbedMultipleConfs(
             mol,
             randomSeed=randomSeed,
@@ -69,7 +75,9 @@ def generate_conformers(
         )
         logging.debug(f"{mol.GetNumConformers()} conformers generated for {id}")
 
-    n_conformers = np.array([mol.GetNumConformers() for mol in mols.values()])
+    n_conformers = np.array(
+        [mol_properties[MOL_KEY].GetNumConformers() for mol_properties in mols.values()]
+    )
     logging.info(
         f"{np.sum(n_conformers == numConfs + 1)} molecules with {numConfs + 1} conformers each"
     )
@@ -78,7 +86,7 @@ def generate_conformers(
         f"Min. number of conformers is {np.min(n_conformers) if len(n_conformers) > 0 else np.nan}"
     )
 
-    end = timer()
+    end: float = timer()
     logging.info(f"Conformer generation took {end - start:.2f} seconds. \n")
 
     return mols

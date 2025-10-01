@@ -1,5 +1,0 @@
-pytest
-pytest-cov
-pre-commit
-torch
-mace-torch>=0.3.13

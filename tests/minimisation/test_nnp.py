@@ -1,6 +1,7 @@
 import pytest
-from rdkit import Chem
+from strain_relief.constants import MOL_KEY
 from strain_relief.minimisation._nnp import NNP_min
+from strain_relief.types import MolsDict
 
 
 @pytest.mark.gpu
@@ -8,7 +9,7 @@ from strain_relief.minimisation._nnp import NNP_min
     "method, model_path",
     [("MACE", "mace_model_path"), ("FAIRChem", "esen_model_path")],
 )
-def test_NNP_min(mols: dict[str, Chem.Mol], method: str, model_path: str, request):
+def test_NNP_min(mols: MolsDict, method: str, model_path: str, request):
     """Test minimisation with NNPs."""
     model_path = request.getfixturevalue(model_path)
 
@@ -27,4 +28,6 @@ def test_NNP_min(mols: dict[str, Chem.Mol], method: str, model_path: str, reques
     )
     # Conformers will not have been minimised in 1 iteration and so will be removed.
     assert all([energy == {} for energy in energies.values()])
-    assert all([mol.GetNumConformers() == 0 for mol in mols.values()])
+    assert all(
+        [mol_properties[MOL_KEY].GetNumConformers() == 0 for mol_properties in mols.values()]
+    )

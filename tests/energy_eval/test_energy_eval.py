@@ -1,7 +1,8 @@
 import pytest
 from rdkit import Chem
-from strain_relief.constants import ENERGY_PROPERTY_NAME
+from strain_relief.constants import ENERGY_PROPERTY_NAME, MOL_KEY
 from strain_relief.energy_eval import predict_energy
+from strain_relief.types import MolsDict
 
 
 @pytest.mark.parametrize(
@@ -26,7 +27,7 @@ from strain_relief.energy_eval import predict_energy
         ("XXX", ValueError, {}),
     ],
 )
-def test_predict_energy(mols: dict[str, Chem.Mol], method: str, expected_exception, kwargs: dict):
+def test_predict_energy(mols: MolsDict, method: str, expected_exception, kwargs: dict):
     mols = mols
     if expected_exception:
         with pytest.raises(expected_exception):
@@ -37,7 +38,8 @@ def test_predict_energy(mols: dict[str, Chem.Mol], method: str, expected_excepti
         assert isinstance(result, dict)
         assert len(result) == len(mols)
 
-        for mol in result.values():
+        for mol_properties in result.values():
+            mol = mol_properties[MOL_KEY]
             assert isinstance(mol, Chem.Mol)
             for conf in mol.GetConformers():
                 assert conf.HasProp(ENERGY_PROPERTY_NAME)
@@ -48,9 +50,7 @@ def test_predict_energy(mols: dict[str, Chem.Mol], method: str, expected_excepti
     "model_path_fixture,architecture",
     [("mace_model_path", "MACE"), ("esen_model_path", "FAIRChem")],
 )
-def test_predict_energy_nnp(
-    mols: dict[str, Chem.Mol], model_path_fixture: str, architecture: str, request
-):
+def test_predict_energy_nnp(mols: MolsDict, model_path_fixture: str, architecture: str, request):
     model_path = request.getfixturevalue(model_path_fixture)
     kwargs = {
         "model_paths": str(model_path),
@@ -66,7 +66,8 @@ def test_predict_energy_nnp(
     assert isinstance(result, dict)
     assert len(result) == len(mols)
 
-    for mol in result.values():
+    for mol_properties in result.values():
+        mol = mol_properties[MOL_KEY]
         assert isinstance(mol, Chem.Mol)
         for conf in mol.GetConformers():
             assert conf.HasProp(ENERGY_PROPERTY_NAME)

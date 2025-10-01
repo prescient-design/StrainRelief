@@ -1,4 +1,8 @@
+from collections.abc import Iterator
+from typing import Any
+
 import numpy as np
+from ase import Atoms
 from ase.optimize import BFGS
 from loguru import logger as logging
 
@@ -6,19 +10,16 @@ from loguru import logger as logging
 class StrainReliefBFGS(BFGS):
     """BFGS optimiser with exit conditions for strain relief.
 
-    This class is a subclass of the BFGS optimiser from the Atomic Simulation Environment (ASE).
-    It adds an additional exit condition for strain relief to the BFGS optimiser (1. see below).
-
-    The exit conditions are:
-    1. The maximum force on an atom is > fexit (dynamics are exploding).
-    2. The number of steps exceeds max_steps.
-    3. The minimisation has converged.
+    Exit conditions:
+    1. Maximum force on any atom > fexit (dynamics exploding).
+    2. Number of steps exceeds max_steps.
+    3. Forces have converged (max force < fmax).
     """
 
-    def __init__(self, atoms, **kwargs):
+    def __init__(self, atoms: Atoms, **kwargs: Any) -> None:
         super().__init__(atoms, **kwargs)
 
-    def run(self, steps, fmax=0.05, fexit=250):
+    def run(self, steps: int, fmax: float = 0.05, fexit: float = 250) -> bool:
         """Run optimizer.
 
         Parameters
@@ -26,120 +27,113 @@ class StrainReliefBFGS(BFGS):
         steps : int
             Number of optimizer steps to be run.
         fmax : float
-            Convergence criterion of the forces on atoms.
-        fexit : int
-            Exit criterion of the forces
+            Convergence criterion (max |F| < fmax).
+        fexit : float
+            Exit criterion (abort if max |F| > fexit).
 
         Returns
         -------
-        converged : bool
-            True if the forces on atoms are converged.
+        bool
+            True if converged.
         """
         self.fmax = fmax
         self.n_fmax = 0.0  # maximum force on atom at step n
         self.fexit = fexit
         return self.dynamics_run(steps=steps)
 
-    def dynamics_run(self, steps):
-        """Run dynamics algorithm.
-
-        This method will return when the forces on all individual
-        atoms are less than *fmax* or when the number of steps exceeds
-        *steps*.
+    def dynamics_run(self, steps: int) -> bool:
+        """Run dynamics algorithm until convergence or exit.
 
         Parameters
         ----------
-        steps : int, default=DEFAULT_MAX_STEPS
-            Number of dynamics steps to be run.
+        steps : int
+            Number of dynamics steps to attempt.
 
         Returns
         -------
-        converged : bool
-            True if the forces on atoms are converged.
+        bool
+            True if converged.
         """
         for converged in self.dynamics_irun(steps=steps):
             pass
         return converged
 
-    def dynamics_irun(self, steps):
-        """Run dynamics algorithm as generator.
+    def dynamics_irun(self, steps: int) -> Iterator[bool]:
+        """Generator form of dynamics loop.
 
         Parameters
         ----------
         steps : int
-            Number of dynamics steps to be run.
+            Number of dynamics steps to attempt.
 
         Yields
         ------
-        converged : bool
-            True if the forces on atoms are converged.
+        bool
+            Convergence status after each (attempted) step.
         """
         # update the maximum number of steps
         self.max_steps = self.nsteps + steps
 
-        # compute the initial step
+        # initial gradient
         self.gradient = self.optimizable.get_gradient()
         self.n_fmax = float(np.linalg.norm(self.gradient.reshape(-1, 3), axis=1).max())
 
-        # check exit condition
         is_exit = self.exit()
         yield self.converged(self.gradient)
 
         while not is_exit:
-            # compute the next step
             self.step()
             self.nsteps += 1
 
             self.gradient = self.optimizable.get_gradient()
             self.n_fmax = float(np.linalg.norm(self.gradient.reshape(-1, 3), axis=1).max())
 
-            # check exit conditions
             is_exit = self.exit()
             yield self.converged()
 
-    def converged(self, gradient=None):
-        """Did the optimization converge?
+    def converged(self, gradient: np.ndarray | None = None) -> bool:
+        """Check force convergence.
 
         Parameters
         ----------
-        gradient : np.ndarray, optional
-            The gradient to check for convergence, by default None (will use the current gradient).
+        gradient : np.ndarray | None
+            Gradient to test (1D flattened). If None, uses current gradient.
 
         Returns
         -------
         bool
-            True if the forces on atoms are converged.
+            True if max force < fmax.
         """
         if gradient is None:
             gradient = self.gradient
         assert gradient.ndim == 1
         return self.optimizable.converged(gradient, self.fmax)
 
-    def exit(self):
-        """Check exit conditions.
-
-        The minimisationwill exit if:
-        1. The maximum force on an atom is > fexit (dynamics are exploding).
-        2. The number of steps exceeds max_steps.
-        3. The minimisation has converged.
-        """
+    def exit(self) -> bool:
+        """Check exit conditions (explosion, max steps, convergence)."""
         if (self.n_fmax > self.fexit) or (self.nsteps >= self.max_steps) or self.converged():
             self.log()
             return True
         return False
 
-    def log(self):
+    def log(self) -> None:
+        """Log optimisation status for current conformer."""
         e = self.optimizable.get_value()
         name = self.__class__.__name__
 
         if self.nsteps >= self.max_steps:
-            msg = f"""{name} CONFORMER NOT CONVEREGED: Steps = {self.nsteps},
-                fmax = {self.n_fmax}, E = {e} (max steps = {self.max_steps})"""
-        elif self.n_fmax > self.fexit:
-            msg = f"""{name} CONFORMER NOT CONVEREGED: Steps = {self.nsteps},
-                fmax = {self.n_fmax}, E = {e} (fmax > {self.fexit})"""
-        elif self.converged():
             msg = (
-                f"{name} CONFORMER CONVEREGED: Steps = {self.nsteps}, fmax = {self.n_fmax}, E = {e}"
+                f"{name} CONFORMER NOT CONVERGED: Steps={self.nsteps}, "
+                f"fmax={self.n_fmax}, E={e} (max steps={self.max_steps})"
             )
+        elif self.n_fmax > self.fexit:
+            msg = (
+                f"{name} CONFORMER NOT CONVERGED: Steps={self.nsteps}, "
+                f"fmax={self.n_fmax}, E={e} (fmax > {self.fexit})"
+            )
+        elif self.converged():
+            msg = f"{name} CONFORMER CONVERGED: Steps={self.nsteps}, " f"fmax={self.n_fmax}, E={e}"
+        else:
+            msg = f"{name} STATUS: Steps={self.nsteps}, fmax={self.n_fmax}, E={e}"
+
         logging.debug(msg)

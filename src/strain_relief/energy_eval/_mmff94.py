@@ -1,30 +1,37 @@
+from collections.abc import Mapping
+from typing import Any
+
 from loguru import logger as logging
 from rdkit import Chem
 from rdkit.Chem import rdDetermineBonds, rdForceFieldHelpers
 
+from strain_relief.constants import CHARGE_KEY, MOL_KEY
+from strain_relief.types import ConfEnergiesDict, EnergiesDict, MolsDict
+
 
 def MMFF94_energy(
-    mols: dict[str : Chem.Mol],
-    method: str,
-    MMFFGetMoleculeProperties: dict,
-    MMFFGetMoleculeForceField: dict,
-) -> dict[dict]:
+    mols: MolsDict,
+    MMFFGetMoleculeProperties: Mapping[str, Any],
+    MMFFGetMoleculeForceField: Mapping[str, Any],
+    method: str | None = None,
+) -> EnergiesDict:
     """Calculate the MMFF94(s) energy for all conformers of all molecules.
 
     Parameters
     ----------
-    mols : dict[str:Chem.Mol]
+    mols : MolsDict
         A dictionary of molecules.
+    MMFFGetMoleculeProperties : Mapping
+        Additional keyword arguments for MMFFGetMoleculeProperties.
+    MMFFGetMoleculeForceField : Mapping
+        Additional keyword arguments for MMFFGetMoleculeForceField.
     method : str
         [PLACEHOLDER] Needed for NNP_energy compatibility.
-    MMFFGetMoleculeProperties : dict
-        Additional keyword arguments for MMFFGetMoleculeProperties.
-    MMFFGetMoleculeForceField : dict
-        Additional keyword arguments for MMFFGetMoleculeForceField.
+
 
     Returns
     -------
-    dict[str: dict[int: float]]
+    EnergiesDict
         A dictionary of dictionaries of conformer energies for each molecule.
 
         mol_energies = {
@@ -34,9 +41,11 @@ def MMFF94_energy(
         }
     """
     mol_energies = {}
-    for id, mol in mols.items():
+    for id, mol_properties in mols.items():
+        mol = mol_properties[MOL_KEY]
+        charge = mol_properties[CHARGE_KEY]
         if mol.GetNumBonds() == 0:
-            rdDetermineBonds.DetermineBonds(mol)
+            rdDetermineBonds.DetermineBonds(mol, charge=charge)
         mol_energies[id] = _MMFF94_energy(
             mol, id, MMFFGetMoleculeProperties, MMFFGetMoleculeForceField
         )
@@ -44,8 +53,11 @@ def MMFF94_energy(
 
 
 def _MMFF94_energy(
-    mol: Chem.Mol, id: str, MMFFGetMoleculeProperties: dict, MMFFGetMoleculeForceField: dict
-) -> dict[int:float]:
+    mol: Chem.Mol,
+    id: str,
+    MMFFGetMoleculeProperties: Mapping[str, Any],
+    MMFFGetMoleculeForceField: Mapping[str, Any],
+) -> ConfEnergiesDict:
     """Calculate the MMFF94 energy for all conformers of a molecule.
 
     Parameters
@@ -54,14 +66,14 @@ def _MMFF94_energy(
         A molecule.
     id : str
         ID of the molecule. Used for logging.
-    MMFFGetMoleculeProperties : dict
+    MMFFGetMoleculeProperties : Mapping
         Additional keyword arguments for MMFFGetMoleculeProperties.
-    MMFFGetMoleculeForceField : dict
+    MMFFGetMoleculeForceField : Mapping
         Additional keyword arguments for MMFFGetMoleculeForceField.
 
     Returns
     -------
-    dict[int: float]
+    ConfEnergiesDict
         A dictionary of conformer energies.
 
         conf_energies = {
@@ -69,6 +81,7 @@ def _MMFF94_energy(
     """
     conformer_energies = {}
     for conf in mol.GetConformers():
+        print(mol, MMFFGetMoleculeProperties)
         mp = rdForceFieldHelpers.MMFFGetMoleculeProperties(mol, **MMFFGetMoleculeProperties)
         ff = rdForceFieldHelpers.MMFFGetMoleculeForceField(
             mol, mp, confId=conf.GetId(), **MMFFGetMoleculeForceField

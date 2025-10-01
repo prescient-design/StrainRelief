@@ -1,0 +1,48 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "train (mmff94)",
+            "type": "debugpy",
+            "program": "${workspaceFolder}/src/strain_relief/cmdline/_strain_relief.py",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "experiment=mmff94s",
+                "conformers.numConfs=1",
+                "io.input.parquet_path=${workspaceFolder}/data/example_ligboundconf_input.parquet",
+            ],
+            "env": {
+                "HYDRA_FULL_ERROR": "1",
+            }
+        },
+        {
+            "name": "train (mace)",
+            "type": "debugpy",
+            "program": "${workspaceFolder}/src/strain_relief/cmdline/_strain_relief.py",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "experiment=mace",
+                "conformers.numConfs=1",
+                "io.input.parquet_path=${workspaceFolder}/data/example_ligboundconf_input.parquet",
+            ],
+            "env": {
+                "HYDRA_FULL_ERROR": "1",
+                "CUDA_LAUNCH_BLOCKING": "1"
+            }
+        },
+    ]
+}
