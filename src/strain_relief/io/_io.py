@@ -18,7 +18,7 @@ from strain_relief.types import MolsDict
 
 def load_parquet(
     parquet_path: str,
-    include_charged: bool,
+    include_charged: bool | None = None,
     id_col_name: str | None = None,
     mol_col_name: str | None = None,
 ) -> pd.DataFrame:
@@ -60,7 +60,7 @@ def to_mols_dict(
     mol_col_name: str,
     id_col_name: str,
     include_charged: bool,
-    parquet_path: str = "",
+    parquet_path: str | None = None,
 ) -> MolsDict:
     """Converts a DataFrame to a dictionary of RDKit.Mol objects.
 

@@ -1,8 +1,9 @@
 import tempfile
 from typing import Literal
 
-import ase
+from ase.calculators.calculator import Calculator
 from loguru import logger as logging
+from rdkit import Chem
 
 from strain_relief.calculators import CALCULATORS_DICT
 from strain_relief.constants import (
@@ -74,7 +75,7 @@ def NNP_energy(
     calculator = CALCULATORS_DICT[method](**calculator_kwargs)
 
     # Calculate energies for each molecule
-    mol_energies = {}
+    mol_energies: EnergiesDict = {}
     for id, mol_properties in mols.items():
         mol_energies[id] = _NNP_energy(mol_properties, id, calculator, conversion_factor)
     return mol_energies
@@ -83,7 +84,7 @@ def NNP_energy(
 def _NNP_energy(
     mol_properties: MolPropertiesDict,
     id: str,
-    calculator: ase.calculators,
+    calculator: Calculator,
     conversion_factor: float,
 ) -> ConfEnergiesDict:
     """Calculate the NNP energy for all conformers of a molecule.
@@ -94,7 +95,7 @@ def _NNP_energy(
         Dict of molecule and it's properties.
     id : str
         ID of the molecule. Used for logging
-    calculator : ase.calculators
+    calculator : Calculator
         The ASE calculator to use for energy calculation.
     conversion_factor : float
         The conversion factor to use for energy calculation.
@@ -108,11 +109,9 @@ def _NNP_energy(
             "conf_id": energy
         }
     """
-    mol, charge, spin = (
-        mol_properties[MOL_KEY],
-        mol_properties[CHARGE_KEY],
-        mol_properties[SPIN_KEY],
-    )
+    mol: Chem.Mol = mol_properties[MOL_KEY]
+    charge: int = mol_properties[CHARGE_KEY]
+    spin: int = mol_properties[SPIN_KEY]
 
     confs_and_ids = rdkit_to_ase(mol)
     for _, atoms in confs_and_ids:

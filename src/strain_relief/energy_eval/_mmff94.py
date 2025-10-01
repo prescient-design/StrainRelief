@@ -11,9 +11,9 @@ from strain_relief.types import ConfEnergiesDict, EnergiesDict, MolsDict
 
 def MMFF94_energy(
     mols: MolsDict,
-    method: str,
     MMFFGetMoleculeProperties: Mapping[str, Any],
     MMFFGetMoleculeForceField: Mapping[str, Any],
+    method: str | None = None,
 ) -> EnergiesDict:
     """Calculate the MMFF94(s) energy for all conformers of all molecules.
 
@@ -21,12 +21,13 @@ def MMFF94_energy(
     ----------
     mols : MolsDict
         A dictionary of molecules.
+    MMFFGetMoleculeProperties : Mapping
+        Additional keyword arguments for MMFFGetMoleculeProperties.
+    MMFFGetMoleculeForceField : Mapping
+        Additional keyword arguments for MMFFGetMoleculeForceField.
     method : str
         [PLACEHOLDER] Needed for NNP_energy compatibility.
-    MMFFGetMoleculeProperties : Dict
-        Additional keyword arguments for MMFFGetMoleculeProperties.
-    MMFFGetMoleculeForceField : Dict
-        Additional keyword arguments for MMFFGetMoleculeForceField.
+
 
     Returns
     -------
@@ -65,9 +66,9 @@ def _MMFF94_energy(
         A molecule.
     id : str
         ID of the molecule. Used for logging.
-    MMFFGetMoleculeProperties : Dict
+    MMFFGetMoleculeProperties : Mapping
         Additional keyword arguments for MMFFGetMoleculeProperties.
-    MMFFGetMoleculeForceField : Dict
+    MMFFGetMoleculeForceField : Mapping
         Additional keyword arguments for MMFFGetMoleculeForceField.
 
     Returns
