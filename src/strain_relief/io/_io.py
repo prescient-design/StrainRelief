@@ -19,8 +19,8 @@ from strain_relief.types import MolsDict
 def load_parquet(
     parquet_path: str,
     include_charged: bool | None = None,
-    id_col_name: str | None = None,
-    mol_col_name: str | None = None,
+    id_col_name: None | None = None,
+    mol_col_name: None | None = None,
 ) -> pd.DataFrame:
     """Load a parquet file containing molecules.
 
@@ -28,11 +28,11 @@ def load_parquet(
     ----------
     parquet_path: str
         Path to the parquet file containing the molecules.
-    include_charged: bool
-        [PLACEHOLDER] Needed for simplicity of arg parsing.
-    id_col_name: str
+    include_charged: bool [Optional]
+        If False, filters out charged molecules.
+    id_col_name: str [Optional]
         Name of the column containing the molecule IDs.
-    mol_col_name: str
+    mol_col_name: str [Optional]
         Name of the column containing the RDKit.Mol objects OR binary string.
 
     Returns
@@ -273,9 +273,9 @@ def save_parquet(
         Threshold for the ligand strain filter.
     parquet_path: str
         Path to the output parquet file.
-    id_col_name: str [optional]
+    id_col_name: str [Optional]
         Name of the column containing the molecule IDs.
-    mol_col_name: str [optional]
+    mol_col_name: str [Optional]
         Name of the column containing the RDKit.Mol objects.
 
     Returns
