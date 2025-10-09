@@ -1,6 +1,5 @@
-randomSeed: ${seed}
-numConfs: 20
-maxAttempts: 10
-pruneRmsThresh: 0.1
-clearConfs: False
-numThreads: ${numThreads}
+_target_: neural_optimiser.calulator.MACECalculator
+model_paths: path
+device: ${device}
+default_dtype: float32
+# energy_units: eV

@@ -1,9 +1,9 @@
 # @package _global_
 
 defaults:
-  - override /minimisation@local_min: fairchem
-  - override /minimisation@global_min: fairchem
-  - override /model: fairchem
+  - override /calculator: fairchem
+  - override /optimiser@local_optimiser: bfgs
+  - override /optimiser@global_optimiser: bfgs
 
 conformers:
   numConfs: 20

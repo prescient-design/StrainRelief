@@ -1,9 +1,9 @@
 # @package _global_
 
 defaults:
-  - override /minimisation@local_min: mace
-  - override /minimisation@global_min: mace
-  - override /model: mace
+  - override /calculator: mace
+  - override /optimiser@local_optimiser: bfgs
+  - override /optimiser@global_optimiser: bfgs
 
 conformers:
   numConfs: 20

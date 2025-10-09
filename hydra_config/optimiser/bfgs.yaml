@@ -1,0 +1,5 @@
+_target_: neural_optimiser.optimiser.BFGS
+max_step: 0.04
+steps: 250
+fmax: 0.05
+fexit: 250

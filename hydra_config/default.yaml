@@ -2,12 +2,16 @@ defaults:
   - _self_
   - io: default
   - conformers: default
-  - model: null
-  - minimisation@local_min: mmff94s
-  - minimisation@global_min: mmff94s
-  - energy_eval: default
+  - calculator: mace
+  - optimiser@local_optimiser: bfgs
+  - optimiser@global_optimiser: bfgs
   - experiment: null
 
 seed: -1
 threshold: 16.1
-numThreads: 0
+num_workers: 0
+device: cpu
+batch_size: 32
+
+local_optimiser:
+  fmax: 0.50

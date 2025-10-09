@@ -1,8 +1,0 @@
-defaults:
-  - ../model/fairchem@_here_
-
-method: FAIRChem
-maxIters: 250
-fmax: 0.05
-fexit: 250
-model_paths: ${model.model_paths}
