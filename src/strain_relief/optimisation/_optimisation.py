@@ -34,4 +34,5 @@ def run_optimisation(
 
 
 def _remove_non_converged(conformers: ConformerBatch) -> ConformerBatch:
+    # TODO: extensive logging on how many conformers converged for each conformer and how/why
     pass
