@@ -12,21 +12,24 @@
 #####################################################################################################
 
 from collections.abc import Sequence
-from copy import deepcopy
 from timeit import default_timer as timer
 
+import hydra
 import pandas as pd
 import rich
 import rich.syntax
 import rich.tree
-from loguru import logger as logging
+from loguru import logger
+from neural_optimiser.calculator.base import Calculator
+from neural_optimiser.conformers import ConformerBatch
+from neural_optimiser.optimiser.base import Optimiser
 from omegaconf import DictConfig, OmegaConf
 from rdkit import Chem
 
+from strain_relief.configs import _validate_config
 from strain_relief.conformers import generate_conformers
-from strain_relief.energy_eval import predict_energy
-from strain_relief.io import save_parquet, to_mols_dict
-from strain_relief.minimisation import minimise_conformers
+from strain_relief.io import process_output, to_mols_dict
+from strain_relief.optimisation import run_optimisation
 from strain_relief.types import MolsDict
 
 
@@ -58,48 +61,75 @@ def compute_strain(
         Dataframe with strain energies and other metadata.
     """
     start = timer()
-    _print_config_tree(cfg)
 
-    if (
-        cfg.local_min.method in ["MACE", "FAIRChem"]
-        or cfg.global_min.method in ["MACE", "FAIRChem"]
-        or cfg.energy_eval.method in ["MACE", "FAIRChem"]
-    ) and cfg.model.model_paths is None:
-        raise ValueError("Model path must be provided if using a NNP")
+    # -------------- CONFIGURATION --------------
+
+    _print_config_tree(cfg)
+    _validate_config(cfg)  # TODO: more checks here
+
+    # -------------- SET-UP --------------
+
+    # Instantiate calculator
+    logger.info("Instantiating calculator...")
+    calculator: Calculator = hydra.utils.instantiate(cfg.calculator)  # TODO: reshape config
+    logger.info(calculator)
+
+    # Instantiate energy evaluation calculator (if different from minimisation)
+    if cfg.get("energy_evaluation", None):
+        logger.info("Instantiating energy evaluation calculator...")
+        energy_calculator: Calculator = hydra.utils.instantiate(cfg.energy_evaluation.calculator)
+        logger.info(energy_calculator)
+
+    # Instantiate local optimiser
+    logger.info("Instantiating local optimiser...")
+    local_optimiser: Optimiser = hydra.utils.instantiate(
+        cfg.local_optimiser
+    )  # TODO: reshape config
+    logger.info(local_optimiser)
+
+    # Instantiate global optimiser
+    logger.info("Instantiating global optimiser...")
+    global_optimiser: Optimiser = hydra.utils.instantiate(
+        cfg.global_optimiser
+    )  # TODO: reshape config
+    logger.info(global_optimiser)
+
+    local_optimiser.calculator = calculator
+    global_optimiser.calculator = calculator
+
+    # -------------- PROCESS MOLECULES --------------
 
     df = _parse_args(df=df, mols=mols, ids=ids)
 
-    # Load data
-    docked: MolsDict = to_mols_dict(df, **cfg.io.input)
-    local_minima: MolsDict = {id: deepcopy(mol) for id, mol in docked.items()}
-    global_minimia: MolsDict = {id: deepcopy(mol) for id, mol in docked.items()}
+    docked_mols: MolsDict = to_mols_dict(df, **cfg.io.input)  # move to conformer dir?
+    docked_batch: ConformerBatch = ConformerBatch([docked_mols[id] for id in df["id"]])
 
-    # Find the local minimum using a looser convergence criteria
-    logging.info("Minimising docked conformer...")
-    local_minima = minimise_conformers(local_minima, **cfg.local_min)
+    logger.info("Generating conformers for global minimum search...")
+    generated_mols = generate_conformers(docked_mols, **cfg.conformers)
+    generated_batch: ConformerBatch = ConformerBatch([generated_mols[id] for id in df["id"]])
 
-    # Generate conformers from the docked conformer
-    global_minimia = generate_conformers(global_minimia, **cfg.conformers)
+    if cfg.batch_size == -1:
+        cfg.batch_size = len(generated_batch)
 
-    # Find approximate global minimum from generated conformers
-    logging.info("Minimising generated conformers...")
-    global_minimia = minimise_conformers(global_minimia, **cfg.global_min)
+    logger.info("Minimising docked conformers...")
+    local_minima = run_optimisation(docked_batch.clone(), local_optimiser, cfg.batch_size)
 
-    # Predict single point energies (if using a different method from minimisation)
-    if (
-        cfg.local_min.method != cfg.energy_eval.method
-        or cfg.global_min.method != cfg.energy_eval.method
-    ):
-        logging.info("Predicting energies of local minima poses...")
-        local_minima = predict_energy(local_minima, **cfg.energy_eval)
-        logging.info("Predicting energies of generated conformers...")
-        global_minimia = predict_energy(global_minimia, **cfg.energy_eval)
+    logger.info("Minimising generated conformers...")
+    global_minima = run_optimisation(generated_batch, global_optimiser, cfg.batch_size)
 
-    # Save torsional strains
-    md = save_parquet(df, docked, local_minima, global_minimia, cfg.threshold, **cfg.io.output)
+    if cfg.get("energy_evaluation", None):  # TODO: update config for this to be optional
+        logger.info("Predicting energies of local minima poses...")
+        local_minima = energy_calculator.get_energy(local_minima)
+        logger.info("Predicting energies of generated conformers...")
+        global_minima = energy_calculator.get_energy(global_minima)
+
+    # Save ligand strains
+    md = process_output(
+        df, docked_batch, local_minima, global_minima, cfg.threshold, **cfg.io.output
+    )
 
     end = timer()
-    logging.info(f"Ligand strain calculations took {end - start:.2f} seconds. \n")
+    logger.info(f"Ligand strain calculations took {end - start:.2f} seconds. \n")
 
     return md
 
@@ -122,7 +152,7 @@ def _parse_args(
 
     if df is not None:  # prevents input df from being updated
         if mols is not None:
-            logging.warning("compute_strain received both df and mols; using df and ignoring mols.")
+            logger.warning("compute_strain received both df and mols; using df and ignoring mols.")
         return df.copy()
 
     if not ids:
