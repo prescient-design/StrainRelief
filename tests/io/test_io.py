@@ -5,7 +5,7 @@ import pytest
 from rdkit import Chem
 from strain_relief import test_dir
 from strain_relief.constants import CHARGE_COL_NAME, SPIN_COL_NAME
-from strain_relief.io._io import (
+from strain_relief.io._input import (
     _calculate_charge,
     _calculate_spin,
     load_parquet,
