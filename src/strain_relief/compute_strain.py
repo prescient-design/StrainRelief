@@ -20,9 +20,9 @@ import rich
 import rich.syntax
 import rich.tree
 from loguru import logger
-from neural_optimiser.calculator.base import Calculator
-from neural_optimiser.conformers import ConformerBatch
-from neural_optimiser.optimiser.base import Optimiser
+from neural_optimiser.calculators.base import Calculator
+from neural_optimiser.conformers import Conformer, ConformerBatch
+from neural_optimiser.optimisers.base import Optimiser
 from omegaconf import DictConfig, OmegaConf
 from rdkit import Chem
 
@@ -71,7 +71,9 @@ def compute_strain(
 
     # Instantiate calculator
     logger.info("Instantiating calculator...")
-    calculator: Calculator = hydra.utils.instantiate(cfg.calculator)  # TODO: reshape config
+    calculator: Calculator = hydra.utils.instantiate(
+        cfg.calculator
+    )  # TODO: add default_dtype to calculator functionality
     logger.info(calculator)
 
     # Instantiate energy evaluation calculator (if different from minimisation)
@@ -82,16 +84,12 @@ def compute_strain(
 
     # Instantiate local optimiser
     logger.info("Instantiating local optimiser...")
-    local_optimiser: Optimiser = hydra.utils.instantiate(
-        cfg.local_optimiser
-    )  # TODO: reshape config
+    local_optimiser: Optimiser = hydra.utils.instantiate(cfg.local_optimiser)
     logger.info(local_optimiser)
 
     # Instantiate global optimiser
     logger.info("Instantiating global optimiser...")
-    global_optimiser: Optimiser = hydra.utils.instantiate(
-        cfg.global_optimiser
-    )  # TODO: reshape config
+    global_optimiser: Optimiser = hydra.utils.instantiate(cfg.global_optimiser)
     logger.info(global_optimiser)
 
     local_optimiser.calculator = calculator
@@ -102,20 +100,25 @@ def compute_strain(
     df = _parse_args(df=df, mols=mols, ids=ids)
 
     docked_mols: MolsDict = to_mols_dict(df, **cfg.io.input)  # move to conformer dir?
-    docked_batch: ConformerBatch = ConformerBatch([docked_mols[id] for id in df["id"]])
+    docked_batch: ConformerBatch = ConformerBatch.from_data_list(
+        [Conformer.from_rdkit(**docked_mols[id]) for id in docked_mols]
+    )
 
     logger.info("Generating conformers for global minimum search...")
     generated_mols = generate_conformers(docked_mols, **cfg.conformers)
-    generated_batch: ConformerBatch = ConformerBatch([generated_mols[id] for id in df["id"]])
-
-    if cfg.batch_size == -1:
-        cfg.batch_size = len(generated_batch)
+    generated_batch: ConformerBatch = ConformerBatch.cat(
+        [ConformerBatch.from_rdkit(**generated_mols[id]) for id in generated_mols]
+    )
 
     logger.info("Minimising docked conformers...")
-    local_minima = run_optimisation(docked_batch.clone(), local_optimiser, cfg.batch_size)
+    local_minima = run_optimisation(
+        docked_batch.clone(), local_optimiser, cfg.batch_size, cfg.num_workers
+    )
 
     logger.info("Minimising generated conformers...")
-    global_minima = run_optimisation(generated_batch, global_optimiser, cfg.batch_size)
+    global_minima = run_optimisation(
+        generated_batch, global_optimiser, cfg.batch_size, cfg.num_workers
+    )
 
     if cfg.get("energy_evaluation", None):  # TODO: update config for this to be optional
         logger.info("Predicting energies of local minima poses...")
@@ -144,7 +147,7 @@ def _parse_args(
      Precedence:
     1. If df is provided it is copied and returned (mols / ids ignored).
     2. Otherwise mols must be provided and be homogeneous (all Chem.Mol or all bytes).
-       If ids not supplied they are auto-generated (0..n-1). RDKit Mol objects are
+       If ids not supplied they are auto-generated (0..n-1). RDKit Mol objects can be
        converted to binary via Mol.ToBinary().
     """
     if df is None and mols is None:
@@ -198,3 +201,17 @@ def _print_config_tree(
 
     # Print config tree
     rich.print(tree)
+
+
+if __name__ == "__main__":
+
+    @hydra.main(version_base=None, config_path="../../hydra_config", config_name="default")
+    def main(cfg: DictConfig) -> pd.DataFrame:
+        cfg.calculator.model_paths = "./models/MACE_SPICE2_NEUTRAL.model"
+        cfg.io.input.parquet_path = None
+        cfg.conformers.numConfs = 5
+
+        df = pd.read_parquet("./data/example_ligboundconf_input.parquet")
+        return compute_strain(cfg, df=df)
+
+    main()
