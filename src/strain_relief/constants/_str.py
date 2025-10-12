@@ -6,5 +6,5 @@ CHARGE_COL_NAME: str = "formal_charge"
 SPIN_COL_NAME: str = "spin_multiplicity"
 # keys for mol_props dict
 MOL_KEY: str = "mol"
-CHARGE_KEY: str = "formal_charge"
-SPIN_KEY: str = "spin_multiplicity"
+CHARGE_KEY: str = "charge"
+SPIN_KEY: str = "spin"
