@@ -17,8 +17,8 @@ from strain_relief.types import MolsDict
 def load_parquet(
     parquet_path: str,
     include_charged: bool | None = None,
-    id_col_name: None | None = None,
-    mol_col_name: None | None = None,
+    id_col_name: str | None = None,
+    mol_col_name: str | None = None,
 ) -> pd.DataFrame:
     """Load a parquet file containing molecules.
 
