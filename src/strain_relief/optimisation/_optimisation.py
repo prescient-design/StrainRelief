@@ -1,6 +1,6 @@
 from neural_optimiser.conformers import ConformerBatch
-from neural_optimiser.datasets import ConformerDataLoader, ConformerDataset
-from neural_optimiser.optimiser.base import Optimiser
+from neural_optimiser.datasets.base import ConformerDataLoader, ConformerDataset
+from neural_optimiser.optimisers.base import Optimiser
 
 
 def run_optimisation(
