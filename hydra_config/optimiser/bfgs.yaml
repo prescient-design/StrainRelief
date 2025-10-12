@@ -1,4 +1,4 @@
-_target_: neural_optimiser.optimiser.BFGS
+_target_: neural_optimiser.optimisers.BFGS
 max_step: 0.04
 steps: 250
 fmax: 0.05
