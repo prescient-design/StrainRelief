@@ -3,8 +3,6 @@ import os
 import numpy as np
 import pytest
 from strain_relief import test_dir
-from strain_relief.calculators import fairchem_calculator as FAIRChem_calculator
-from strain_relief.calculators import mace_calculator as MACE_calculator
 from strain_relief.constants import EV_TO_KCAL_PER_MOL, MOL_KEY
 from strain_relief.io import load_parquet, to_mols_dict
 from strain_relief.types import EnergiesDict, MolPropertiesDict, MolsDict
@@ -122,15 +120,3 @@ def esen_model_path() -> str:
     if os.path.exists(test_dir / "models" / "eSEN.pt"):
         return str(test_dir / "models" / "eSEN.pt")
     return pytest.skip(f"eSEN model not found at {test_dir / 'models' / 'eSEN.pt'}")
-
-
-@pytest.fixture(scope="session")
-def mace_calculator(mace_model_path):
-    """The MACE ASE calculator."""
-    return MACE_calculator(model_paths=mace_model_path, device="cuda", default_dtype="float32")
-
-
-@pytest.fixture(scope="session")
-def fairchem_calculator(esen_model_path):
-    """The eSEN ASE calculator."""
-    return FAIRChem_calculator(model_paths=esen_model_path, device="cuda", default_dtype="float32")
