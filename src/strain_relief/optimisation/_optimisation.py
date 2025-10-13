@@ -23,16 +23,9 @@ def run_optimisation(
     dataloader = ConformerDataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
 
     # Process batches and collect the results
-    result_batches = [optimiser.run(batch) for batch in dataloader]
+    minimised = []
+    for batch in dataloader:
+        optimiser.run(batch)
+        minimised.append(batch)
 
-    # Combine the list of result batches into a single ConformerBatch
-    # Note: This assumes you have a way to concatenate batches. If not,
-    # you'll need to implement that logic. A placeholder is shown below.
-    final_results = ConformerBatch.cat(result_batches)
-
-    return _remove_non_converged(final_results)
-
-
-def _remove_non_converged(conformers: ConformerBatch) -> ConformerBatch:
-    # TODO: extensive logging on how many conformers converged for each conformer and how/why
-    pass
+    return ConformerBatch.cat(minimised)
