@@ -1,92 +1,87 @@
 import numpy as np
 import pandas as pd
+import torch
 from loguru import logger as logging
-from rdkit import Chem
+from neural_optimiser.conformers import Conformer
+from torch_geometric.data import Batch, Data
 
 from strain_relief.constants import (
-    ENERGY_PROPERTY_NAME,
+    EV_TO_KCAL_PER_MOL,
     ID_COL_NAME,
     MOL_COL_NAME,
-    MOL_KEY,
 )
-from strain_relief.types import MolsDict
 
 
-def _process_molecule_data(
-    id: str,
-    local_min_mol: Chem.Mol,
-    global_min_mol: Chem.Mol,
-    threshold: float,
-) -> dict:
-    """Helper function to process data for a single molecule."""
-    local_min_energy: float = float(np.nan)
-    local_min_conf: float = float(np.nan)
+def extract_minimum_conformer(batch: Batch | Data, molecule_attr: str) -> list[Conformer]:
+    """Extract the minimum energy converged conformer for each molecule in the batch.
 
-    if local_min_mol.GetNumConformers() != 0:
-        local_min_energy = local_min_mol.GetConformer().GetDoubleProp(ENERGY_PROPERTY_NAME)
-        local_min_conf = local_min_mol.ToBinary()
+    Parameters
+    ----------
+    batch: Batch | Data
+        Batch or Data object containing the conformers.
+    molecule_attr: str
+        Attribute name for the molecule indices in the batch.
 
-    global_min_energy: float = float(np.nan)
-    global_min_conf: float = float(np.nan)
-    conf_energies: list[float] = []
+    Returns
+    -------
+    ConformerBatch
+        ConformerBatch containing the minimum energy conformers.
+    """
+    if not hasattr(batch, molecule_attr):
+        raise AttributeError(f"Batch does not have attribute '{molecule_attr}'")
 
-    if global_min_mol.GetNumConformers() != 0:
-        conf_energies = [
-            conf.GetDoubleProp(ENERGY_PROPERTY_NAME) for conf in global_min_mol.GetConformers()
+    molecule_idxs = getattr(batch, molecule_attr).unique()
+
+    minimum_conformers: list[Conformer] = []
+
+    for mol_idx in molecule_idxs:
+        conformers = [
+            batch.conformer(i)
+            for i in range(batch.n_conformers)
+            if getattr(batch, molecule_attr)[i] == mol_idx
         ]
-        conf_idxs = [conf.GetId() for conf in global_min_mol.GetConformers()]
-        min_idx = np.argmin(conf_energies)
-        global_min_energy = conf_energies[min_idx]
-        global_min_conf = Chem.Mol(global_min_mol, confId=conf_idxs[min_idx]).ToBinary()
+        converged_conformers = [conf for conf in conformers if conf.converged]
+        if len(converged_conformers) == 1:
+            minimum_conformers.append(converged_conformers[0])
+            continue
 
-    strain: float = float(np.nan)
-    if not np.isnan(local_min_energy) and not np.isnan(global_min_energy):
-        strain = local_min_energy - global_min_energy
-        if strain < 0:
-            logging.warning(
-                f"{strain:.2f} kcal/mol ligand strain for molecule {id}. Negative ligand strain."
-            )
-        else:
-            logging.debug(f"{strain:.2f} kcal/mol ligand strain for molecule {id}")
-    else:
-        logging.warning(f"Strain cannot be calculated for molecule {id}")
+        if len(converged_conformers) == 0:
+            logging.warning(f"No conformers converged for molecule index {mol_idx}. Skipping.")
+            continue
 
-    return {
-        "id": id,
-        "local_min_mol": local_min_conf,
-        "local_min_e": local_min_energy,
-        "global_min_mol": global_min_conf,
-        "global_min_e": global_min_energy,
-        "ligand_strain": strain,
-        "passes_strain_filter": strain <= threshold if threshold is not None else np.nan,
-        "nconfs_converged": len(conf_energies),
-    }
+        min_energy = np.argmin([float(conf.energies) for conf in converged_conformers])
+        minimum_conformers.append(conformers[min_energy])
+
+    return minimum_conformers
 
 
-def save_parquet(
+def process_output(
     input_df: pd.DataFrame,
-    docked_mols: MolsDict,
-    local_min_mols: MolsDict,
-    global_min_mols: MolsDict,
+    docked: Data | Batch,
+    local_min: Data | Batch,
+    global_min: Data | Batch,
     threshold: float,
+    molecule_attr: str,
     parquet_path: str,
     id_col_name: str | None = None,
     mol_col_name: str | None = None,
 ) -> pd.DataFrame:
-    """Creates a df of results and saves to a parquet file using mol.ToBinary().
+    """Process the output of the strain relief calculation and save to a parquet file.
 
     Parameters
     ----------
     input_df: pd.DataFrame
         Input DataFrame containing the StrainRelief's original input.
-    docked_mols: MolsDict
-        Nested dictionary containing the poses of docked molecules.
-    local_min_mols: MolsDict
-        Nested dictionary containing the poses of locally minimised molecules using strain_relief.
-    global_min_mols: MolsDict
-        Nested dictionary containing the poses of globally minimised molecules using strain_relief.
+    docked: Data | Batch
+        Data or Batch object containing the poses of docked molecules.
+    local_min: Data | Batch
+        Data or Batch object containing the poses of locally minimised molecules.
+    global_min: Data | Batch
+        Data or Batch object containing the poses of globally minimised molecules.
     threshold: float
         Threshold for the ligand strain filter.
+    molecule_attr: str
+        Attribute name for the molecule indices in the batch.
     parquet_path: str
         Path to the output parquet file.
     id_col_name: str [Optional]
@@ -103,16 +98,62 @@ def save_parquet(
         id_col_name = ID_COL_NAME
     if mol_col_name is None:
         mol_col_name = MOL_COL_NAME
+    if molecule_attr is None:
+        molecule_attr = ID_COL_NAME
 
-    dicts = []
-    for mol_id in docked_mols.keys():
-        dicts.append(
-            _process_molecule_data(
-                mol_id,
-                local_min_mols[mol_id][MOL_KEY],
-                global_min_mols[mol_id][MOL_KEY],
-                threshold,
+    if not (
+        hasattr(docked, molecule_attr)
+        and hasattr(local_min, molecule_attr)
+        and hasattr(global_min, molecule_attr)
+    ):
+        raise AttributeError(f"Batch does not have attribute '{molecule_attr}'")
+
+    molecule_idxs = getattr(docked, molecule_attr).unique()
+
+    local_min_confs = extract_minimum_conformer(local_min, molecule_attr)
+    global_min_confs = extract_minimum_conformer(global_min, molecule_attr)
+
+    rows = []
+
+    for mol_idx in molecule_idxs:
+        local_min_conf = [c for c in local_min_confs if getattr(c, molecule_attr) == mol_idx]
+        if len(local_min_conf) == 0:
+            local_min_conf = np.nan
+        elif len(local_min_conf) == 1:
+            local_min_conf = local_min_conf[0]
+        else:
+            raise ValueError(
+                f"Multiple local minimum conformers found for molecule index {mol_idx}."
             )
+
+        global_min_conf = [c for c in global_min_confs if getattr(c, molecule_attr) == mol_idx]
+        if len(global_min_conf) == 0:
+            global_min_conf = np.nan
+        elif len(global_min_conf) == 1:
+            global_min_conf = global_min_conf[0]
+        else:
+            raise ValueError(
+                f"Multiple global minimum conformers found for molecule index {mol_idx}."
+            )
+
+        local_min_e = local_min_conf.energies if local_min_conf is not np.nan else np.nan
+        global_min_e = global_min_conf.energies if global_min_conf is not np.nan else np.nan
+
+        local_min_mol = (
+            local_min_conf.to_rdkit().ToBinary() if local_min_conf is not np.nan else np.nan
+        )
+        global_min_mol = (
+            global_min_conf.to_rdkit().ToBinary() if global_min_conf is not np.nan else np.nan
+        )
+
+        rows.append(
+            {
+                "id": mol_idx.item(),
+                "local_min_mol": local_min_mol,
+                "local_min_e": float(local_min_e),
+                "global_min_mol": global_min_mol,
+                "global_min_e": float(global_min_e),
+            }
         )
 
     # Define columns upfront to ensure correct order and handle empty DataFrame creation
@@ -122,11 +163,14 @@ def save_parquet(
         "local_min_e",
         "global_min_mol",
         "global_min_e",
-        "ligand_strain",
-        "passes_strain_filter",
-        "nconfs_converged",
     ]
-    results = pd.DataFrame(dicts, columns=result_columns)
+    results = pd.DataFrame(rows, columns=result_columns)
+
+    results["local_min_e"] *= EV_TO_KCAL_PER_MOL
+    results["global_min_e"] *= EV_TO_KCAL_PER_MOL
+
+    results["ligand_strain"] = results["local_min_e"] - results["global_min_e"]
+    results["passes_strain_filter"] = results["ligand_strain"] <= threshold
 
     if not results[results.ligand_strain < 0].empty:
         logging.warning(
@@ -139,17 +183,17 @@ def save_parquet(
             "for either the initial or minimised pose, so strain cannot be calculated."
         )
 
-    total_n_confs: int = results["nconfs_converged"].sum() if not results.empty else 0
+    # total_n_confs: int = results["nconfs_converged"].sum() if not results.empty else 0
 
-    if total_n_confs > 0 and not results.empty:
-        logging.info(
-            f"{total_n_confs:,} configurations converged across {len(results):,} molecules "
-            f"(avg. {total_n_confs / len(results):.2f} per molecule)"
-        )
-    else:
-        logging.error(
-            "Ligand strain calculation failed for all molecules or no molecules were processed."
-        )
+    # if total_n_confs > 0 and not results.empty:
+    #     logging.info(
+    #         f"{total_n_confs:,} configurations converged across {len(results):,} molecules "
+    #         f"(avg. {total_n_confs / len(results):.2f} per molecule)"
+    #     )
+    # else:
+    #     logging.error(
+    #         "Ligand strain calculation failed for all molecules or no molecules were processed."
+    #     )
 
     # Merge and drop original molecule column
     final_results = input_df.merge(results, left_on=id_col_name, right_on="id", how="outer")
@@ -157,7 +201,9 @@ def save_parquet(
 
     if parquet_path is not None:
         final_results.to_parquet(parquet_path)
-        logging.info(f"Data saved to {parquet_path}")
+        torch.save(local_min, parquet_path.replace(".parquet", "_local_min.pt"))
+        torch.save(global_min, parquet_path.replace(".parquet", "_global_min.pt"))
+        logging.info(f"Batches and outputs saved to {parquet_path}")
     else:
         logging.info("Output file not provided, data not saved.")
 
