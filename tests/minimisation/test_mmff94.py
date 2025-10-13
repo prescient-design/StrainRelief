@@ -1,11 +1,12 @@
 import pytest
-from rdkit import Chem
+from strain_relief.constants import MOL_KEY
 from strain_relief.minimisation._mmff94 import MMFF94_min
+from strain_relief.types import MolsDict
 
 
 @pytest.mark.parametrize("fixture", ["mols", "mols_wo_bonds"])
 @pytest.mark.parametrize("force_field", ["MMFF94", "MMFF94s"])
-def test_MMFF94_min(request, fixture: dict[str, Chem.Mol], force_field: str):
+def test_MMFF94_min(request, fixture: MolsDict, force_field: str):
     mols = request.getfixturevalue(fixture)
     results, mols = MMFF94_min(
         mols=mols,
@@ -19,4 +20,4 @@ def test_MMFF94_min(request, fixture: dict[str, Chem.Mol], force_field: str):
 
     for id in mols.keys():
         conf_energies = results[id]
-        assert len(conf_energies) == mols[id].GetNumConformers()
+        assert len(conf_energies) == mols[id][MOL_KEY].GetNumConformers()
