@@ -9,7 +9,7 @@ StrainRelief calculates the ligand strain of uncharged docked poses and has a su
 
 ![Strain Relief Logo](assets/strain_relief_logo.png)
 
-## Update: v0.4
+## Update: v0.5
 - Inclusion of NNP ASE calculators is more modular, making it easier to add your own.
 - Meta's FairChem [e-SEN](https://arxiv.org/html/2502.12147v1) NNP from [OMol25](https://arxiv.org/abs/2505.08762) has been added giving a significant performance boost! Request access to the model weights [here](https://huggingface.co/facebook/OMol25).
 - Improved hydra configurations mean `model.model_paths` now only has to be specified once.
