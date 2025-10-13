@@ -40,17 +40,13 @@ def extract_minimum_conformer(batch: Batch | Data, molecule_attr: str) -> list[C
             for i in range(batch.n_conformers)
             if getattr(batch, molecule_attr)[i] == mol_idx
         ]
-        converged_conformers = [conf for conf in conformers if conf.converged]
-        if len(converged_conformers) == 1:
-            minimum_conformers.append(converged_conformers[0])
-            continue
+        converged = [conf for conf in conformers if conf.converged]
 
-        if len(converged_conformers) == 0:
+        if len(converged) == 0:
             logging.warning(f"No conformers converged for molecule index {mol_idx}. Skipping.")
             continue
 
-        min_energy = np.argmin([float(conf.energies) for conf in converged_conformers])
-        minimum_conformers.append(conformers[min_energy])
+        minimum_conformers.append(min(converged, key=lambda c: float(c.energies)))
 
     return minimum_conformers
 
@@ -101,58 +97,44 @@ def process_output(
     if molecule_attr is None:
         molecule_attr = ID_COL_NAME
 
-    if not (
-        hasattr(docked, molecule_attr)
-        and hasattr(local_min, molecule_attr)
-        and hasattr(global_min, molecule_attr)
-    ):
+    if not all(hasattr(b, molecule_attr) for b in (docked, local_min, global_min)):
         raise AttributeError(f"Batch does not have attribute '{molecule_attr}'")
+
+    def as_int(x) -> int:
+        return int(x.item()) if hasattr(x, "item") else int(x)
+
+    def energy(c: Conformer | None) -> float:
+        return float(c.energies) if c is not None else float("nan")
+
+    def mol_bytes(c: Conformer | None):
+        return c.to_rdkit().ToBinary() if c is not None else np.nan
 
     molecule_idxs = getattr(docked, molecule_attr).unique()
 
-    local_min_confs = extract_minimum_conformer(local_min, molecule_attr)
-    global_min_confs = extract_minimum_conformer(global_min, molecule_attr)
+    # Compute minimum conformers once and build fast lookup maps
+    local_min_map = {
+        as_int(getattr(c, molecule_attr)): c
+        for c in extract_minimum_conformer(local_min, molecule_attr)
+    }
+    global_min_map = {
+        as_int(getattr(c, molecule_attr)): c
+        for c in extract_minimum_conformer(global_min, molecule_attr)
+    }
 
     rows = []
-
     for mol_idx in molecule_idxs:
-        local_min_conf = [c for c in local_min_confs if getattr(c, molecule_attr) == mol_idx]
-        if len(local_min_conf) == 0:
-            local_min_conf = np.nan
-        elif len(local_min_conf) == 1:
-            local_min_conf = local_min_conf[0]
-        else:
-            raise ValueError(
-                f"Multiple local minimum conformers found for molecule index {mol_idx}."
-            )
+        mol_id = as_int(mol_idx)
 
-        global_min_conf = [c for c in global_min_confs if getattr(c, molecule_attr) == mol_idx]
-        if len(global_min_conf) == 0:
-            global_min_conf = np.nan
-        elif len(global_min_conf) == 1:
-            global_min_conf = global_min_conf[0]
-        else:
-            raise ValueError(
-                f"Multiple global minimum conformers found for molecule index {mol_idx}."
-            )
-
-        local_min_e = local_min_conf.energies if local_min_conf is not np.nan else np.nan
-        global_min_e = global_min_conf.energies if global_min_conf is not np.nan else np.nan
-
-        local_min_mol = (
-            local_min_conf.to_rdkit().ToBinary() if local_min_conf is not np.nan else np.nan
-        )
-        global_min_mol = (
-            global_min_conf.to_rdkit().ToBinary() if global_min_conf is not np.nan else np.nan
-        )
+        lconf = local_min_map.get(mol_id)
+        gconf = global_min_map.get(mol_id)
 
         rows.append(
             {
-                "id": mol_idx.item(),
-                "local_min_mol": local_min_mol,
-                "local_min_e": float(local_min_e),
-                "global_min_mol": global_min_mol,
-                "global_min_e": float(global_min_e),
+                "id": mol_id,
+                "local_min_mol": mol_bytes(lconf),
+                "local_min_e": energy(lconf),
+                "global_min_mol": mol_bytes(gconf),
+                "global_min_e": energy(gconf),
             }
         )
 
