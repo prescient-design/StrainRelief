@@ -209,7 +209,12 @@ if __name__ == "__main__":
     def main(cfg: DictConfig) -> pd.DataFrame:
         cfg.calculator.model_paths = "./models/MACE_SPICE2_NEUTRAL.model"
         cfg.io.input.parquet_path = None
-        cfg.conformers.numConfs = 5
+        cfg.conformers.numConfs = 1
+        cfg.local_optimiser.fmax = 0.5
+
+        from omegaconf import OmegaConf
+
+        OmegaConf.resolve(cfg)
 
         df = pd.read_parquet("./data/example_ligboundconf_input.parquet")
         return compute_strain(cfg, df=df)
