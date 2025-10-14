@@ -31,7 +31,7 @@ def _validate_model(cfg: DictConfig):
 def _validate_batch(cfg: DictConfig) -> DictConfig:
     """Validate the batch size and set to a large number if -1 (i.e. no batching)."""
     if cfg.batch_size == -1:
-        cfg.batch_size = 1_000_000
+        cfg.batch_size = 1_000_000_000
     return cfg
 
 
