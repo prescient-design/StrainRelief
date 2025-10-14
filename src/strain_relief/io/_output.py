@@ -25,7 +25,7 @@ def extract_minimum_conformer(batch: Batch | Data, molecule_attr: str) -> list[C
     Returns
     -------
     ConformerBatch
-        ConformerBatch containing the minimum energy conformers.
+        ConformerBatch containing only the minimum energy conformers.
     """
     if not hasattr(batch, molecule_attr):
         raise AttributeError(f"Batch does not have attribute '{molecule_attr}'")
@@ -57,8 +57,8 @@ def process_output(
     local_min: Data | Batch,
     global_min: Data | Batch,
     threshold: float,
-    molecule_attr: str,
     parquet_path: str,
+    molecule_attr: str | None = None,
     id_col_name: str | None = None,
     mol_col_name: str | None = None,
 ) -> pd.DataFrame:
@@ -76,10 +76,10 @@ def process_output(
         Data or Batch object containing the poses of globally minimised molecules.
     threshold: float
         Threshold for the ligand strain filter.
-    molecule_attr: str
-        Attribute name for the molecule indices in the batch.
     parquet_path: str
         Path to the output parquet file.
+    molecule_attr: str [Optional]
+        Attribute name for the molecule indices in the batch.
     id_col_name: str [Optional]
         Name of the column containing the molecule IDs.
     mol_col_name: str [Optional]
@@ -121,7 +121,7 @@ def process_output(
         for c in extract_minimum_conformer(global_min, molecule_attr)
     }
 
-    rows = []
+    rows: list[dict] = []
     for mol_idx in molecule_idxs:
         mol_id = as_int(mol_idx)
 
