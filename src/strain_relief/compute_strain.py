@@ -149,6 +149,20 @@ def _parse_args(
     2. Otherwise mols must be provided and be homogeneous (all Chem.Mol or all bytes).
        If ids not supplied they are auto-generated (0..n-1). RDKit Mol objects can be
        converted to binary via Mol.ToBinary().
+
+    Parameters
+    ----------
+    df: pd.DataFrame [Optional]
+        Input dataframe without rdkit.Mol objects.
+    mols: Sequence[Chem.Mol|bytes] [Optional]
+        List of molecules (RDKit.Mol or bytes).
+    ids: Sequence[int|str] [Optional]
+        List of unique molecule ids.
+
+    Returns
+    -------
+    pd.DataFrame
+        Dataframe with columns ['id', 'mol_bytes'].
     """
     if df is None and mols is None:
         raise ValueError("Either df or mols must be provided")
