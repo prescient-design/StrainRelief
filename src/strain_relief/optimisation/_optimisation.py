@@ -24,7 +24,7 @@ def run_optimisation(
     ConformerBatch
         A single ConformerBatch containing all the optimised results.
     """
-    dataset = ConformerDataset([conformers.conformer(i) for i in range(conformers.n_conformers)])
+    dataset = ConformerDataset(conformers.to_data_list())
     dataloader = ConformerDataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
 
     minimised = []
