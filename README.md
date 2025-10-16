@@ -110,7 +110,7 @@ Add New Configs:
 Update Method Dicts:
 - `strain_relief.minimisation._minimisation.METHODS_DICT`
 - `strain_relief.energy_eval._energy_eval.METHODS_DICT`
-- `strain_relief.calculators.__init__.CALCULATOR_DICT`
+- `strain_relief.calculators.__init__.CALCULATORS_DICT`
 
 ### Configurations
 
