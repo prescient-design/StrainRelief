@@ -95,8 +95,7 @@ More examples are given [here](./examples/examples.sh), including the command us
 
 ### Adding Your Own ASE Calculator
 
-Add New ASE Calculator:
-- `strain_relief/calculators/_nnp.py`
+Add New ASE Calculator to `strain_relief/calculators/_nnp.py`:
 ```python
 def another_calculator(model_paths: str, device: str, default_dtype: str, **kwargs: Any) -> Calculator:
     # set up your new ase calculator here
