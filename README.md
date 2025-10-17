@@ -93,6 +93,25 @@ strain-relief \
 
 More examples are given [here](./examples/examples.sh), including the command used for the calculations in the StrainRelief paper.
 
+### Adding Your Own ASE Calculator
+
+Add New ASE Calculator to `strain_relief/calculators/_nnp.py`:
+```python
+def another_calculator(model_paths: str, device: str, default_dtype: str, **kwargs: Any) -> Calculator:
+    # set up your new ase calculator here
+    return calculator
+```
+Add New Configs:
+- `hydra_config/model/another_calculator.yaml`
+- `hydra_config/energy_eval/another_calculator.yaml`
+- `hydra_config/minimisation/another_calculator.yaml`
+- `hydra_config/experiments` [Optional]
+
+Update Method Dicts:
+- `strain_relief.minimisation._minimisation.METHODS_DICT`
+- `strain_relief.energy_eval._energy_eval.METHODS_DICT`
+- `strain_relief.calculators.__init__.CALCULATORS_DICT`
+
 ### Configurations
 
 **RDKit kwargs**
