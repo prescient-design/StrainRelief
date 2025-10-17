@@ -9,12 +9,11 @@ StrainRelief calculates the ligand strain of uncharged docked poses and has a su
 
 ![Strain Relief Logo](assets/strain_relief_logo.png)
 
-## Update: v0.4
-- Inclusion of NNP ASE calculators is more modular, making it easier to add your own.
-- Meta's FairChem [e-SEN](https://arxiv.org/html/2502.12147v1) NNP from [OMol25](https://arxiv.org/abs/2505.08762) has been added giving a significant performance boost! Request access to the model weights [here](https://huggingface.co/facebook/OMol25).
-- Improved hydra configurations mean `model.model_paths` now only has to be specified once.
-- Our [paper](https://pubs.acs.org/doi/10.1021/acs.jcim.5c00586) has been published in the *Journal of Chemical Information and Modelling*!
-- We have written a RAG [chatbot](https://strain-relief.streamlit.app/) to answer questions about the code, paper and any of its references.
+## Update: v0.5
+1. Switched to uv for package management.
+2. Introduced custom typing (`MolsDict`, `MolPropertiesDict`, `EnergiesDict` and `ConfEnergiesDict`) to make functions more readable.
+3. Updated workflows and `MolsDict` to include charge and spin. This allows for charge aware NNPs such as eSEN and UMA. A boolean kwarg (`include_charged=True`) has been added to `load_parquets` to optionally filter these out.
+4. Restructured calling of the main function to make it more intuitive with PyPi packaging.
 
 ## Installation
 
