@@ -11,7 +11,7 @@ from strain_relief.constants import (
     SPIN_COL_NAME,
     SPIN_KEY,
 )
-from strain_relief.types import MolsDict
+from strain_relief.data_types import MolsDict
 
 
 def load_parquet(

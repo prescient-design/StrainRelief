@@ -1,7 +1,5 @@
 from typing import NewType
 
-from ase import Atoms
-
 MolsDict = NewType("MolsDict", dict[str, dict])
 """
 mols = {
@@ -30,18 +28,4 @@ energies = {
         "conf_id": float
     }
 }
-"""
-
-ConfEnergiesDict = NewType("ConfEnergiesDict", dict[int, float])
-"""
-conf_energies = {
-    "conf_id": float
-}
-"""
-
-ConformerASEList = list[tuple[int, Atoms]]
-"""
-conformer_ase_list = [
-    (conf_id, Atoms),
-]
 """

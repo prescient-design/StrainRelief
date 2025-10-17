@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from strain_relief.conformers import generate_conformers
 from strain_relief.constants import MOL_KEY
-from strain_relief.types import MolPropertiesDict
+from strain_relief.data_types import MolPropertiesDict
 
 
 @pytest.mark.parametrize("fixture", ["mol", "mol_wo_bonds"])
