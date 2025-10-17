@@ -21,6 +21,7 @@ dependencies = [
     "loguru",
     "mace-torch",
     "rich",
+    "neural-optimiser",
 ]
 
 [project.optional-dependencies]
