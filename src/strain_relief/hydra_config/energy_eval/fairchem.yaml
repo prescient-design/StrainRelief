@@ -1,5 +1,0 @@
-defaults:
-  - ../model/fairchem@_here_
-
-method: FAIRChem
-model_paths: ${model.model_paths}

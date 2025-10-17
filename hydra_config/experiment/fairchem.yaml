@@ -1,0 +1,19 @@
+# @package _global_
+
+defaults:
+  - override /calculator: fairchem
+  - override /optimiser@local_optimiser: bfgs
+  - override /optimiser@global_optimiser: bfgs
+
+conformers:
+  numConfs: 20
+
+model:
+  model_paths: models/omol25_esen_sm_conserving
+
+local_min:
+  model_paths: models/omol25_esen_sm_conserving
+  fmax: 0.50
+
+global_min:
+  model_paths: models/omol25_esen_sm_conserving

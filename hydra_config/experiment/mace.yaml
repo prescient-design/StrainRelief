@@ -1,0 +1,19 @@
+# @package _global_
+
+defaults:
+  - override /calculator: mace
+  - override /optimiser@local_optimiser: bfgs
+  - override /optimiser@global_optimiser: bfgs
+
+conformers:
+  numConfs: 20
+
+model:
+  model_paths: models/MACE_SPICE2_NEUTRAL.model
+
+local_min:
+  model_paths: models/MACE_SPICE2_NEUTRAL.model
+  fmax: 0.50
+
+global_min:
+  model_paths: models/MACE_SPICE2_NEUTRAL.model
