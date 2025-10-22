@@ -16,6 +16,13 @@ StrainRelief calculates the ligand strain of uncharged docked poses and has a su
 4. Restructured calling of the main function to make it more intuitive with PyPi packaging.
 
 ## Installation
+Pre-requisities: Python 3.11, PyTorch and PyTorch Geometric compatible with your envirnment
+
+```bash
+# For example
+uv pip install torch==2.8.0 -f https://data.pyg.org/whl/torch-2.8.0+cu128.html
+uv pip install torch-geometric==2.7.0 torch-cluster -f https://data.pyg.org/whl/torch-2.8.0+cu128.html
+```
 
 ### Installation from PyPi
 
@@ -23,32 +30,21 @@ StrainRelief calculates the ligand strain of uncharged docked poses and has a su
 pip install strain-relief
 ```
 
-### Installation from source
-
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if not already installed. Create a new `uv` enviroment using:
-
-```bash
-uv venv
-source .venv/bin/activate
-```
-
-From the root directory, run the following commands to install the package and its dependencies in editable mode:
-
-(`mace-torch==0.3.x` requires `e3nn==0.4.4` (only for training, not inference). `fairchem-core` requires `e3nn>=0.5`. So until `mace-torch==0.4` is released we will have to do this finicky way of installing ([GitHub issue](https://github.com/ACEsuit/mace/issues/555)).)
-
-```bash
-git clone https://github.com/prescient-design/StrainRelief.git
-
-uv pip install -e ".[dev]"
-uv pip install --force-reinstall e3nn==0.5 fairchem-core
-uv run pre-commit install
-```
-
-or if you have a `uv.lock` file:
-
+### Installation from source (uv)
 ```bash
 uv sync --extra dev --editable
 ```
+or create a virtual environment and install the package and its dependencies in editable mode:
+```bash
+uv venv
+source .venv/bin/activate
+
+uv pip install -e ".[dev]"
+uv pip install --force-reinstall e3nn==0.5 fairchem-core
+
+uv run pre-commit install
+```
+**Note:** `mace-torch==0.3.x` requires `e3nn==0.4.4` (only for training, not inference). `fairchem-core` requires `e3nn>=0.5`. So until `mace-torch==0.4` is released we will have to do this finicky way of installing ([GitHub issue](https://github.com/ACEsuit/mace/issues/555)).
 
 ## The Protocol
 
@@ -86,9 +82,10 @@ For a complete example see the tutorial [notebook](./examples/tutorial.ipynb).
 
 ```bash
 strain-relief \
-    experiment=mmff94s \
+    experiment=mace \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
     io.output.parquet_path=data/example_ligboundconf_output.parquet \
+    conformers.numConfs=1 \
 ```
 
 More examples are given [here](./examples/examples.sh), including the command used for the calculations in the StrainRelief paper.
