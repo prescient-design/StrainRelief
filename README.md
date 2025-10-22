@@ -38,7 +38,7 @@ or create a virtual environment and install the package and its dependencies in 
 ```bash
 uv venv
 source .venv/bin/activate
-
+# [install torch and torch-geometric as above]
 uv pip install -e ".[dev]"
 uv pip install --force-reinstall e3nn==0.5 fairchem-core
 
