@@ -103,12 +103,14 @@ def compute_strain(
     docked_batch: ConformerBatch = ConformerBatch.from_data_list(
         [Conformer.from_rdkit(**docked_mols[id]) for id in docked_mols]
     )
+    docked_batch.to(cfg.device)
 
     logging.info("Generating conformers for global minimum search...")
     generated_mols = generate_conformers(docked_mols, **cfg.conformers)
     generated_batch: ConformerBatch = ConformerBatch.cat(
         [ConformerBatch.from_rdkit(**generated_mols[id]) for id in generated_mols]
     )
+    generated_batch.to(cfg.device)
 
     logging.info("Minimising docked conformers...")
     local_minima = run_optimisation(
