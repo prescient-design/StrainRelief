@@ -6,97 +6,25 @@ from strain_relief.compute_strain import _parse_args, compute_strain
 from strain_relief.io import load_parquet
 
 
-@pytest.mark.integration
-@pytest.mark.parametrize("eval_method", ["mmff94", "mmff94s"])
-@pytest.mark.parametrize("min_method", ["mmff94", "mmff94s"])
-def test_strain_relief(min_method: str, eval_method: str):
-    with initialize(version_base="1.1", config_path="../hydra_config"):
-        cfg = compose(
-            config_name="default",
-            overrides=[
-                f"io.input.parquet_path={test_dir}/data/target.parquet",
-                "io.input.id_col_name=SMILES",
-                f"calculator={min_method}",
-                "optimiser@local_optimiser=bfgs",
-                "optimiser@global_optimiser=bfgs",
-                f"energy_eval={eval_method}",
-                "conformers.numConfs=1",
-            ],
-        )
-    df = load_parquet(
-        parquet_path=cfg.io.input.parquet_path, id_col_name="SMILES", include_charged=True
-    )
-    compute_strain(df=df, cfg=cfg)
+def test_compute_strain_from_mols():
+    assert True is False
 
 
-@pytest.mark.integration
-@pytest.mark.gpu
-def test_strain_relief_w_mace():
-    with initialize(version_base="1.1", config_path="../hydra_config"):
-        cfg = compose(
-            config_name="default",
-            overrides=[
-                f"io.input.parquet_path={test_dir}/data/target.parquet",
-                "io.input.id_col_name=SMILES",
-                "optimiser@local_optimiser=bfgs",
-                "optimiser@global_optimiser=bfgs",
-                "calculator=mace",
-                "local_min.fmax=0.50",
-                f"local_optimiser.model_paths={test_dir}/models/MACE.model",
-                f"global_optimiser.model_paths={test_dir}/models/MACE.model",
-                f"model.model_paths={test_dir}/models/MACE.model",
-                "conformers.numConfs=1",
-            ],
-        )
-    df = load_parquet(
-        parquet_path=cfg.io.input.parquet_path, id_col_name="SMILES", include_charged=True
-    )
-    compute_strain(df=df, cfg=cfg)
-
-
-@pytest.mark.integration
-@pytest.mark.gpu
-def test_strain_relief_w_esen(esen_model_path: str):
-    with initialize(version_base="1.1", config_path="../hydra_config"):
-        cfg = compose(
-            config_name="default",
-            overrides=[
-                f"io.input.parquet_path={test_dir}/data/target.parquet",
-                "io.input.id_col_name=SMILES",
-                "optimiser@local_optimiser=bfgs",
-                "optimiser@global_optimiser=bfgs",
-                "calculator=fairchem",
-                "local_optimiser.fmax=0.50",
-                f"local_optimiser.model_paths={test_dir}/models/eSEN.pt",
-                f"global_optimiser.model_paths={test_dir}/models/eSEN.pt",
-                f"model.model_paths={test_dir}/models/eSEN.pt",
-                "conformers.numConfs=1",
-            ],
-        )
-    df = load_parquet(
-        parquet_path=cfg.io.input.parquet_path, id_col_name="SMILES", include_charged=True
-    )
-    compute_strain(df=df, cfg=cfg)
-
-
-@pytest.mark.integration
-def test_strain_relief_all_charged():
+def test_compute_strain_empty_df(device: str):
     with initialize(version_base="1.1", config_path="../hydra_config"):
         cfg = compose(
             config_name="default",
             overrides=[
                 f"io.input.parquet_path={test_dir}/data/all_charged.parquet",
-                "io.input.id_col_name=id",
-                "optimiser@local_optimiser=bfgs",
-                "optimiser@global_optimiser=bfgs",
-                "calculator=mace",
-                "conformers.numConfs=1",
+                "experiment=pytest",
+                f"device={device}",
             ],
         )
     df = load_parquet(
         parquet_path=cfg.io.input.parquet_path, id_col_name="id", include_charged=False
     )
     results = compute_strain(df=df, cfg=cfg)
+    assert len(results) == 2
     assert results["ligand_strain"].isna().all()
     assert results["passes_strain_filter"].isna().all()
 

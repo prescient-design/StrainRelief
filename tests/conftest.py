@@ -1,8 +1,15 @@
 import pytest
+import torch
 from strain_relief import test_dir
 from strain_relief.constants import MOL_KEY
 from strain_relief.data_types import MolPropertiesDict, MolsDict
 from strain_relief.io import load_parquet, to_mols_dict
+
+
+@pytest.fixture(scope="session")
+def device() -> str:
+    """Return 'cuda' if a GPU is available, else 'cpu'."""
+    return "cuda" if torch.cuda.is_available() else "cpu"
 
 
 @pytest.fixture(scope="function")
