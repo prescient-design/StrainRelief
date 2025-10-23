@@ -29,7 +29,7 @@
             }
         },
         {
-            "name": "train (mace)",
+            "name": "train (mace - gpu)",
             "type": "debugpy",
             "program": "${workspaceFolder}/src/strain_relief/cmdline/_strain_relief.py",
             "request": "launch",
@@ -39,6 +39,25 @@
                 "experiment=mace",
                 "conformers.numConfs=1",
                 "io.input.parquet_path=${workspaceFolder}/data/example_ligboundconf_input.parquet",
+                "device=cuda",
+            ],
+            "env": {
+                "HYDRA_FULL_ERROR": "1",
+                "CUDA_LAUNCH_BLOCKING": "1"
+            }
+        },
+        {
+            "name": "train (mace- cpu)",
+            "type": "debugpy",
+            "program": "${workspaceFolder}/src/strain_relief/cmdline/_strain_relief.py",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "experiment=mace",
+                "conformers.numConfs=1",
+                "io.input.parquet_path=${workspaceFolder}/data/example_ligboundconf_input.parquet",
+                "device=cpu",
             ],
             "env": {
                 "HYDRA_FULL_ERROR": "1",
