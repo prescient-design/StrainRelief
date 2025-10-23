@@ -59,6 +59,19 @@ def _validate_calculator(cfg: DictConfig):
                 "duplcating computation."
             )
 
+        if (
+            cfg.energy_evaluation.calculator._target_
+            == "neural_optimiser.calculators.MACECalculator"
+            and cfg.io.input.include_charged
+        ):
+            logger.warning("MACE (v0.3.14) currently has limited support for charged molecules.")
+
+    if (
+        cfg.calculator._target_ == "neural_optimiser.calculators.MACECalculator"
+        and cfg.io.input.include_charged
+    ):
+        logger.warning("MACE (v0.3.14) currently has limited support for charged molecules.")
+
 
 def _validate_batch(cfg: DictConfig) -> DictConfig:
     """Validate the batch size and set to a large number if -1 (i.e. no batching)."""
