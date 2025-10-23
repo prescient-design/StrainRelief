@@ -71,9 +71,7 @@ def compute_strain(
 
     # Instantiate calculator
     logging.info("Instantiating calculator...")
-    calculator: Calculator = hydra.utils.instantiate(
-        cfg.calculator
-    )  # TODO: add default_dtype to calculator functionality
+    calculator: Calculator = hydra.utils.instantiate(cfg.calculator)
     logging.info(calculator)
 
     # Instantiate energy evaluation calculator (if different from minimisation)
@@ -99,7 +97,7 @@ def compute_strain(
 
     df = _parse_args(df=df, mols=mols, ids=ids)
 
-    docked_mols: MolsDict = to_mols_dict(df, **cfg.io.input)  # move to conformer dir?
+    docked_mols: MolsDict = to_mols_dict(df, **cfg.io.input)
     docked_batch: ConformerBatch = ConformerBatch.from_data_list(
         [Conformer.from_rdkit(**docked_mols[id]) for id in docked_mols]
     )
@@ -122,7 +120,7 @@ def compute_strain(
         generated_batch, global_optimiser, cfg.batch_size, cfg.num_workers
     )
 
-    if cfg.get("energy_evaluation", None):  # TODO: update config for this to be optional
+    if cfg.get("energy_evaluation", None):
         logging.info("Predicting energies of local minima poses...")
         local_minima = energy_calculator.get_energy(local_minima)
         logging.info("Predicting energies of generated conformers...")

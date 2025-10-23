@@ -1,4 +1,4 @@
 _target_: neural_optimiser.calculators.FAIRChemCalculator
 model_paths: null
 device: ${device}
-# default_dtype: float32
+default_dtype: float32
