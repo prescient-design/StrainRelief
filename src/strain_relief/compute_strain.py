@@ -26,7 +26,7 @@ from neural_optimiser.optimisers.base import Optimiser
 from omegaconf import DictConfig, OmegaConf
 from rdkit import Chem
 
-from strain_relief.configs import _validate_config
+from strain_relief.configs import validate_config
 from strain_relief.conformers import generate_conformers
 from strain_relief.data_types import MolsDict
 from strain_relief.io import process_output, to_mols_dict
@@ -65,7 +65,7 @@ def compute_strain(
     # -------------- CONFIGURATION --------------
 
     _print_config_tree(cfg)
-    _validate_config(cfg)  # TODO: more checks here
+    validate_config(cfg)
 
     # -------------- SET-UP --------------
 
