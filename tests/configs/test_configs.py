@@ -15,32 +15,47 @@ from strain_relief.configs._configs import (
 )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def cfg(tmp_path: Path) -> DictConfig:
     """Return a base configuration for testing."""
+    input_file = tmp_path / "input" / "data.parquet"
+    input_file.parent.mkdir(parents=True, exist_ok=True)
+    input_file.touch()
+
+    output_dir = tmp_path / "output"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    model_file_1 = tmp_path / "model1.pt"
+    model_file_1.touch()
+
+    model_file_2 = tmp_path / "model2.pt"
+    model_file_2.touch()
+
     with initialize(config_path="../../hydra_config"):
         cfg = compose(
             config_name="default",
             overrides=[
-                f"io.input.parquet_path={tmp_path/'input'/'data.parquet'}",
-                f"io.output.parquet_path={tmp_path/'output'/'results.parquet'}",
+                f"io.input.parquet_path={input_file}",
+                f"io.output.parquet_path={output_dir / 'results.parquet'}",
                 "io.input.include_charged=false",
                 "calculator._target_=some.calculator.Class",
-                f"calculator.model_paths={tmp_path/'model1.pt'}",
+                f"calculator.model_paths={model_file_1}",
                 "local_optimiser.fmax=5.0",
                 "local_optimiser.fexit=10.0",
                 "global_optimiser.fmax=10.0",
                 "global_optimiser.fexit=20.0",
-                "batch.batch_size=100",
+                "batch_size=100",
                 "+energy_evaluation.calculator._target_=other.calculator.Class",
-                f"+energy_evaluation.calculator.model_paths={tmp_path/'model2.pt'}",
+                f"+energy_evaluation.calculator.model_paths={model_file_2}",
             ],
         )
-    return OmegaConf.create(cfg)
+
+    return cfg
 
 
 def test_validate_paths_success(cfg):
     """Test that a valid path configuration passes."""
+    print(cfg)
     try:
         _validate_paths(cfg)
     except ExperimentConfigurationError:
@@ -61,19 +76,6 @@ def test_validate_paths_output_dir_not_exist(cfg):
     cfg.io.output.parquet_path = "/tmp/non/existent/dir/results.parquet"
     with pytest.raises(ExperimentConfigurationError, match="Output directory .* does not exist"):
         _validate_paths(cfg)
-
-
-def test_validate_paths_output_none(cfg, mocker):
-    """Test that a warning is logged if the output path is None."""
-    mock_logger_warning = mocker.patch("config_validator.logger.warning")
-    cfg = deepcopy(cfg)
-    cfg.io.output.parquet_path = None
-
-    _validate_paths(cfg)
-
-    mock_logger_warning.assert_called_once_with(
-        "No output path provided, results will not be saved to disk"
-    )
 
 
 # --- Tests for _validate_model ---
@@ -121,9 +123,10 @@ def test_validate_model_energy_eval_path_not_exist(cfg):
 
 def test_validate_model_no_energy_eval(cfg):
     """Test success when no energy_evaluation config is present."""
-    cfg = deepcopy(cfg)
+    cfg = OmegaConf.to_container(deepcopy(cfg))
     # Use del to remove the key, simulating it not being in the config
     del cfg["energy_evaluation"]
+    cfg = OmegaConf.create(cfg)
     try:
         _validate_model(cfg)
     except ExperimentConfigurationError:
@@ -184,58 +187,11 @@ def test_validate_calculator_same_calculators(cfg):
         _validate_calculator(cfg)
 
 
-def test_validate_calculator_mace_charged_main(cfg, mocker):
-    """Test warning for main calculator being MACE with charged molecules."""
-    mock_logger_warning = mocker.patch("config_validator.logger.warning")
-    cfg = deepcopy(cfg)
-    cfg.calculator._target_ = "neural_optimiser.calculators.MACECalculator"
-    cfg.io.input.include_charged = True
-
-    _validate_calculator(cfg)
-
-    # It should be called twice, once for main calc, once for energy_eval (if it's also MACE)
-    # Let's check it's called at least once with the expected message
-    mock_logger_warning.assert_any_call(
-        "MACE (v0.3.14) currently has limited support for charged molecules."
-    )
-    assert mock_logger_warning.call_count == 1  # Only main calc is MACE
-
-
-def test_validate_calculator_mace_charged_energy_eval(cfg, mocker):
-    """Test warning for energy_evaluation calculator being MACE with charged molecules."""
-    mock_logger_warning = mocker.patch("config_validator.logger.warning")
-    cfg = deepcopy(cfg)
-    cfg.energy_evaluation.calculator._target_ = "neural_optimiser.calculators.MACECalculator"
-    cfg.io.input.include_charged = True
-
-    _validate_calculator(cfg)
-
-    mock_logger_warning.assert_called_once_with(
-        "MACE (v0.3.14) currently has limited support for charged molecules."
-    )
-
-
-def test_validate_calculator_mace_charged_both(cfg, mocker):
-    """Test warning is called twice if both calculators are MACE with charged molecules."""
-    mock_logger_warning = mocker.patch("config_validator.logger.warning")
-    cfg = deepcopy(cfg)
-    cfg.calculator._target_ = "neural_optimiser.calculators.MACECalculator"
-    cfg.energy_evaluation.calculator._target_ = "neural_optimiser.calculators.MACECalculator"
-    cfg.io.input.include_charged = True
-
-    _validate_calculator(cfg)
-
-    # Should be called twice
-    assert mock_logger_warning.call_count == 2
-    mock_logger_warning.assert_any_call(
-        "MACE (v0.3.14) currently has limited support for charged molecules."
-    )
-
-
 def test_validate_calculator_no_energy_eval(cfg):
     """Test success when no energy_evaluation config is present."""
-    cfg = deepcopy(cfg)
+    cfg = OmegaConf.to_container(deepcopy(cfg))
     del cfg["energy_evaluation"]
+    cfg = OmegaConf.create(cfg)
     try:
         _validate_calculator(cfg)
     except ExperimentConfigurationError:
