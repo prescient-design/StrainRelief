@@ -154,28 +154,7 @@ def process_output(
     results["ligand_strain"] = results["local_min_e"] - results["global_min_e"]
     results["passes_strain_filter"] = results["ligand_strain"] <= threshold
 
-    if not results[results.ligand_strain < 0].empty:
-        logging.warning(
-            f"{len(results[results.ligand_strain < 0])} molecules have a negative ligand strain, "
-            "meaning the initial conformer is lower energy than all generated conformers."
-        )
-    if not results[results.ligand_strain.isna()].empty:
-        logging.warning(
-            f"{len(results[results.ligand_strain.isna()])} molecules have no conformers generated "
-            "for either the initial or minimised pose, so strain cannot be calculated."
-        )
-
-    # total_n_confs: int = results["nconfs_converged"].sum() if not results.empty else 0
-
-    # if total_n_confs > 0 and not results.empty:
-    #     logging.info(
-    #         f"{total_n_confs:,} configurations converged across {len(results):,} molecules "
-    #         f"(avg. {total_n_confs / len(results):.2f} per molecule)"
-    #     )
-    # else:
-    #     logging.error(
-    #         "Ligand strain calculation failed for all molecules or no molecules were processed."
-    #     )
+    _log_results(results, global_min)
 
     # Merge and drop original molecule column
     final_results = input_df.merge(results, left_on=id_col_name, right_on="id", how="outer")
@@ -190,3 +169,41 @@ def process_output(
         logging.info("Output file not provided, data not saved.")
 
     return final_results
+
+
+def _log_results(results: pd.DataFrame, global_min: Data | Batch) -> None:
+    """Helper method to log output summary statistics."""
+    # Log individual calculated ligand strains
+    for id, strain in zip(results.id, results.ligand_strain):
+        if strain is np.nan:
+            logging.warning(f"Ligand strain could not be calculated for molecule {id}.")
+        elif strain > 0:
+            logging.debug(f"{strain:.2f} kcal/mol ligand strain for molecule {id}")
+        else:
+            logging.warning(
+                f"{strain:.2f} kcal/mol ligand strain for molecule {id}. Negative ligand strain."
+            )
+
+    # Log any negative or NaN ligand strains
+    if not results[results.ligand_strain < 0].empty:
+        logging.warning(
+            f"{len(results[results.ligand_strain < 0])} molecules have a negative ligand strain, "
+            "meaning the initial conformer is lower energy than all generated conformers."
+        )
+    if not results[results.ligand_strain.isna()].empty:
+        logging.warning(
+            f"{len(results[results.ligand_strain.isna()])} molecules have no conformers generated "
+            "for either the initial or minimised pose, so strain cannot be calculated."
+        )
+
+    # Log overall convergence statistics
+    total_n_confs: int = global_min.converged.sum()
+    if total_n_confs > 0 and not results.empty:
+        logging.info(
+            f"{total_n_confs:,} configurations converged across {len(results):,} molecules "
+            f"(avg. {total_n_confs / len(results):.2f} per molecule)"
+        )
+    else:
+        logging.error(
+            "Ligand strain calculation failed for all molecules or no molecules were processed."
+        )

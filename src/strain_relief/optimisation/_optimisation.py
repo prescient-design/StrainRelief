@@ -1,3 +1,7 @@
+from timeit import default_timer as timer
+
+import torch
+from loguru import logger
 from neural_optimiser.conformers import ConformerBatch
 from neural_optimiser.datasets.base import ConformerDataLoader, ConformerDataset
 from neural_optimiser.optimisers.base import Optimiser
@@ -24,12 +28,79 @@ def run_optimisation(
     ConformerBatch
         A single ConformerBatch containing all the optimised results.
     """
+    start = timer()
+
     dataset = ConformerDataset(conformers.to_data_list())
     dataloader = ConformerDataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
 
     minimised = []
     for batch in dataloader:
+        if len(dataloader) > 1:
+            logger.info(f"Optimising batch {dataloader._index}/{len(dataloader)}")
         optimiser.run(batch)
         minimised.append(batch)
 
-    return ConformerBatch.cat(minimised)
+    all_conformers = ConformerBatch.cat(minimised)
+    _log_optimisation(all_conformers, optimiser)
+
+    end = timer()
+    logger.info(f"Conformers minimisation took {end - start:.2f} seconds. \n")
+
+    return all_conformers
+
+
+def _log_optimisation(conformers: ConformerBatch, optimiser: Optimiser) -> None:
+    """Helper method to log optimisation summary statistics.
+
+    Parameters
+    ----------
+    conformers: ConformerBatch
+        The batch of conformers that were optimised.
+    optimiser: Optimiser
+        The optimiser used for the optimisation.
+    """
+    no_converged = 0
+
+    ids = conformers.id.unique().tolist()
+    for id in ids:
+        # Molecule level logging
+        confs = [
+            conformers.conformer(i)
+            for i in range(conformers.n_conformers)
+            if conformers.id[i] == id
+        ]
+        n_converged = sum([conf.converged for conf in confs])
+        if n_converged == len(confs):
+            logger.info(
+                f"Molecule ID {id}: All {n_converged} conformers converged after minimisation."
+            )
+        else:
+            logger.info(
+                f"Molecule ID {id} has {n_converged} converged conformers after minimisation."
+            )
+        if n_converged == 0:
+            no_converged += 1
+
+        # Conformer level logging
+        for i, conf in enumerate(confs):
+            fmax = torch.linalg.vector_norm(conf.forces, dim=1).max()
+            if conf.converged:
+                logger.debug(
+                    f"Molecule ID {conf.id}, Conformer {i} converged: "
+                    f"Steps={conf.converged_step}, fmax={fmax:.4f}, E={conf.energies:.2f}."
+                )
+            elif fmax > optimiser.fexit:
+                logger.debug(
+                    f"Molecule ID {conf.id}, Conformer {i} failed: "
+                    f"Steps={conf.pos_dt.size(0)}, fmax={fmax:.4f} (fexit activated)."
+                )
+            elif conf.pos_dt.size(0) >= optimiser.steps:
+                logger.debug(
+                    f"Molecule ID {conf.id}, Conformer {i} failed: "
+                    f"Steps={conf.pos_dt.size(0)}, fmax={fmax:.4f} (max steps reached)."
+                )
+            else:
+                raise RuntimeError("Conformer minimisation failed for an unknown reason.")
+
+    if no_converged > 0:
+        logger.warning(f"{no_converged} molecules have 0 converged conformers after minimisation.")
