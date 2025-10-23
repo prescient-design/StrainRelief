@@ -21,7 +21,7 @@ def _validate_paths(cfg: DictConfig):
     output_path = Path(cfg.io.output.parquet_path)
     if output_path is None:
         logger.warning("No output path provided, results will not be saved to disk")
-    if not output_path.parent.exists():
+    elif not output_path.parent.exists():
         raise ExperimentConfigurationError(f"Output directory {output_path.parent} does not exist")
 
 
@@ -31,14 +31,16 @@ def _validate_model(cfg: DictConfig):
         raise ExperimentConfigurationError("Model path must be provided if using a NNP")
 
     if not Path(cfg.calculator.model_paths).exists():
-        raise ExperimentConfigurationError(f"Model path {cfg.model.model_paths} does not exist")
+        raise ExperimentConfigurationError(
+            f"Model path {cfg.calculator.model_paths} does not exist"
+        )
 
     if cfg.get("energy_evaluation", None):
         if cfg.energy_evaluation.calculator.model_paths is None:
             raise ExperimentConfigurationError("Model path must be provided if using a NNP")
         elif not Path(cfg.energy_evaluation.calculator.model_paths).exists():
             raise ExperimentConfigurationError(
-                f"Model path {cfg.energy_evaluation.model_paths} does not exist"
+                f"Model path {cfg.energy_evaluation.calculator.model_paths} does not exist"
             )
 
 
