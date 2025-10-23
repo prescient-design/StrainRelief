@@ -27,6 +27,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "pytest-mock",
     "pytest-cov",
     "pre-commit",
     "ipykernel",
