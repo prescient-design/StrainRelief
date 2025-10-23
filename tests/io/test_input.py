@@ -47,8 +47,3 @@ def test_to_mols_dict():
 @pytest.mark.skip(reason="Test not implemented")
 def test_check_columns():
     pass
-
-
-@pytest.mark.skip(reason="Test not implemented")
-def test_save_data():
-    pass
