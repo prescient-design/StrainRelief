@@ -11,7 +11,7 @@ seed: -1
 threshold: 16.1
 num_workers: 0
 device: cpu
-batch_size: 32
+batch_size: -1
 
 local_optimiser:
   fmax: 0.50

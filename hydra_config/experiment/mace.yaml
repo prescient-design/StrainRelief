@@ -8,12 +8,8 @@ defaults:
 conformers:
   numConfs: 20
 
-model:
+calculator:
   model_paths: models/MACE_SPICE2_NEUTRAL.model
 
-local_min:
-  model_paths: models/MACE_SPICE2_NEUTRAL.model
+local_optimiser:
   fmax: 0.50
-
-global_min:
-  model_paths: models/MACE_SPICE2_NEUTRAL.model

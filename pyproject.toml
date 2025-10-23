@@ -4,8 +4,9 @@ description = "Calculates ligand strain of small molecules from their docked pos
 authors = [{name = "Ewan Wallace", email = "erw@wallace2.com"}]
 license = "Apache-2.0"
 dynamic = ["version"]
-requires-python = ">=3.11"
+requires-python = "==3.11.*"
 readme = {file = "README.md", content-type = "text/markdown"}
+urls = {Homepage = "https://github.com/prescient-design/StrainRelief"}
 
 dependencies = [
     "rdkit",
@@ -19,8 +20,8 @@ dependencies = [
     "universal-pathlib",
     "boto3",
     "loguru",
-    "mace-torch",
     "rich",
+    "neural-optimiser",
 ]
 
 [project.optional-dependencies]
@@ -31,21 +32,26 @@ dev = [
     "ipykernel",
 ]
 
-[project.urls]
-Homepage = "https://github.com/prescient-design/StrainRelief"
+[project.scripts]
+strain-relief = "strain_relief.cmdline:strain_relief"
+
+[tool.uv.extra-build-dependencies]
+torch-cluster = ["torch"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.in"]}
-
-[tool.setuptools.dynamic.optional-dependencies]
-dev = {file = ["requirements-dev.in"]}
+[tool.setuptools_scm]
+local_scheme = "node-and-date"
+search_parent_directories = true
+version_scheme = "no-guess-dev"
 
 [build-system]
 requires = ["setuptools >= 65", "setuptools_scm[toml]>=6.2"]
 build-backend = 'setuptools.build_meta'
+
+[tool.ruff]
+line-length = 100
 
 [tool.ruff.lint]
 select = [
@@ -54,17 +60,6 @@ select = [
     "I", # isort
     "UP", # pyupgrade
 ]
-
-[tool.ruff]
-line-length = 100
-
-[tool.setuptools_scm]
-local_scheme = "node-and-date"
-search_parent_directories = true
-version_scheme = "no-guess-dev"
-
-[project.scripts]
-strain-relief = "strain_relief.cmdline:strain_relief"
 
 [tool.pytest.ini_options]
 markers = [

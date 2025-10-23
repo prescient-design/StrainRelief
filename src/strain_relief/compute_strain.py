@@ -19,7 +19,7 @@ import pandas as pd
 import rich
 import rich.syntax
 import rich.tree
-from loguru import logger
+from loguru import logger as logging
 from neural_optimiser.calculators.base import Calculator
 from neural_optimiser.conformers import Conformer, ConformerBatch
 from neural_optimiser.optimisers.base import Optimiser
@@ -28,9 +28,9 @@ from rdkit import Chem
 
 from strain_relief.configs import _validate_config
 from strain_relief.conformers import generate_conformers
+from strain_relief.data_types import MolsDict
 from strain_relief.io import process_output, to_mols_dict
 from strain_relief.optimisation import run_optimisation
-from strain_relief.types import MolsDict
 
 
 def compute_strain(
@@ -70,27 +70,27 @@ def compute_strain(
     # -------------- SET-UP --------------
 
     # Instantiate calculator
-    logger.info("Instantiating calculator...")
+    logging.info("Instantiating calculator...")
     calculator: Calculator = hydra.utils.instantiate(
         cfg.calculator
     )  # TODO: add default_dtype to calculator functionality
-    logger.info(calculator)
+    logging.info(calculator)
 
     # Instantiate energy evaluation calculator (if different from minimisation)
     if cfg.get("energy_evaluation", None):
-        logger.info("Instantiating energy evaluation calculator...")
+        logging.info("Instantiating energy evaluation calculator...")
         energy_calculator: Calculator = hydra.utils.instantiate(cfg.energy_evaluation.calculator)
-        logger.info(energy_calculator)
+        logging.info(energy_calculator)
 
     # Instantiate local optimiser
-    logger.info("Instantiating local optimiser...")
+    logging.info("Instantiating local optimiser...")
     local_optimiser: Optimiser = hydra.utils.instantiate(cfg.local_optimiser)
-    logger.info(local_optimiser)
+    logging.info(local_optimiser)
 
     # Instantiate global optimiser
-    logger.info("Instantiating global optimiser...")
+    logging.info("Instantiating global optimiser...")
     global_optimiser: Optimiser = hydra.utils.instantiate(cfg.global_optimiser)
-    logger.info(global_optimiser)
+    logging.info(global_optimiser)
 
     local_optimiser.calculator = calculator
     global_optimiser.calculator = calculator
@@ -103,27 +103,29 @@ def compute_strain(
     docked_batch: ConformerBatch = ConformerBatch.from_data_list(
         [Conformer.from_rdkit(**docked_mols[id]) for id in docked_mols]
     )
+    docked_batch.to(cfg.device)
 
-    logger.info("Generating conformers for global minimum search...")
+    logging.info("Generating conformers for global minimum search...")
     generated_mols = generate_conformers(docked_mols, **cfg.conformers)
     generated_batch: ConformerBatch = ConformerBatch.cat(
         [ConformerBatch.from_rdkit(**generated_mols[id]) for id in generated_mols]
     )
+    generated_batch.to(cfg.device)
 
-    logger.info("Minimising docked conformers...")
+    logging.info("Minimising docked conformers...")
     local_minima = run_optimisation(
         docked_batch.clone(), local_optimiser, cfg.batch_size, cfg.num_workers
     )
 
-    logger.info("Minimising generated conformers...")
+    logging.info("Minimising generated conformers...")
     global_minima = run_optimisation(
         generated_batch, global_optimiser, cfg.batch_size, cfg.num_workers
     )
 
     if cfg.get("energy_evaluation", None):  # TODO: update config for this to be optional
-        logger.info("Predicting energies of local minima poses...")
+        logging.info("Predicting energies of local minima poses...")
         local_minima = energy_calculator.get_energy(local_minima)
-        logger.info("Predicting energies of generated conformers...")
+        logging.info("Predicting energies of generated conformers...")
         global_minima = energy_calculator.get_energy(global_minima)
 
     # Save ligand strains
@@ -132,7 +134,7 @@ def compute_strain(
     )
 
     end = timer()
-    logger.info(f"Ligand strain calculations took {end - start:.2f} seconds. \n")
+    logging.info(f"Ligand strain calculations took {end - start:.2f} seconds. \n")
 
     return md
 
@@ -169,7 +171,7 @@ def _parse_args(
 
     if df is not None:  # prevents input df from being updated
         if mols is not None:
-            logger.warning("compute_strain received both df and mols; using df and ignoring mols.")
+            logging.warning("compute_strain received both df and mols; using df and ignoring mols.")
         return df.copy()
 
     if not ids:
@@ -234,3 +236,5 @@ if __name__ == "__main__":
         return compute_strain(cfg, df=df)
 
     main()
+
+    print("Finished")

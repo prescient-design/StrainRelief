@@ -9,14 +9,20 @@ StrainRelief calculates the ligand strain of uncharged docked poses and has a su
 
 ![Strain Relief Logo](assets/strain_relief_logo.png)
 
-## Update: v0.4
-- Inclusion of NNP ASE calculators is more modular, making it easier to add your own.
-- Meta's FairChem [e-SEN](https://arxiv.org/html/2502.12147v1) NNP from [OMol25](https://arxiv.org/abs/2505.08762) has been added giving a significant performance boost! Request access to the model weights [here](https://huggingface.co/facebook/OMol25).
-- Improved hydra configurations mean `model.model_paths` now only has to be specified once.
-- Our [paper](https://pubs.acs.org/doi/10.1021/acs.jcim.5c00586) has been published in the *Journal of Chemical Information and Modelling*!
-- We have written a RAG [chatbot](https://strain-relief.streamlit.app/) to answer questions about the code, paper and any of its references.
+## Update: v0.5
+1. Switched to uv for package management.
+2. Introduced custom typing (`MolsDict`, `MolPropertiesDict`, `EnergiesDict` and `ConfEnergiesDict`) to make functions more readable.
+3. Updated workflows and `MolsDict` to include charge and spin. This allows for charge aware NNPs such as eSEN and UMA. A boolean kwarg (`include_charged=True`) has been added to `load_parquets` to optionally filter these out.
+4. Restructured calling of the main function to make it more intuitive with PyPi packaging.
 
 ## Installation
+Pre-requisities: Python 3.11, PyTorch and PyTorch Geometric compatible with your envirnment
+
+```bash
+# For example
+uv pip install torch==2.8.0 -f https://data.pyg.org/whl/torch-2.8.0+cu128.html
+uv pip install torch-geometric==2.7.0 torch-cluster -f https://data.pyg.org/whl/torch-2.8.0+cu128.html
+```
 
 ### Installation from PyPi
 
@@ -24,32 +30,21 @@ StrainRelief calculates the ligand strain of uncharged docked poses and has a su
 pip install strain-relief
 ```
 
-### Installation from source
-
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if not already installed. Create a new `uv` enviroment using:
-
-```bash
-uv venv
-source .venv/bin/activate
-```
-
-From the root directory, run the following commands to install the package and its dependencies in editable mode:
-
-(`mace-torch==0.3.x` requires `e3nn==0.4.4` (only for training, not inference). `fairchem-core` requires `e3nn>=0.5`. So until `mace-torch==0.4` is released we will have to do this finicky way of installing ([GitHub issue](https://github.com/ACEsuit/mace/issues/555)).)
-
-```bash
-git clone https://github.com/prescient-design/StrainRelief.git
-
-uv pip install -e ".[dev]"
-uv pip install --force-reinstall e3nn==0.5 fairchem-core
-uv run pre-commit install
-```
-
-or if you have a `uv.lock` file:
-
+### Installation from source (uv)
 ```bash
 uv sync --extra dev --editable
 ```
+or create a virtual environment and install the package and its dependencies in editable mode:
+```bash
+uv venv
+source .venv/bin/activate
+
+uv pip install -e ".[dev]"
+uv pip install --force-reinstall e3nn==0.5 fairchem-core
+
+uv run pre-commit install
+```
+**Note:** `mace-torch==0.3.x` requires `e3nn==0.4.4` (only for training, not inference). `fairchem-core` requires `e3nn>=0.5`. So until `mace-torch==0.4` is released we will have to do this finicky way of installing ([GitHub issue](https://github.com/ACEsuit/mace/issues/555)).
 
 ## The Protocol
 
@@ -87,12 +82,32 @@ For a complete example see the tutorial [notebook](./examples/tutorial.ipynb).
 
 ```bash
 strain-relief \
-    experiment=mmff94s \
+    experiment=mace \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
     io.output.parquet_path=data/example_ligboundconf_output.parquet \
+    conformers.numConfs=1 \
 ```
 
 More examples are given [here](./examples/examples.sh), including the command used for the calculations in the StrainRelief paper.
+
+### Adding Your Own ASE Calculator
+
+Add New ASE Calculator to `strain_relief/calculators/_nnp.py`:
+```python
+def another_calculator(model_paths: str, device: str, default_dtype: str, **kwargs: Any) -> Calculator:
+    # set up your new ase calculator here
+    return calculator
+```
+Add New Configs:
+- `hydra_config/model/another_calculator.yaml`
+- `hydra_config/energy_eval/another_calculator.yaml`
+- `hydra_config/minimisation/another_calculator.yaml`
+- `hydra_config/experiments` [Optional]
+
+Update Method Dicts:
+- `strain_relief.minimisation._minimisation.METHODS_DICT`
+- `strain_relief.energy_eval._energy_eval.METHODS_DICT`
+- `strain_relief.calculators.__init__.CALCULATORS_DICT`
 
 ### Configurations
 
