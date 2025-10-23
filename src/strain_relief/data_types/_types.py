@@ -19,13 +19,3 @@ mol_properties = {
     "mol": RDKit.Mol,
 }
 """
-
-
-EnergiesDict = NewType("EnergiesDict", dict[str, dict[str, float]])
-"""
-energies = {
-    "mol_id": {
-        "conf_id": float
-    }
-}
-"""
