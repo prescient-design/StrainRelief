@@ -1,5 +1,4 @@
 from ._types import (
-    EnergiesDict,
     MolPropertiesDict,
     MolsDict,
 )
@@ -7,5 +6,4 @@ from ._types import (
 __all__ = [
     "MolsDict",
     "MolPropertiesDict",
-    "EnergiesDict",
 ]
