@@ -1,3 +1,4 @@
+from collections import defaultdict
 from timeit import default_timer as timer
 
 import torch
@@ -50,33 +51,25 @@ def run_optimisation(
 
 
 def _log_optimisation(conformers: ConformerBatch, optimiser: Optimiser) -> None:
-    """Helper method to log optimisation summary statistics.
-
-    Parameters
-    ----------
-    conformers: ConformerBatch
-        The batch of conformers that were optimised.
-    optimiser: Optimiser
-        The optimiser used for the optimisation.
-    """
+    """Helper method to log optimisation summary statistics."""
     no_converged = 0
 
-    ids = conformers.id.unique().tolist()
-    for id in ids:
+    # Group conformers by molecule ID in a single pass
+    confs_by_mol = defaultdict(list)
+    for idx in range(conformers.n_conformers):
+        mol_id = conformers.id[idx]
+        confs_by_mol[mol_id].append(conformers.conformer(idx))
+
+    for mol_id, confs in confs_by_mol.items():
         # Molecule level logging
-        confs = [
-            conformers.conformer(i)
-            for i in range(conformers.n_conformers)
-            if conformers.id[i] == id
-        ]
         n_converged = sum([conf.converged for conf in confs])
         if n_converged == len(confs):
             logger.info(
-                f"Molecule ID {id}: All {n_converged} conformers converged after minimisation."
+                f"Molecule ID {mol_id}: All {n_converged} conformers converged after minimisation."
             )
         else:
             logger.info(
-                f"Molecule ID {id} has {n_converged} converged conformers after minimisation."
+                f"Molecule ID {mol_id} has {n_converged} converged conformers after minimisation."
             )
         if n_converged == 0:
             no_converged += 1
