@@ -9,3 +9,5 @@ __pycache__/
 *.pyc
 
 tests/models/eSEN.pt
+
+outputs/
