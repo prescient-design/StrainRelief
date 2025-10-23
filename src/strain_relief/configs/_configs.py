@@ -14,11 +14,15 @@ class ExperimentConfigurationError(Exception):
 
 def _validate_paths(cfg: DictConfig):
     """Ensures input and output paths are valid."""
-    input_path = Path(cfg.io.input.parquet_path)
-    if not input_path.exists():
+    input_path = Path(cfg.io.input.parquet_path) if cfg.io.input.parquet_path is not None else None
+
+    if input_path and not input_path.exists():
         raise ExperimentConfigurationError(f"Input path {input_path} does not exist")
 
-    output_path = Path(cfg.io.output.parquet_path)
+    output_path = (
+        Path(cfg.io.output.parquet_path) if cfg.io.output.parquet_path is not None else None
+    )
+
     if output_path is None:
         logger.warning("No output path provided, results will not be saved to disk")
     elif not output_path.parent.exists():
