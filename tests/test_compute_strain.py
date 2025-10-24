@@ -6,11 +6,23 @@ from strain_relief.compute_strain import _parse_args, compute_strain
 from strain_relief.io import load_parquet
 
 
-def test_compute_strain_from_mols():
-    assert True is False
+def test_compute_strain_from_mols(device: str):
+    """Test strain computation from a list of molecules."""
+    with initialize(version_base="1.1", config_path="../hydra_config"):
+        cfg = compose(
+            config_name="default",
+            overrides=[
+                "experiment=pytest",
+                f"device={device}",
+            ],
+        )
+    mols = [Chem.MolFromSmiles("C"), Chem.MolFromSmiles("CC")]
+    df = _parse_args(mols=mols)
+    compute_strain(df=df, cfg=cfg)
 
 
 def test_compute_strain_empty_df(device: str):
+    """Test strain computation on a DataFrame with no neutral molecules."""
     with initialize(version_base="1.1", config_path="../hydra_config"):
         cfg = compose(
             config_name="default",
@@ -29,7 +41,8 @@ def test_compute_strain_empty_df(device: str):
     assert results["passes_strain_filter"].isna().all()
 
 
-def test_parse_args():
+def test_parse_args_from_df():
+    """Test _parse_args with a DataFrame input."""
     df = load_parquet(
         parquet_path=test_dir / "data" / "target.parquet",
         id_col_name="SMILES",
@@ -46,7 +59,8 @@ def test_parse_args():
         ([Chem.MolFromSmiles("C").ToBinary(), Chem.MolFromSmiles("CC").ToBinary()], None),
     ],
 )
-def test_parse_args_mols(mols, ids):
+def test_parse_args_from_mols(mols, ids):
+    """Test _parse_args with a list of molecules and optional IDs."""
     df = _parse_args(mols=mols, ids=ids)
     assert len(df) == 2
     assert df.id.to_list() == [0, 1]

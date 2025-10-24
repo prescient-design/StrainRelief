@@ -7,6 +7,7 @@ from strain_relief.data_types import MolPropertiesDict
 
 @pytest.mark.parametrize("fixture", ["mol", "mol_wo_bonds"])
 def test_generate_conformers(request, fixture: MolPropertiesDict):
+    """Test conformer generation on molecules without initial conformers."""
     mol = request.getfixturevalue(fixture)
     initial_mol = mol[MOL_KEY]
 
@@ -29,6 +30,7 @@ def test_generate_conformers(request, fixture: MolPropertiesDict):
 
 @pytest.mark.parametrize("fixture", ["mol_w_confs", "mol_wo_bonds_w_confs"])
 def test_generate_conformers_multiple_initial_confs(request, fixture: dict):
+    """Test conformer generation on molecules with existing conformers."""
     mol = request.getfixturevalue(fixture)
     with pytest.raises(ValueError):
         generate_conformers({"0": mol})

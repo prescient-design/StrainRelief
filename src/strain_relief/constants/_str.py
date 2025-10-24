@@ -1,4 +1,3 @@
-ENERGY_PROPERTY_NAME: str = "single_point_energy"
 # df columns names
 ID_COL_NAME: str = "id"
 MOL_COL_NAME: str = "mol"
