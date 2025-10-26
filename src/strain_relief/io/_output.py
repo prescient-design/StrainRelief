@@ -1,3 +1,5 @@
+from typing import Any
+
 import numpy as np
 import pandas as pd
 import torch
@@ -100,8 +102,13 @@ def process_output(
     if not all(hasattr(b, molecule_attr) for b in (docked, local_min, global_min)):
         raise AttributeError(f"Batch does not have attribute '{molecule_attr}'")
 
+    def to_int(mol_id: Any):
+        if isinstance(mol_id, torch.Tensor):
+            return int(mol_id.item())
+        return mol_id
+
     def energy(c: Conformer | None) -> float:
-        return float(c.energies) if c is not None else float("nan")
+        return float(c.energies) if c is not None else np.nan
 
     def mol_bytes(c: Conformer | None):
         return c.to_rdkit().ToBinary() if c is not None else np.nan
@@ -110,17 +117,18 @@ def process_output(
 
     # Compute minimum conformers once and build fast lookup maps
     local_min_map = {
-        getattr(c, molecule_attr): c for c in extract_minimum_conformer(local_min, molecule_attr)
+        to_int(getattr(c, molecule_attr)): c
+        for c in extract_minimum_conformer(local_min, molecule_attr)
     }
     global_min_map = {
-        getattr(c, molecule_attr): c for c in extract_minimum_conformer(global_min, molecule_attr)
+        to_int(getattr(c, molecule_attr)): c
+        for c in extract_minimum_conformer(global_min, molecule_attr)
     }
 
     rows: list[dict] = []
     for mol_id in molecule_idxs:
         # For if ids were auto-generated
-        if isinstance(mol_id, torch.Tensor):
-            mol_id = int(mol_id.item())
+        mol_id = to_int(mol_id)
 
         lconf = local_min_map.get(mol_id)
         gconf = global_min_map.get(mol_id)
