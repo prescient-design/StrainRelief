@@ -4,9 +4,8 @@ from hydra import compose, initialize
 from strain_relief import test_dir
 from strain_relief.cmdline._strain_relief import main
 
-pytest.mark.integration
 
-
+@pytest.mark.integration
 def test_compute_strain_cpu():
     """Test strain relief computation on CPU."""
     with initialize(version_base="1.1", config_path="../../hydra_config"):
@@ -20,7 +19,11 @@ def test_compute_strain_cpu():
                 "device=cpu",
             ],
         )
-    main(cfg)
+    df = main(cfg)
+
+    assert len(df) == 2
+    for c in df.columns:
+        assert df[c].isna().sum() == 0
 
 
 @pytest.mark.integration
@@ -39,4 +42,8 @@ def test_compute_strain_cuda():
                 "device=cuda",
             ],
         )
-    main(cfg)
+    df = main(cfg)
+
+    assert len(df) == 2
+    for c in df.columns:
+        assert df[c].isna().sum() == 0
