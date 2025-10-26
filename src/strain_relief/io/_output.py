@@ -30,7 +30,7 @@ def extract_minimum_conformer(batch: Batch | Data, molecule_attr: str) -> list[C
     if not hasattr(batch, molecule_attr):
         raise AttributeError(f"Batch does not have attribute '{molecule_attr}'")
 
-    molecule_idxs = getattr(batch, molecule_attr).unique()
+    molecule_idxs = set(getattr(batch, molecule_attr))
 
     minimum_conformers: list[Conformer] = []
 
@@ -100,30 +100,27 @@ def process_output(
     if not all(hasattr(b, molecule_attr) for b in (docked, local_min, global_min)):
         raise AttributeError(f"Batch does not have attribute '{molecule_attr}'")
 
-    def as_int(x) -> int:
-        return int(x.item()) if hasattr(x, "item") else int(x)
-
     def energy(c: Conformer | None) -> float:
         return float(c.energies) if c is not None else float("nan")
 
     def mol_bytes(c: Conformer | None):
         return c.to_rdkit().ToBinary() if c is not None else np.nan
 
-    molecule_idxs = getattr(docked, molecule_attr).unique()
+    molecule_idxs = set(getattr(docked, molecule_attr))
 
     # Compute minimum conformers once and build fast lookup maps
     local_min_map = {
-        as_int(getattr(c, molecule_attr)): c
-        for c in extract_minimum_conformer(local_min, molecule_attr)
+        getattr(c, molecule_attr): c for c in extract_minimum_conformer(local_min, molecule_attr)
     }
     global_min_map = {
-        as_int(getattr(c, molecule_attr)): c
-        for c in extract_minimum_conformer(global_min, molecule_attr)
+        getattr(c, molecule_attr): c for c in extract_minimum_conformer(global_min, molecule_attr)
     }
 
     rows: list[dict] = []
-    for mol_idx in molecule_idxs:
-        mol_id = as_int(mol_idx)
+    for mol_id in molecule_idxs:
+        # For if ids were auto-generated
+        if isinstance(mol_id, torch.Tensor):
+            mol_id = int(mol_id.item())
 
         lconf = local_min_map.get(mol_id)
         gconf = global_min_map.get(mol_id)
@@ -157,6 +154,10 @@ def process_output(
     _log_results(results, global_min)
 
     # Merge and drop original molecule column
+    print(id_col_name)
+    print(input_df[id_col_name])
+    print(results.id)
+
     final_results = input_df.merge(results, left_on=id_col_name, right_on="id", how="outer")
     final_results.drop(columns=[mol_col_name], inplace=True)
 
