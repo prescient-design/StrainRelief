@@ -154,10 +154,6 @@ def process_output(
     _log_results(results, global_min)
 
     # Merge and drop original molecule column
-    print(id_col_name)
-    print(input_df[id_col_name])
-    print(results.id)
-
     final_results = input_df.merge(results, left_on=id_col_name, right_on="id", how="outer")
     final_results.drop(columns=[mol_col_name], inplace=True)
 
