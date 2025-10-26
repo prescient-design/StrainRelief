@@ -35,9 +35,9 @@ def run_optimisation(
     dataloader = ConformerDataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
 
     minimised = []
-    for batch in dataloader:
+    for i, batch in enumerate(dataloader):
         if len(dataloader) > 1:
-            logger.info(f"Optimising batch {dataloader._index}/{len(dataloader)}")
+            logger.info(f"Optimising batch {i}/{len(dataloader)}")
         optimiser.run(batch)
         minimised.append(batch)
 
