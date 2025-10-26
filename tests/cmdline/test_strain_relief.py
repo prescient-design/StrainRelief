@@ -25,7 +25,7 @@ def test_compute_strain_cpu():
                 f"io.input.parquet_path={test_dir}/data/target.parquet",
                 f"calculator.model_paths={test_dir}/models/MACE.model",
                 "io.input.id_col_name=SMILES",
-                "conformer.numCOnfs=5",
+                "conformer.numConfs=5",
                 "experiment=mace",
                 "device=cpu",
             ],
