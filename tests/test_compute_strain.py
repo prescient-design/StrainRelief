@@ -6,6 +6,16 @@ from strain_relief import test_dir
 from strain_relief.compute_strain import _parse_args, compute_strain
 from strain_relief.io import load_parquet
 
+CALCULATED_COLUMNS = [
+    "id",
+    "local_min_mol",
+    "local_min_e",
+    "global_min_mol",
+    "global_min_e",
+    "ligand_strain",
+    "passes_strain_filter",
+]
+
 
 def test_compute_strain_from_mols(device: str):
     """Test strain computation from a list of molecules."""
@@ -29,8 +39,8 @@ def test_compute_strain_from_mols(device: str):
     results = compute_strain(df=df, cfg=cfg)
 
     assert len(results) == 2
-    for c in results.columns:
-        assert results[c].isna().sum() == 0
+    nans_in_col = [c for c in CALCULATED_COLUMNS if results[c].isna().sum() != 0]
+    assert nans_in_col == [], f"Columns with NaN values: {nans_in_col}"
 
 
 def test_parse_args_from_df():

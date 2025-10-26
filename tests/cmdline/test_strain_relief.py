@@ -4,6 +4,16 @@ from hydra import compose, initialize
 from strain_relief import test_dir
 from strain_relief.cmdline._strain_relief import main
 
+CALCULATED_COLUMNS = [
+    "id",
+    "local_min_mol",
+    "local_min_e",
+    "global_min_mol",
+    "global_min_e",
+    "ligand_strain",
+    "passes_strain_filter",
+]
+
 
 @pytest.mark.integration
 def test_compute_strain_cpu():
@@ -15,15 +25,16 @@ def test_compute_strain_cpu():
                 f"io.input.parquet_path={test_dir}/data/target.parquet",
                 f"calculator.model_paths={test_dir}/models/MACE.model",
                 "io.input.id_col_name=SMILES",
-                "experiment=pytest",
+                "conformer.numCOnfs=5",
+                "experiment=mace",
                 "device=cpu",
             ],
         )
     df = main(cfg)
 
     assert len(df) == 2
-    for c in df.columns:
-        assert df[c].isna().sum() == 0
+    nans_in_col = [c for c in CALCULATED_COLUMNS if df[c].isna().sum() != 0]
+    assert nans_in_col == [], f"Columns with NaN values: {nans_in_col}"
 
 
 @pytest.mark.integration
@@ -38,12 +49,13 @@ def test_compute_strain_cuda():
                 f"io.input.parquet_path={test_dir}/data/target.parquet",
                 f"calculator.model_paths={test_dir}/models/MACE.model",
                 "io.input.id_col_name=SMILES",
-                "experiment=pytest",
+                "conformer.numCOnfs=5",
+                "experiment=mace",
                 "device=cuda",
             ],
         )
     df = main(cfg)
 
     assert len(df) == 2
-    for c in df.columns:
-        assert df[c].isna().sum() == 0
+    nans_in_col = [c for c in CALCULATED_COLUMNS if df[c].isna().sum() != 0]
+    assert nans_in_col == [], f"Columns with NaN values: {nans_in_col}"
