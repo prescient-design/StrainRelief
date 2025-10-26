@@ -43,6 +43,33 @@ def test_compute_strain_from_mols(device: str):
     assert nans_in_col == [], f"Columns with NaN values: {nans_in_col}"
 
 
+def test_compute_strain_batching(device: str):
+    """Test strain computation from a list of molecules."""
+    with initialize(version_base="1.1", config_path="../hydra_config"):
+        cfg = compose(
+            config_name="default",
+            overrides=[
+                f"calculator.model_paths={test_dir}/models/MACE.model",
+                "experiment=pytest",
+                f"device={device}",
+                "batch_size=2",
+            ],
+        )
+
+    mols = []
+    for smiles in ["C", "CC", "CCO"]:
+        mol = Chem.MolFromSmiles(smiles)
+        mol = Chem.AddHs(mol)
+        AllChem.EmbedMolecule(mol)
+        mols.append(mol)
+    df = _parse_args(mols=mols)
+    results = compute_strain(df=df, cfg=cfg)
+
+    assert len(results) == 3
+    nans_in_col = [c for c in CALCULATED_COLUMNS if results[c].isna().sum() != 0]
+    assert nans_in_col == [], f"Columns with NaN values: {nans_in_col}"
+
+
 def test_parse_args_from_df():
     """Test _parse_args with a DataFrame input."""
     df = load_parquet(
