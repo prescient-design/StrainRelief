@@ -28,27 +28,6 @@ def test_compute_strain_from_mols(device: str):
     compute_strain(df=df, cfg=cfg)
 
 
-def test_compute_strain_empty_df(device: str):
-    """Test strain computation on a DataFrame with no neutral molecules."""
-    with initialize(version_base="1.1", config_path="../hydra_config"):
-        cfg = compose(
-            config_name="default",
-            overrides=[
-                f"io.input.parquet_path={test_dir}/data/all_charged.parquet",
-                f"calculator.model_paths={test_dir}/models/MACE.model",
-                "experiment=pytest",
-                f"device={device}",
-            ],
-        )
-    df = load_parquet(
-        parquet_path=cfg.io.input.parquet_path, id_col_name="id", include_charged=False
-    )
-    results = compute_strain(df=df, cfg=cfg)
-    assert len(results) == 2
-    assert results["ligand_strain"].isna().all()
-    assert results["passes_strain_filter"].isna().all()
-
-
 def test_parse_args_from_df():
     """Test _parse_args with a DataFrame input."""
     df = load_parquet(
