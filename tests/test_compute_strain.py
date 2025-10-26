@@ -1,6 +1,7 @@
 import pytest
 from hydra import compose, initialize
 from rdkit import Chem
+from rdkit.Chem import AllChem
 from strain_relief import test_dir
 from strain_relief.compute_strain import _parse_args, compute_strain
 from strain_relief.io import load_parquet
@@ -12,11 +13,17 @@ def test_compute_strain_from_mols(device: str):
         cfg = compose(
             config_name="default",
             overrides=[
+                f"calculator.model_paths={test_dir}/models/MACE.model",
                 "experiment=pytest",
                 f"device={device}",
             ],
         )
-    mols = [Chem.MolFromSmiles("C"), Chem.MolFromSmiles("CC")]
+
+    mols = []
+    for mol in [Chem.MolFromSmiles("C"), Chem.MolFromSmiles("CC")]:
+        mol = Chem.AddHs(mol)
+        AllChem.EmbedMolecule(mol)
+        mols.append(mol)
     df = _parse_args(mols=mols)
     compute_strain(df=df, cfg=cfg)
 
@@ -28,6 +35,7 @@ def test_compute_strain_empty_df(device: str):
             config_name="default",
             overrides=[
                 f"io.input.parquet_path={test_dir}/data/all_charged.parquet",
+                f"calculator.model_paths={test_dir}/models/MACE.model",
                 "experiment=pytest",
                 f"device={device}",
             ],

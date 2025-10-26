@@ -9,7 +9,7 @@ pytest.mark.integration
 
 def test_compute_strain_cpu():
     """Test strain relief computation on CPU."""
-    with initialize(version_base="1.1", config_path="../hydra_config"):
+    with initialize(version_base="1.1", config_path="../../hydra_config"):
         cfg = compose(
             config_name="default",
             overrides=[
@@ -28,7 +28,7 @@ def test_compute_strain_cuda():
     """Test strain relief computation on CUDA."""
     if not torch.cuda.is_available():
         pytest.skip("CUDA not available, skipping CUDA test.")
-    with initialize(version_base="1.1", config_path="../hydra_config"):
+    with initialize(version_base="1.1", config_path="../../hydra_config"):
         cfg = compose(
             config_name="default",
             overrides=[
