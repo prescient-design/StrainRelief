@@ -1,7 +1,7 @@
 # @package _global_
 
 defaults:
-  - override /calculator: fairchem
+  - override /calculator: mmff94
   - override /optimiser@local_optimiser: bfgs
   - override /optimiser@global_optimiser: bfgs
 
@@ -9,7 +9,7 @@ conformers:
   numConfs: 20
 
 calculator:
-  model_paths: models/omol25_esen_sm_conserving
+  model_paths: models/MACE_SPICE2_NEUTRAL.model
 
 local_optimiser:
   fmax: 0.50
@@ -19,5 +19,5 @@ global_optimiser:
   fmax: 0.05
   fexit: 25
 
-device: cuda
-batch_size: 64
+device: cpu
+batch_size: 1

@@ -13,3 +13,11 @@ calculator:
 
 local_optimiser:
   fmax: 0.50
+  fexit: 5
+
+global_optimiser:
+  fmax: 0.05
+  fexit: 25
+
+device: cuda
+batch_size: 64
