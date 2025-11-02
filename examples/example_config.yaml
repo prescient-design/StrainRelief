@@ -2,11 +2,11 @@ seed: -1
 threshold: 16.1
 num_workers: 0
 device: cpu
-batch_size: -1
+batch_size: 64
 
 io:
   input:
-    parquet_path: /homefs/home/wallace5/StrainRelief+/data/example_ligboundconf_input.parquet
+    parquet_path: data/example_ligboundconf_input.parquet
     mol_col_name: null
     id_col_name: null
     include_charged: true
@@ -30,15 +30,15 @@ calculator:
   device: ${device}
 
 local_optimiser:
-  fmax: 0.5
   _target_: neural_optimiser.optimisers.BFGS
   max_step: 0.04
   steps: 250
-  fexit: 250
+  fmax: 0.5
+  fexit: 10
 
 global_optimiser:
   _target_: neural_optimiser.optimisers.BFGS
   max_step: 0.04
   steps: 250
   fmax: 0.05
-  fexit: 250
+  fexit: 50
