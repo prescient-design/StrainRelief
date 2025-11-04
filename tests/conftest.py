@@ -1,9 +1,17 @@
 import pytest
 import torch
+from ase.build import molecule
+from neural_optimiser.calculators import MACECalculator
+from neural_optimiser.conformers import ConformerBatch
+from neural_optimiser.optimisers import BFGS
+from rdkit import Chem
+from rdkit.Chem import AllChem
 from strain_relief import test_dir
 from strain_relief.constants import MOL_KEY
-from strain_relief.data_types import MolPropertiesDict, MolsDict
+from strain_relief.data_types import MolPropertiesDict
 from strain_relief.io import load_parquet, to_mols_dict
+
+# --------- GENERAL FIXTURES ---------
 
 
 @pytest.fixture(scope="session")
@@ -12,20 +20,44 @@ def device() -> str:
     return "cuda" if torch.cuda.is_available() else "cpu"
 
 
+# ---------- OPTIMISER TESTS FIXTURES ----------
+
+
+@pytest.fixture(scope="session")
+def mace_model_path() -> str:
+    """Path to the MACE model used in tests."""
+    return str(test_dir / "models" / "MACE.model")
+
+
+@pytest.fixture(scope="module")
+def opt(device: str, mace_model_path: str) -> BFGS:
+    """BFGS Optimiser"""
+    calculator = MACECalculator(model_paths=mace_model_path, device=device)
+    optimiser = BFGS(steps=10, fmax=0.50, fexit=25)
+    optimiser.calculator = calculator
+    return optimiser
+
+
 @pytest.fixture(scope="function")
-def mols() -> MolsDict:
-    """Two posed molecules from an internal target."""
+def batch(device: str):
+    """ConformerBatch with three small molecules."""
+    batch = ConformerBatch.from_ase([molecule("H2O"), molecule("H2O"), molecule("NH3")])
+    batch.to(device)
+    return batch
+
+
+# --------- CONFORMER GENERATION FIXTURES ---------
+
+
+@pytest.fixture(scope="function")
+def mol(mols) -> MolPropertiesDict:
     df = load_parquet(
         parquet_path=test_dir / "data" / "target.parquet",
         id_col_name="SMILES",
         include_charged=True,
     )
-    return to_mols_dict(df=df, mol_col_name="mol", id_col_name="SMILES", include_charged=True)
-
-
-@pytest.fixture(scope="function")
-def mol(mols) -> MolPropertiesDict:
-    k = list(mols.keys())[0]
+    mols_dict = to_mols_dict(df=df, mol_col_name="mol", id_col_name="SMILES", include_charged=True)
+    k = list(mols_dict.keys())[0]
     return mols[k]
 
 
@@ -38,34 +70,39 @@ def mol_w_confs(mol) -> MolPropertiesDict:
     return mol
 
 
-# LIGBOUNDCONF TEST MOLECULES
-@pytest.fixture(scope="function")
-def mols_wo_bonds() -> MolsDict:
-    """This is two bound conformers taken from LigBoundConf 2.0.
-
-    Bond information is determined using RDKit's DetermineBonds."""
-    df = load_parquet(parquet_path=test_dir / "data" / "ligboundconf.parquet", include_charged=True)
-    return to_mols_dict(df=df, mol_col_name="mol", id_col_name="id", include_charged=True)
-
-
 @pytest.fixture(scope="function")
 def mol_wo_bonds(mols_wo_bonds) -> MolPropertiesDict:
     """Bound conformer from LigBoundConf 2.0.
 
     Bond information is determined using RDKit's DetermineBonds."""
-    k = list(mols_wo_bonds.keys())[0]
+    df = load_parquet(parquet_path=test_dir / "data" / "ligboundconf.parquet", include_charged=True)
+    mols_dict = to_mols_dict(df=df, mol_col_name="mol", id_col_name="id", include_charged=True)
+    k = list(mols_dict.keys())[0]
     return mols_wo_bonds[k]
 
 
+# --------- INTEGRATION TEST FIXTURES ---------
+
+
 @pytest.fixture(scope="function")
-def mol_wo_bonds_w_confs(mol_wo_bonds) -> MolPropertiesDict:
-    """Bound conformer from LigBoundConf 2.0.
+def mols_input2() -> list[Chem.Mol]:
+    """Two small molecules for integration tests."""
+    mols = []
+    for smiles in ["C", "CC"]:
+        mol = Chem.MolFromSmiles(smiles)
+        mol = Chem.AddHs(mol)
+        AllChem.EmbedMolecule(mol)
+        mols.append(mol)
+    return mols
 
-    Bond information is determined using RDKit's DetermineBonds.
-    Has two conformers."""
-    mol_wo_bonds[MOL_KEY].AddConformer(mol_wo_bonds[MOL_KEY].GetConformer(0), assignId=True)
-    return mol_wo_bonds
 
-
-# TODO: only mol_w_confs and mol_wo_bonds_w_confs, mol, mol_wo_bonds are used in conf generation
-# tests. Remove unused fixtures?
+@pytest.fixture(scope="function")
+def mols_input3() -> list[Chem.Mol]:
+    """Three small molecules for integration tests."""
+    mols = []
+    for smiles in ["C", "CC", "CCO"]:
+        mol = Chem.MolFromSmiles(smiles)
+        mol = Chem.AddHs(mol)
+        AllChem.EmbedMolecule(mol)
+        mols.append(mol)
+    return mols

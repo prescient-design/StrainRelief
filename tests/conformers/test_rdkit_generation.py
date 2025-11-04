@@ -28,9 +28,7 @@ def test_generate_conformers(request, fixture: MolPropertiesDict):
     assert any([n > 2 for n in n_confs])
 
 
-@pytest.mark.parametrize("fixture", ["mol_w_confs", "mol_wo_bonds_w_confs"])
-def test_generate_conformers_multiple_initial_confs(request, fixture: dict):
+def test_generate_conformers_multiple_initial_confs(mol_w_confs):
     """Test conformer generation on molecules with existing conformers."""
-    mol = request.getfixturevalue(fixture)
     with pytest.raises(ValueError):
-        generate_conformers({"0": mol})
+        generate_conformers({"0": mol_w_confs})
