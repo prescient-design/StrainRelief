@@ -61,9 +61,13 @@ jobs:
       run: |
         uv run pre-commit run --all-files
 
-    - name: CPU unit tests
+    - name: Unit tests
       run: |
-        uv run pytest tests
+        uv run pytest tests -m "not integration"
+
+    - name: Integration tests
+      run: |
+        uv run pytest tests -m "integration"
 
     - name: Build sdist/wheel
       run: |
