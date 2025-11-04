@@ -31,13 +31,14 @@ def _validate_paths(cfg: DictConfig):
 
 def _validate_model(cfg: DictConfig):
     """Ensures model paths is provdied if a NNP model is being used."""
-    if cfg.calculator.model_paths is None:
-        raise ExperimentConfigurationError("Model path must be provided if using a NNP")
+    if hasattr(cfg.calculator, "model_paths"):
+        if cfg.calculator.model_paths is None:
+            raise ExperimentConfigurationError("Model path must be provided if using a NNP")
 
-    if not Path(cfg.calculator.model_paths).exists():
-        raise ExperimentConfigurationError(
-            f"Model path {cfg.calculator.model_paths} does not exist"
-        )
+        if not Path(cfg.calculator.model_paths).exists():
+            raise ExperimentConfigurationError(
+                f"Model path {cfg.calculator.model_paths} does not exist"
+            )
 
     if cfg.get("energy_evaluation", None):
         if cfg.energy_evaluation.calculator.model_paths is None:
@@ -58,25 +59,28 @@ def _validate_optimiser(cfg: DictConfig):
 
 def _validate_calculator(cfg: DictConfig):
     """Ensures calculator parameters are valid."""
-    if cfg.get("energy_evaluation", None):
-        if cfg.energy_evaluation.calculator == cfg.calculator:
-            raise ExperimentConfigurationError(
-                "Energy evaluation calculator is the same as minimisation calculator. This is "
-                "duplcating computation."
-            )
+    opt_calculator = cfg.calculator._target_
+    e_calculator = (
+        cfg.energy_evaluation.calculator._target_ if cfg.get("energy_evaluation", None) else None
+    )
 
-        if (
-            cfg.energy_evaluation.calculator._target_
-            == "neural_optimiser.calculators.MACECalculator"
-            and cfg.io.input.include_charged
-        ):
-            logger.warning("MACE (v0.3.14) currently has limited support for charged molecules.")
+    if opt_calculator == e_calculator:
+        raise ExperimentConfigurationError(
+            "Energy evaluation calculator is the same as minimisation calculator. This is "
+            "duplcating computation."
+        )
 
     if (
-        cfg.calculator._target_ == "neural_optimiser.calculators.MACECalculator"
+        "neural_optimiser.calculators.MACECalculator" in [opt_calculator, e_calculator]
         and cfg.io.input.include_charged
     ):
         logger.warning("MACE (v0.3.14) currently has limited support for charged molecules.")
+
+    if (
+        "neural_optimiser.calculators.MMFF94Calculator" in [opt_calculator, e_calculator]
+        and cfg.batch_size != 1
+    ):
+        raise ExperimentConfigurationError("MMFF94 calculator only supports batch size of 1.")
 
 
 def _validate_batch(cfg: DictConfig) -> DictConfig:
