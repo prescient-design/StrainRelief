@@ -63,7 +63,7 @@ jobs:
 
     - name: CPU unit tests
       run: |
-        uv run pytest tests -m "not gpu"
+        uv run pytest tests
 
     - name: Build sdist/wheel
       run: |
