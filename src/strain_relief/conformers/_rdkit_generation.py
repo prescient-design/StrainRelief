@@ -4,7 +4,8 @@ from typing import Any
 
 import numpy as np
 from loguru import logger as logging
-from rdkit.Chem import AllChem, rdDetermineBonds
+from nvmolkit.embedMolecules import EmbedMolecules
+from rdkit.Chem import rdDetermineBonds
 
 from strain_relief.constants import CHARGE_KEY, MOL_KEY
 from strain_relief.data_types import MolsDict
@@ -63,17 +64,22 @@ def generate_conformers(
         if mol.GetNumBonds() == 0:
             logging.debug(f"Adding bonds to {id}")
             rdDetermineBonds.DetermineBonds(mol, charge=charge)
-        AllChem.EmbedMultipleConfs(
-            mol,
-            randomSeed=randomSeed,
-            numConfs=numConfs,
-            maxAttempts=maxAttempts,
-            pruneRmsThresh=pruneRmsThresh,
-            clearConfs=clearConfs,
-            numThreads=numThreads,
-            **kwargs,
-        )
-        logging.debug(f"{mol.GetNumConformers()} conformers generated for {id}")
+
+    mol_list = [mol_properties[MOL_KEY] for mol_properties in mols.values()]
+    EmbedMolecules(
+        mol_list,
+        randomSeed=randomSeed,
+        numConfs=numConfs,
+        maxAttempts=maxAttempts,
+        pruneRmsThresh=pruneRmsThresh,
+        clearConfs=clearConfs,
+        numThreads=numThreads,
+        **kwargs,
+    )
+
+    for i, id in enumerate(mols.keys()):
+        mols[id][MOL_KEY] = mol_list[i]
+        logging.debug(f"{mols[id][MOL_KEY].GetNumConformers()} conformers generated for {id}")
 
     n_conformers = np.array(
         [mol_properties[MOL_KEY].GetNumConformers() for mol_properties in mols.values()]
