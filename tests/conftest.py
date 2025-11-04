@@ -51,7 +51,7 @@ def batch(device: str):
 
 
 @pytest.fixture(scope="function")
-def mol(mols) -> MolPropertiesDict:
+def mol() -> MolPropertiesDict:
     df = load_parquet(
         parquet_path=test_dir / "data" / "target.parquet",
         id_col_name="SMILES",
@@ -59,7 +59,7 @@ def mol(mols) -> MolPropertiesDict:
     )
     mols_dict = to_mols_dict(df=df, mol_col_name="mol", id_col_name="SMILES", include_charged=True)
     k = list(mols_dict.keys())[0]
-    return mols[k]
+    return mols_dict[k]
 
 
 @pytest.fixture(scope="function")
@@ -72,14 +72,25 @@ def mol_w_confs(mol) -> MolPropertiesDict:
 
 
 @pytest.fixture(scope="function")
-def mol_wo_bonds(mols_wo_bonds) -> MolPropertiesDict:
+def mol_wo_bonds() -> MolPropertiesDict:
     """Bound conformer from LigBoundConf 2.0.
 
     Bond information is determined using RDKit's DetermineBonds."""
     df = load_parquet(parquet_path=test_dir / "data" / "ligboundconf.parquet", include_charged=True)
     mols_dict = to_mols_dict(df=df, mol_col_name="mol", id_col_name="id", include_charged=True)
     k = list(mols_dict.keys())[0]
-    return mols_wo_bonds[k]
+    return mols_dict[k]
+
+
+# --------- INPUT FIXTURES ---------
+
+
+@pytest.fixture(scope="function")
+def sample_mol_bytes() -> tuple[bytes, bytes]:
+    """Two small molecules in bytes format."""
+    mol_c = Chem.MolFromSmiles("C")
+    mol_o = Chem.MolFromSmiles("O")
+    return mol_c.ToBinary(), mol_o.ToBinary()
 
 
 # --------- OUTPUT FIXTURES ---------
