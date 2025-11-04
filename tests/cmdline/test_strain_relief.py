@@ -16,8 +16,8 @@ CALCULATED_COLUMNS = [
 
 
 @pytest.mark.integration
-@pytest.mark.parameterized("device", ["cpu", "cuda"])
-@pytest.mark.parameterized("parquet id_col_name", [("target", "SMILES"), ("ligboundconf", "id")])
+@pytest.mark.parametrize("device", ["cpu", "cuda"])
+@pytest.mark.parametrize("parquet,id_col_name", [("target", "SMILES"), ("ligboundconf", "id")])
 def test_compute_strain_cpu(mace_model_path: str, device: str, parquet: str, id_col_name: str):
     """Test strain relief computation on CPU."""
     if device == "cuda" and not torch.cuda.is_available():
