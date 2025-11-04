@@ -82,6 +82,21 @@ def mol_wo_bonds(mols_wo_bonds) -> MolPropertiesDict:
     return mols_wo_bonds[k]
 
 
+# --------- OUTPUT FIXTURES ---------
+
+
+@pytest.fixture(scope="function")
+def minimised_batch(batch: ConformerBatch, device: str) -> ConformerBatch:
+    """ConformerBatch with three small molecules."""
+    batch = ConformerBatch.cat([batch, batch])
+    batch.id = [0, 1, 2, 3, 4, 5]
+    batch.name = ["H2O", "H2O", "NH3", "H2O", "H2O", "NH3"]
+    batch.converged = torch.tensor([False, True, True, True, True, True])
+    batch.energies = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5, 0.6], dtype=torch.float32)
+    batch.to(device)
+    return batch
+
+
 # --------- INTEGRATION TEST FIXTURES ---------
 
 
