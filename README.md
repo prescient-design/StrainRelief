@@ -86,7 +86,7 @@ For a complete set of examples see the tutorial [notebook](./examples/tutorial.i
 
 ```bash
 strain-relief \
-    experiment=mace \
+    experiment=mmff94 \
     io.input.parquet_path=data/example_ligboundconf_input.parquet \
     io.output.parquet_path=data/example_ligboundconf_output.parquet \
     conformers.numConfs=1 \

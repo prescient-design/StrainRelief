@@ -8,9 +8,6 @@ defaults:
 conformers:
   numConfs: 20
 
-calculator:
-  model_paths: models/MACE_SPICE2_NEUTRAL.model
-
 local_optimiser:
   fmax: 0.50
   fexit: 5
