@@ -23,7 +23,8 @@ strain-relief \
     io.output.parquet_path=./data/example_ligboundconf_output.parquet \
     optimiser@local_optimiser=bfgs \
     optimiser@global_optimiser=bfgs \
-    calculator=mmff94s \
+    calculator=mmff94 \
+    batch_size=1 \
     device=cpu
 
 # This script demonstrates using different force fields for minimisation
@@ -33,9 +34,10 @@ strain-relief \
     io.output.parquet_path=./data/example_ligboundconf_output.parquet \
     optimiser@local_optimiser=bfgs \
     optimiser@global_optimiser=bfgs \
-    calculator=mmff94s \
-    energy_evaluation.calculator=mace \
-    energy_evaluation.calculator.model_paths=./tests/models/MACE.model \
+    calculator=mmff94 \
+    +calculator@energy_evaluation.calculator=mace \
+    +energy_evaluation.calculator.model_paths=./tests/models/MACE.model \
+    batch_size=1 \
     device=cpu
 
 # This is the script as used for most calculations in the StrainRelief paper.

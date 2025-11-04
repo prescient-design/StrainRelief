@@ -122,9 +122,9 @@ def compute_strain(
 
     if cfg.get("energy_evaluation", None):
         logging.info("Predicting energies of local minima poses...")
-        local_minima = energy_calculator.get_energy(local_minima)
+        local_minima.energies = energy_calculator.get_energies(local_minima)
         logging.info("Predicting energies of generated conformers...")
-        global_minima = energy_calculator.get_energy(global_minima)
+        global_minima.energies = energy_calculator.get_energies(global_minima)
 
     # Save ligand strains
     md = process_output(
