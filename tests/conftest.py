@@ -42,6 +42,7 @@ def opt(device: str, mace_model_path: str) -> BFGS:
 def batch(device: str):
     """ConformerBatch with three small molecules."""
     batch = ConformerBatch.from_ase([molecule("H2O"), molecule("H2O"), molecule("NH3")])
+    batch.id = [0, 1, 2]
     batch.to(device)
     return batch
 
