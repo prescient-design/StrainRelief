@@ -943,7 +943,7 @@ wheels = [
 
 [[package]]
 name = "neural-optimiser"
-version = "0.0.10"
+version = "0.0.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ase" },
@@ -957,9 +957,9 @@ dependencies = [
     { name = "torch-geometric" },
     { name = "universal-pathlib" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1c/b7/d95416fc304de5601eba62785a431fc98d643e3ccbe086c1b5456e6162fa/neural_optimiser-0.0.10.tar.gz", hash = "sha256:fcf822363c5053c457f2bd51862592e98dd3d4ae05a9e25aaeaf7d3fffbae34b", size = 5579648, upload-time = "2025-11-04T10:55:22.921Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/09/23/46535fe4151e0d39e76149c57beeb3626dfb0bba70103212462c11afff81/neural_optimiser-0.0.11.tar.gz", hash = "sha256:27565beca10ee23d74d09a39255a715a392978f56e8a0510a327f2b5359f82b8", size = 5580444, upload-time = "2025-11-23T20:03:10.192Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/89/72/b7e0cce1cd7e50c2b1f28ff573fa7793571b5a92018d078ca0da4b7f3761/neural_optimiser-0.0.10-py3-none-any.whl", hash = "sha256:b194e64a1acae75db61ba3f8ec9a4345f015b424694b570c79f0319bdef44e3e", size = 28545, upload-time = "2025-11-04T10:55:21.361Z" },
+    { url = "https://files.pythonhosted.org/packages/ee/5b/c12d496f91036504041674eb14203c70a3bbc8aa917583358ef5a1ad9cef/neural_optimiser-0.0.11-py3-none-any.whl", hash = "sha256:1f0ff68037b67469a21e371d6596da0740b493c53ef52d590adc6aebd6f8915f", size = 28841, upload-time = "2025-11-23T20:03:08.55Z" },
 ]
 
 [[package]]
