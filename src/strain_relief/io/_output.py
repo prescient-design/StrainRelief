@@ -60,6 +60,7 @@ def process_output(
     global_min: Data | Batch,
     threshold: float,
     parquet_path: str,
+    save_batch: bool = False,
     molecule_attr: str | None = None,
     id_col_name: str | None = None,
     mol_col_name: str | None = None,
@@ -80,6 +81,8 @@ def process_output(
         Threshold for the ligand strain filter.
     parquet_path: str
         Path to the output parquet file.
+    save_batch: bool [Optional]
+        Whether to save the batch objects alongside the parquet file.
     molecule_attr: str [Optional]
         Attribute name for the molecule indices in the batch.
     id_col_name: str [Optional]
@@ -167,11 +170,16 @@ def process_output(
 
     if parquet_path is not None:
         final_results.to_parquet(parquet_path)
-        torch.save(local_min, parquet_path.replace(".parquet", "_local_min.pt"))
-        torch.save(global_min, parquet_path.replace(".parquet", "_global_min.pt"))
         logging.info(f"Batches and outputs saved to {parquet_path}")
     else:
         logging.info("Output file not provided, data not saved.")
+
+    if save_batch:
+        torch.save(local_min, parquet_path.replace(".parquet", "_local_min.pt"))
+        torch.save(global_min, parquet_path.replace(".parquet", "_global_min.pt"))
+        logging.info(f"Batches saved to {parquet_path.replace('.parquet', '_*.pt')}")
+    else:
+        logging.info("Save batch flag not set, batches not saved.")
 
     return final_results
 

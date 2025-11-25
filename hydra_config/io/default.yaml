@@ -5,6 +5,7 @@ input:
   include_charged: true
 output:
   parquet_path: null
+  save_batch: false
   mol_col_name: ${..input.mol_col_name}
   id_col_name: ${..input.id_col_name}
   molecule_attr: id
