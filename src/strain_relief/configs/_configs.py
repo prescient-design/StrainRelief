@@ -35,7 +35,7 @@ def _validate_model(cfg: DictConfig):
         if cfg.calculator.model_paths is None:
             raise ExperimentConfigurationError("Model path must be provided if using a NNP")
 
-        if not Path(cfg.calculator.model_paths).exists():
+        if "s3" not in cfg.calculator.model_paths and not Path(cfg.calculator.model_paths).exists():
             raise ExperimentConfigurationError(
                 f"Model path {cfg.calculator.model_paths} does not exist"
             )
