@@ -9,7 +9,7 @@ from neural_optimiser.optimisers.base import Optimiser
 
 
 def run_optimisation(
-    conformers: ConformerBatch, optimiser: Optimiser, batch_size: int, num_workers: int
+    conformers: ConformerBatch, optimiser: Optimiser, batch_size: int, num_workers: int, device: str
 ) -> ConformerBatch:
     """Helper method to run batch optimisation using a DataLoader.
 
@@ -23,6 +23,8 @@ def run_optimisation(
         The batch size to use for the DataLoader.
     num_workers: int
         The number of workers to use for the DataLoader.
+    device: str
+        The device to use for the optimisation.
 
     Returns
     -------
@@ -38,8 +40,8 @@ def run_optimisation(
     for i, batch in enumerate(dataloader):
         if len(dataloader) > 1:
             logger.info(f"Optimising batch {i}/{len(dataloader)}")
-        optimiser.run(batch)
-        minimised.append(batch)
+        optimiser.run(batch.to(device))
+        minimised.append(batch.to("cpu"))  # free up GPU memory
 
     all_conformers = ConformerBatch.cat(minimised)
     _log_optimisation(all_conformers, optimiser)

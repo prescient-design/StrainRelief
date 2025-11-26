@@ -83,12 +83,10 @@ def compute_strain(
     # Instantiate local optimiser
     logging.info("Instantiating local optimiser...")
     local_optimiser: Optimiser = hydra.utils.instantiate(cfg.local_optimiser)
-    logging.info(local_optimiser)
 
     # Instantiate global optimiser
     logging.info("Instantiating global optimiser...")
     global_optimiser: Optimiser = hydra.utils.instantiate(cfg.global_optimiser)
-    logging.info(global_optimiser)
 
     local_optimiser.calculator = calculator
     global_optimiser.calculator = calculator
@@ -101,23 +99,21 @@ def compute_strain(
     docked_batch: ConformerBatch = ConformerBatch.from_data_list(
         [Conformer.from_rdkit(**docked_mols[id]) for id in docked_mols]
     )
-    docked_batch.to(cfg.device)
 
     logging.info("Generating conformers for global minimum search...")
     generated_mols = generate_conformers(docked_mols, **cfg.conformers)
     generated_batch: ConformerBatch = ConformerBatch.cat(
         [ConformerBatch.from_rdkit(**generated_mols[id]) for id in generated_mols]
     )
-    generated_batch.to(cfg.device)
 
     logging.info("Minimising docked conformers...")
     local_minima = run_optimisation(
-        docked_batch.clone(), local_optimiser, cfg.batch_size, cfg.num_workers
+        docked_batch.clone(), local_optimiser, cfg.batch_size, cfg.num_workers, cfg.device
     )
 
     logging.info("Minimising generated conformers...")
     global_minima = run_optimisation(
-        generated_batch, global_optimiser, cfg.batch_size, cfg.num_workers
+        generated_batch, global_optimiser, cfg.batch_size, cfg.num_workers, cfg.device
     )
 
     if cfg.get("energy_evaluation", None):
