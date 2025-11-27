@@ -943,10 +943,11 @@ wheels = [
 
 [[package]]
 name = "neural-optimiser"
-version = "0.0.11"
+version = "0.0.12"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ase" },
+    { name = "boto3" },
     { name = "cuequivariance-torch" },
     { name = "loguru" },
     { name = "mace-torch" },
@@ -957,9 +958,9 @@ dependencies = [
     { name = "torch-geometric" },
     { name = "universal-pathlib" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/09/23/46535fe4151e0d39e76149c57beeb3626dfb0bba70103212462c11afff81/neural_optimiser-0.0.11.tar.gz", hash = "sha256:27565beca10ee23d74d09a39255a715a392978f56e8a0510a327f2b5359f82b8", size = 5580444, upload-time = "2025-11-23T20:03:10.192Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e2/1b/474cefebaca934f96de0da720e1fb2501237ff7c93ccde763f0294498ae9/neural_optimiser-0.0.12.tar.gz", hash = "sha256:8dad9abb5506d708c321bfc88bfa170219fc545f4c7328913938269c3da025b3", size = 5581928, upload-time = "2025-11-27T10:36:04.905Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ee/5b/c12d496f91036504041674eb14203c70a3bbc8aa917583358ef5a1ad9cef/neural_optimiser-0.0.11-py3-none-any.whl", hash = "sha256:1f0ff68037b67469a21e371d6596da0740b493c53ef52d590adc6aebd6f8915f", size = 28841, upload-time = "2025-11-23T20:03:08.55Z" },
+    { url = "https://files.pythonhosted.org/packages/4a/57/67f17f04d666feafca903eeb88a7460766fb0517e88f7b1b9e7e81f8d8a2/neural_optimiser-0.0.12-py3-none-any.whl", hash = "sha256:d5c99884c12b2c5072c8a2201eec4e3f1af21ef9ea17b3012a34cb765f89c77a", size = 29672, upload-time = "2025-11-27T10:36:03.419Z" },
 ]
 
 [[package]]
