@@ -40,8 +40,11 @@ def run_optimisation(
     for i, batch in enumerate(dataloader):
         if len(dataloader) > 1:
             logger.info(f"Optimising batch {i}/{len(dataloader)}")
-        optimiser.run(batch.to(device))
-        minimised.append(batch.to("cpu"))  # free up GPU memory
+        batch = batch.to(device)
+        optimiser.run(batch)
+        del batch.pos_dt, batch.forces_dt, batch.energies_dt
+        batch = batch.to("cpu")  # free up GPU memory
+        minimised.append(batch)
 
     all_conformers = ConformerBatch.cat(minimised)
     _log_optimisation(all_conformers, optimiser)
@@ -87,15 +90,13 @@ def _log_optimisation(conformers: ConformerBatch, optimiser: Optimiser) -> None:
             elif fmax > optimiser.fexit:
                 logger.debug(
                     f"Molecule ID {conf.id}, Conformer {i} failed: "
-                    f"Steps={conf.pos_dt.size(0)}, fmax={fmax:.4f} (fexit activated)."
-                )
-            elif conf.pos_dt.size(0) >= optimiser.steps:
-                logger.debug(
-                    f"Molecule ID {conf.id}, Conformer {i} failed: "
-                    f"Steps={conf.pos_dt.size(0)}, fmax={fmax:.4f} (max steps reached)."
+                    f"Steps={optimiser.steps}, fmax={fmax:.4f} (fexit activated)."
                 )
             else:
-                raise RuntimeError("Conformer minimisation failed for an unknown reason.")
+                logger.debug(
+                    f"Molecule ID {conf.id}, Conformer {i} failed: "
+                    f"Steps={optimiser.steps}, fmax={fmax:.4f} (max steps reached)."
+                )
 
     if no_converged > 0:
         logger.warning(f"{no_converged} molecules have 0 converged conformers after minimisation.")
