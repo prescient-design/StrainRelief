@@ -90,7 +90,7 @@ def _log_optimisation(conformers: ConformerBatch, optimiser: Optimiser) -> None:
             elif fmax > optimiser.fexit:
                 logger.debug(
                     f"Molecule ID {conf.id}, Conformer {i} failed: "
-                    f"Steps={optimiser.steps}, fmax={fmax:.4f} (fexit activated)."
+                    f"fmax={fmax:.4f} (fexit activated)."
                 )
             else:
                 logger.debug(
