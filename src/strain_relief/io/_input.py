@@ -186,10 +186,19 @@ def _calculate_spin(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
 
     def hunds_rule(mol: Chem.Mol) -> int:
         """Calculate spin multiplicity using Hund's rule."""
+        charge = Chem.GetFormalCharge(mol)
+        num_electrons = sum(atom.GetAtomicNum() for atom in mol.GetAtoms()) - charge
         num_radical_electrons = sum(atom.GetNumRadicalElectrons() for atom in mol.GetAtoms())
-        total_electronic_spin = num_radical_electrons / 2
-        spin_multiplicity = 2 * total_electronic_spin + 1
-        return int(spin_multiplicity)
+
+        is_odd_electron = num_electrons % 2 != 0
+
+        unpaired_electrons = num_radical_electrons
+        if is_odd_electron and unpaired_electrons == 0:
+            unpaired_electrons = 1
+
+        total_spin_s = unpaired_electrons / 2.0
+        multiplicity = int((2 * total_spin_s) + 1)
+        return int(multiplicity)
 
     df[SPIN_COL_NAME] = df[mol_col_name].apply(lambda x: hunds_rule(x))
 
