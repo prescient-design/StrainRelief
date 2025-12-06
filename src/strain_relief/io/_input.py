@@ -184,8 +184,13 @@ def _calculate_spin(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
         DataFrame with spin multiplicity column.
     """
 
-    def hunds_rule(mol: Chem.Mol) -> int:
-        """Calculate spin multiplicity using Hund's rule."""
+    def lewis_structure_multiplicity(mol: Chem.Mol) -> int:
+        """Calculates multiplicity based STRICTLY on the provided Lewis structure (graph).
+
+        WARNING: This does NOT calculate the Quantum Mechanical ground state.
+        It will fail for O2, high-spin metals, and non-Kekule molecules unless
+        the input Mol object explicitly marks atoms with radical electrons.
+        """
         charge = Chem.GetFormalCharge(mol)
         num_electrons = sum(atom.GetAtomicNum() for atom in mol.GetAtoms()) - charge
         num_radical_electrons = sum(atom.GetNumRadicalElectrons() for atom in mol.GetAtoms())
@@ -200,6 +205,6 @@ def _calculate_spin(df: pd.DataFrame, mol_col_name: str) -> pd.DataFrame:
         multiplicity = int((2 * total_spin_s) + 1)
         return int(multiplicity)
 
-    df[SPIN_COL_NAME] = df[mol_col_name].apply(lambda x: hunds_rule(x))
+    df[SPIN_COL_NAME] = df[mol_col_name].apply(lambda x: lewis_structure_multiplicity(x))
 
     return df
