@@ -1,0 +1,4 @@
+_target_: neural_optimiser.calculators.MACECalculator
+model_paths: null
+device: ${device}
+default_dtype: float32

@@ -1,0 +1,23 @@
+# @package _global_
+
+defaults:
+  - override /calculator: fairchem
+  - override /optimiser@local_optimiser: bfgs
+  - override /optimiser@global_optimiser: bfgs
+
+conformers:
+  numConfs: 20
+
+calculator:
+  model_paths: models/omol25_esen_sm_conserving
+
+local_optimiser:
+  fmax: 0.50
+  fexit: 5
+
+global_optimiser:
+  fmax: 0.05
+  fexit: 25
+
+device: cuda
+batch_size: 64

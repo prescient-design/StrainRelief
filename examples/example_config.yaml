@@ -1,0 +1,44 @@
+seed: -1
+threshold: 16.1
+num_workers: 0
+device: cpu
+batch_size: 1
+
+io:
+  input:
+    parquet_path: data/example_ligboundconf_input.parquet
+    mol_col_name: null
+    id_col_name: null
+    include_charged: true
+  output:
+    parquet_path: null
+    mol_col_name: ${..input.mol_col_name}
+    id_col_name: ${..input.id_col_name}
+    molecule_attr: ${..input.id_col_name}
+
+conformers:
+  randomSeed: ${seed}
+  numConfs: 1
+  maxAttempts: 10
+  pruneRmsThresh: 0.1
+  clearConfs: false
+  numThreads: ${num_workers}
+
+calculator:
+  _target_: neural_optimiser.calculators.MACECalculator
+  model_paths: models/MACE_SPICE2_NEUTRAL.model
+  device: ${device}
+
+local_optimiser:
+  _target_: neural_optimiser.optimisers.BFGS
+  max_step: 0.04
+  steps: 250
+  fmax: 0.5
+  fexit: 10
+
+global_optimiser:
+  _target_: neural_optimiser.optimisers.BFGS
+  max_step: 0.04
+  steps: 250
+  fmax: 0.05
+  fexit: 50

@@ -1,0 +1,18 @@
+# @package _global_
+
+defaults:
+  - override /calculator: mace
+  - override /optimiser@local_optimiser: bfgs
+  - override /optimiser@global_optimiser: bfgs
+
+conformers:
+  numConfs: 1
+
+calculator:
+  model_paths: null
+
+local_optimiser:
+  fmax: 0.75
+
+global_optimiser:
+  fmax: 0.50

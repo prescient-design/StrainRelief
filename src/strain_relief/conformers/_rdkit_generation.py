@@ -7,7 +7,7 @@ from loguru import logger as logging
 from rdkit.Chem import AllChem, rdDetermineBonds
 
 from strain_relief.constants import CHARGE_KEY, MOL_KEY
-from strain_relief.types import MolsDict
+from strain_relief.data_types import MolsDict
 
 
 def generate_conformers(

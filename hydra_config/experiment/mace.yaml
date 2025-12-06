@@ -1,0 +1,23 @@
+# @package _global_
+
+defaults:
+  - override /calculator: mace
+  - override /optimiser@local_optimiser: bfgs
+  - override /optimiser@global_optimiser: bfgs
+
+conformers:
+  numConfs: 20
+
+calculator:
+  model_paths: models/MACE_SPICE2_NEUTRAL.model
+
+local_optimiser:
+  fmax: 0.50
+  fexit: 5
+
+global_optimiser:
+  fmax: 0.05
+  fexit: 25
+
+device: cuda
+batch_size: 64

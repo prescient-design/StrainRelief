@@ -51,6 +51,8 @@ jobs:
         python -m pip install "uv==${{ env.UV_VERSION }}"
         uv --version
         uv venv
+        uv pip install torch==2.8.0 -f https://data.pyg.org/whl/torch-2.8.0+cu128.html
+        uv pip install torch-geometric==2.7.0 torch-cluster -f https://data.pyg.org/whl/torch-2.8.0+cu128.html
         uv pip install -e ".[dev]"
         uv run pre-commit install
         df -h
@@ -59,9 +61,13 @@ jobs:
       run: |
         uv run pre-commit run --all-files
 
-    - name: CPU unit tests
+    - name: Unit tests
       run: |
-        uv run pytest tests -m "not gpu"
+        uv run pytest tests -m "not integration"
+
+    - name: Integration tests
+      run: |
+        uv run pytest tests -m "integration"
 
     - name: Build sdist/wheel
       run: |

@@ -1,0 +1,20 @@
+# @package _global_
+
+defaults:
+  - override /calculator: mmff94
+  - override /optimiser@local_optimiser: bfgs
+  - override /optimiser@global_optimiser: bfgs
+
+conformers:
+  numConfs: 20
+
+local_optimiser:
+  fmax: 0.50
+  fexit: 5
+
+global_optimiser:
+  fmax: 0.05
+  fexit: 25
+
+device: cpu
+batch_size: 1

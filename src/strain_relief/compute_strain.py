@@ -12,22 +12,25 @@
 #####################################################################################################
 
 from collections.abc import Sequence
-from copy import deepcopy
 from timeit import default_timer as timer
 
+import hydra
 import pandas as pd
 import rich
 import rich.syntax
 import rich.tree
 from loguru import logger as logging
+from neural_optimiser.calculators.base import Calculator
+from neural_optimiser.conformers import Conformer, ConformerBatch
+from neural_optimiser.optimisers.base import Optimiser
 from omegaconf import DictConfig, OmegaConf
 from rdkit import Chem
 
+from strain_relief.configs import validate_config
 from strain_relief.conformers import generate_conformers
-from strain_relief.energy_eval import predict_energy
-from strain_relief.io import save_parquet, to_mols_dict
-from strain_relief.minimisation import minimise_conformers
-from strain_relief.types import MolsDict
+from strain_relief.data_types import MolsDict
+from strain_relief.io import process_output, to_mols_dict
+from strain_relief.optimisation import run_optimisation
 
 
 def compute_strain(
@@ -58,45 +61,71 @@ def compute_strain(
         Dataframe with strain energies and other metadata.
     """
     start = timer()
-    _print_config_tree(cfg)
 
-    if (
-        cfg.local_min.method in ["MACE", "FAIRChem"]
-        or cfg.global_min.method in ["MACE", "FAIRChem"]
-        or cfg.energy_eval.method in ["MACE", "FAIRChem"]
-    ) and cfg.model.model_paths is None:
-        raise ValueError("Model path must be provided if using a NNP")
+    # -------------- CONFIGURATION --------------
+
+    _print_config_tree(cfg)
+    validate_config(cfg)
+
+    # -------------- SET-UP --------------
+
+    # Instantiate calculator
+    logging.info("Instantiating calculator...")
+    calculator: Calculator = hydra.utils.instantiate(cfg.calculator)
+    logging.info(calculator)
+
+    # Instantiate energy evaluation calculator (if different from minimisation)
+    if cfg.get("energy_evaluation", None):
+        logging.info("Instantiating energy evaluation calculator...")
+        energy_calculator: Calculator = hydra.utils.instantiate(cfg.energy_evaluation.calculator)
+        logging.info(energy_calculator)
+
+    # Instantiate local optimiser
+    logging.info("Instantiating local optimiser...")
+    local_optimiser: Optimiser = hydra.utils.instantiate(cfg.local_optimiser)
+
+    # Instantiate global optimiser
+    logging.info("Instantiating global optimiser...")
+    global_optimiser: Optimiser = hydra.utils.instantiate(cfg.global_optimiser)
+
+    local_optimiser.calculator = calculator
+    global_optimiser.calculator = calculator
+
+    # -------------- PROCESS MOLECULES --------------
 
     df = _parse_args(df=df, mols=mols, ids=ids)
 
-    # Load data
-    docked: MolsDict = to_mols_dict(df, **cfg.io.input)
-    local_minima: MolsDict = {id: deepcopy(mol) for id, mol in docked.items()}
-    global_minimia: MolsDict = {id: deepcopy(mol) for id, mol in docked.items()}
+    docked_mols: MolsDict = to_mols_dict(df, **cfg.io.input)
+    docked_batch: ConformerBatch = ConformerBatch.from_data_list(
+        [Conformer.from_rdkit(**docked_mols[id]) for id in docked_mols]
+    )
 
-    # Find the local minimum using a looser convergence criteria
-    logging.info("Minimising docked conformer...")
-    local_minima = minimise_conformers(local_minima, **cfg.local_min)
+    logging.info("Generating conformers for global minimum search...")
+    generated_mols = generate_conformers(docked_mols, **cfg.conformers)
+    generated_batch: ConformerBatch = ConformerBatch.cat(
+        [ConformerBatch.from_rdkit(**generated_mols[id]) for id in generated_mols]
+    )
 
-    # Generate conformers from the docked conformer
-    global_minimia = generate_conformers(global_minimia, **cfg.conformers)
+    logging.info("Minimising docked conformers...")
+    local_minima = run_optimisation(
+        docked_batch.clone(), local_optimiser, cfg.batch_size, cfg.num_workers, cfg.device
+    )
 
-    # Find approximate global minimum from generated conformers
     logging.info("Minimising generated conformers...")
-    global_minimia = minimise_conformers(global_minimia, **cfg.global_min)
+    global_minima = run_optimisation(
+        generated_batch, global_optimiser, cfg.batch_size, cfg.num_workers, cfg.device
+    )
 
-    # Predict single point energies (if using a different method from minimisation)
-    if (
-        cfg.local_min.method != cfg.energy_eval.method
-        or cfg.global_min.method != cfg.energy_eval.method
-    ):
+    if cfg.get("energy_evaluation", None):
         logging.info("Predicting energies of local minima poses...")
-        local_minima = predict_energy(local_minima, **cfg.energy_eval)
+        local_minima.energies = energy_calculator.get_energies(local_minima)
         logging.info("Predicting energies of generated conformers...")
-        global_minimia = predict_energy(global_minimia, **cfg.energy_eval)
+        global_minima.energies = energy_calculator.get_energies(global_minima)
 
-    # Save torsional strains
-    md = save_parquet(df, docked, local_minima, global_minimia, cfg.threshold, **cfg.io.output)
+    # Save ligand strains
+    md = process_output(
+        df, docked_batch, local_minima, global_minima, cfg.threshold, **cfg.io.output
+    )
 
     end = timer()
     logging.info(f"Ligand strain calculations took {end - start:.2f} seconds. \n")
@@ -114,8 +143,22 @@ def _parse_args(
      Precedence:
     1. If df is provided it is copied and returned (mols / ids ignored).
     2. Otherwise mols must be provided and be homogeneous (all Chem.Mol or all bytes).
-       If ids not supplied they are auto-generated (0..n-1). RDKit Mol objects are
+       If ids not supplied they are auto-generated (0..n-1). RDKit Mol objects can be
        converted to binary via Mol.ToBinary().
+
+    Parameters
+    ----------
+    df: pd.DataFrame [Optional]
+        Input dataframe without rdkit.Mol objects.
+    mols: Sequence[Chem.Mol|bytes] [Optional]
+        List of molecules (RDKit.Mol or bytes).
+    ids: Sequence[int|str] [Optional]
+        List of unique molecule ids.
+
+    Returns
+    -------
+    pd.DataFrame
+        Dataframe with columns ['id', 'mol_bytes'].
     """
     if df is None and mols is None:
         raise ValueError("Either df or mols must be provided")
