@@ -102,7 +102,7 @@ def _method_min(
     conf_id_and_conf = rdkit_to_ase(mol)
 
     for conf_id, conf in conf_id_and_conf:
-        conf.info = {"charge": charge, "spin": spin}
+        conf.info.update({"charge": charge, "spin": spin})
         new_conf, converged, energy = run_minimisation(conf, calculator, maxIters, fmax, fexit)
         results.append(tuple([converged, energy]))
         conf_id_and_conf_min.append(tuple([conf_id, new_conf]))
