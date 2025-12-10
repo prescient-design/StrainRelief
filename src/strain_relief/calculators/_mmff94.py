@@ -74,19 +74,11 @@ class RDKitMMFFCalculator(Calculator):
 
         mol = ase_to_rdkit([(0, atoms)])
 
-        # Determine bonds for each new molecule. Bond information remains constant during MD.
         new_smiles = Chem.MolToSmiles(mol)
         if new_smiles != self.smiles:
-            rdDetermineBonds.DetermineBonds(mol, charge=charge)
-            self.bond_info = [
-                (bond.GetBeginAtomIdx(), bond.GetEndAtomIdx(), bond.GetBondType())
-                for bond in mol.GetBonds()
-            ]
+            if mol.GetNumBonds() == 0:
+                rdDetermineBonds.DetermineBonds(mol, charge=charge)
             self.smiles = new_smiles
-        else:
-            if self.bond_info:
-                for BeginAtomIdx, EndAtomIdx, BondType in self.bond_info:
-                    mol.AddBond(BeginAtomIdx, EndAtomIdx, BondType)
         Chem.SanitizeMol(mol)
 
         # Calculate MMFF energy

@@ -22,6 +22,12 @@ def rdkit_to_ase(mol: Chem.Mol) -> ConformerASEList:
         (conf.GetId(), Atoms(numbers=atomic_numbers, positions=conf.GetPositions()))
         for conf in mol.GetConformers()
     ]
+    if mol.GetNumBonds() > 0:
+        bond_info = [
+            (b.GetBeginAtomIdx(), b.GetEndAtomIdx(), b.GetBondType()) for b in mol.GetBonds()
+        ]
+        for _, conf in conf_id_and_conf:
+            conf.info["bond_info"] = bond_info
     return conf_id_and_conf
 
 
@@ -50,5 +56,9 @@ def ase_to_rdkit(conf_id_and_conf: ConformerASEList) -> Chem.Mol:
             conf.SetAtomPosition(i, pos)
         conf.SetId(conf_id)
         mol.AddConformer(conf, assignId=True)
+
+    if "bond_info" in ase_atoms.info:
+        for BeginAtomIdx, EndAtomIdx, BondType in ase_atoms.info["bond_info"]:
+            mol.AddBond(BeginAtomIdx, EndAtomIdx, BondType)
 
     return mol
