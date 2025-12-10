@@ -26,6 +26,9 @@ def test_rdkit_to_ase(mol_w_confs: dict):
             assert atom.position[1] == rdkit_mol.GetConformer(conf_id).GetAtomPosition(i).y
             assert atom.position[2] == rdkit_mol.GetConformer(conf_id).GetAtomPosition(i).z
 
+    if rdkit_mol.GetNumBonds() > 0:
+        assert "bond_info" in ase_atoms[0][1].info
+
 
 def test_ase_to_rdkit(ase_atoms: list[tuple[int, Atoms]]):
     rdkit_mol = ase_to_rdkit(ase_atoms)
@@ -37,6 +40,9 @@ def test_ase_to_rdkit(ase_atoms: list[tuple[int, Atoms]]):
             assert atom.position[0] == rdkit_mol.GetConformer(conf_id).GetAtomPosition(i).x
             assert atom.position[1] == rdkit_mol.GetConformer(conf_id).GetAtomPosition(i).y
             assert atom.position[2] == rdkit_mol.GetConformer(conf_id).GetAtomPosition(i).z
+
+    if "bond_info" in ase_atoms[0][1].info:
+        assert rdkit_mol.GetNumBonds() > 0
 
 
 def test_rdkit_to_ase_to_rdkit(mol_w_confs: Chem.Mol):
@@ -60,3 +66,5 @@ def test_rdkit_to_ase_to_rdkit(mol_w_confs: Chem.Mol):
                 mols.GetConformer(conf_id).GetAtomPosition(i).z
                 == rdkit_mol.GetConformer(conf_id).GetAtomPosition(i).z
             )
+
+    assert mols.GetNumBonds() == rdkit_mol.GetNumBonds()
