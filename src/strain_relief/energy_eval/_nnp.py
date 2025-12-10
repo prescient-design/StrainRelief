@@ -115,7 +115,7 @@ def _NNP_energy(
 
     confs_and_ids = rdkit_to_ase(mol)
     for _, atoms in confs_and_ids:
-        atoms.info = {"charge": charge, "spin": spin}
+        atoms.info.update({"charge": charge, "spin": spin})
         atoms.calc = calculator
     conf_energies = {
         conf_id: atoms.get_potential_energy() * conversion_factor
