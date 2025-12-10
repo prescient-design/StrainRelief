@@ -80,8 +80,8 @@ def _MMFF94_energy(
             "conf_id": energy
     """
     conformer_energies = {}
+    Chem.SanitizeMol(mol)
     for conf in mol.GetConformers():
-        print(mol, MMFFGetMoleculeProperties)
         mp = rdForceFieldHelpers.MMFFGetMoleculeProperties(mol, **MMFFGetMoleculeProperties)
         ff = rdForceFieldHelpers.MMFFGetMoleculeForceField(
             mol, mp, confId=conf.GetId(), **MMFFGetMoleculeForceField
