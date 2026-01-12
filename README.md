@@ -7,7 +7,7 @@ StrainRelief calculates the ligand strain of docked poses and has a suite of dif
 - 💻 Chatbot source [code](https://github.com/erwallace/paper_query).
 - 📉 neural-optimiser [package](https://github.com/erwallace/neural-optimiser).
 
-![Strain Relief Logo](assets/strain_relief_logo.png)
+![Strain Relief Logo](assets/strain_relief_plus_logo.png)
 
 ## Update 1.0.0
 
@@ -75,7 +75,7 @@ StrainRelief runs are configured using hydra configs.
 ```
 from strain_relief import compute_strain
 
-strains = compute_strain(poses: list[RDKit.Mol], config: DictConfig)
+computed = compute_strain(poses: list[RDKit.Mol], config: DictConfig)
 
 for i, r in computed.iterrows():
     print(f"Pose {r['id']} has a strain of {r['ligand_strain']:.2f} kcal/mol")
