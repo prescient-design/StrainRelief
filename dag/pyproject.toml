@@ -1,0 +1,48 @@
+[project]
+name = "dag"
+version = "0.1.0"
+requires-python = ">=3.10,<3.15"
+dependencies = [
+    "dagster==1.13.9",
+    "strain-relief",
+    "matplotlib",
+    "seaborn",
+]
+
+[project.optional-dependencies]
+# Dev tooling: dg CLI + webserver, needed to run Dagster (`dg dev`).
+# Exposed as an extra so `uv pip install -e ".[dev]"` installs it.
+dev = [
+    "dagster-dg-cli",
+    "dagster-webserver",
+]
+
+[dependency-groups]
+dev = [
+    "dagster-dg-cli",
+    "dagster-webserver",
+]
+
+[tool.uv.sources]
+strain-relief = { path = "..", editable = true }
+
+# Dagster's asset-selection grammar needs antlr 4.13; omegaconf (via strain-relief -> hydra) pins
+# 4.9. NB: the hydra CLI is unusable in this env as a result.
+[tool.uv]
+override-dependencies = ["antlr4-python3-runtime>=4.13,<4.14"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+force-include = { "pyproject.toml" = "pyproject.toml" }
+
+[tool.dg]
+directory_type = "project"
+
+[tool.dg.project]
+root_module = "dag"
+registry_modules = [
+    "dag.components.*",
+]

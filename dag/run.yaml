@@ -1,0 +1,71 @@
+resources:
+  # --- calculator (shared, loaded once) : _target_ selector lives under spec.kind ---
+  calculator:
+    config:
+      spec:
+        # Discriminated union -> Dagster renders it as a selector: pick ONE of
+        # mace | mmff94 | fairchem and nest that variant's params under it.
+        mace:
+          model_paths: ../models/MACE_SPICE2_NEUTRAL.model
+          device: cpu
+          default_dtype: float32
+  # --- optimisers : discriminated union -> selector (uniform with calculator). Pick bfgs. ---
+  local_optimiser:
+    config:
+      spec:
+        bfgs:
+          max_step: 0.04
+          steps: 250
+          fmax: 0.50
+          fexit: 5
+  global_optimiser:
+    config:
+      spec:
+        bfgs:
+          max_step: 0.04
+          steps: 250
+          fmax: 0.25
+          fexit: 25
+
+ops:
+  input_df:  # InputConfig
+    config:
+      parquet_path: ../data/example_ligboundconf_input.parquet
+      include_charged: true
+      id_col_name: null
+      mol_col_name: null
+  docked_mols:  # InputConfig
+    config:
+      parquet_path: ../data/example_ligboundconf_input.parquet
+      include_charged: true
+      id_col_name: null
+      mol_col_name: null
+  conformers:  # ConformerConfig
+    config:
+      randomSeed: -1
+      numConfs: 2
+      maxAttempts: 200
+      pruneRmsThresh: 0.1
+      clearConfs: false
+      numThreads: 0
+  local_minima:  # LocalOptimisationConfig
+    config:
+      batch_size: 8
+      num_workers: 0
+      device: cpu
+  global_minima:  # GlobalOptimisationConfig
+    config:
+      batch_size: 8
+      num_workers: 0
+      device: cpu
+  aggregate_results:  # OutputConfig
+    config:
+      threshold: 16.1
+      parquet_path: null # overwritten in asset
+      save_batch: false
+      molecule_attr: null
+      id_col_name: null
+      mol_col_name: null
+  plot_results:  # PlotConfig
+    config:
+      true_strain_col: null
